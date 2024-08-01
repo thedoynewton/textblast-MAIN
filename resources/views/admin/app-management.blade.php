@@ -17,6 +17,7 @@
         <table class="min-w-full bg-white border border-gray-300">
             <thead>
                 <tr>
+                    <th class="py-2 px-4 border-b">ID</th>
                     <th class="py-2 px-4 border-b">First Name</th>
                     <th class="py-2 px-4 border-b">Last Name</th>
                     <th class="py-2 px-4 border-b">Middle Name</th>
@@ -33,6 +34,7 @@
             <tbody>
                 @foreach($students as $student)
                     <tr class="hover:bg-gray-100">
+                        <td class="py-2 px-4 border-b">{{ $student->stud_id }}</td>
                         <td class="py-2 px-4 border-b">{{ $student->stud_fname }}</td>
                         <td class="py-2 px-4 border-b">{{ $student->stud_lname }}</td>
                         <td class="py-2 px-4 border-b">{{ $student->stud_mname }}</td>
@@ -62,6 +64,7 @@
         <table class="min-w-full bg-white border border-gray-300">
             <thead>
                 <tr>
+                    <th class="py-2 px-4 border-b">ID</th>
                     <th class="py-2 px-4 border-b">First Name</th>
                     <th class="py-2 px-4 border-b">Last Name</th>
                     <th class="py-2 px-4 border-b">Middle Name</th>
@@ -76,6 +79,7 @@
             <tbody>
                 @foreach($employees as $employee)
                     <tr class="hover:bg-gray-100">
+                        <td class="py-2 px-4 border-b">{{ $employee->emp_id }}</td>
                         <td class="py-2 px-4 border-b">{{ $employee->emp_fname }}</td>
                         <td class="py-2 px-4 border-b">{{ $employee->emp_lname }}</td>
                         <td class="py-2 px-4 border-b">{{ $employee->emp_mname }}</td>

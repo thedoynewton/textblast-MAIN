@@ -9,13 +9,14 @@ class Program extends Model
 {
     use HasFactory;
 
+    protected $table = 'programs';
     protected $primaryKey = 'program_id';
 
-    protected $fillable = ['program_name', 'campus_id', 'college_id'];
+    protected $fillable = ['program_name', 'college_id', 'campus_id'];
 
-    public function students()
+    public function college()
     {
-        return $this->hasMany(Student::class, 'program_id', 'program_id');
+        return $this->belongsTo(College::class, 'college_id', 'college_id');
     }
 
     public function campus()
@@ -23,13 +24,4 @@ class Program extends Model
         return $this->belongsTo(Campus::class, 'campus_id', 'campus_id');
     }
 
-    public function college()
-    {
-        return $this->belongsTo(College::class, 'college_id', 'college_id');
-    }
-
-    public function majors()
-    {
-        return $this->hasMany(Major::class, 'program_id', 'program_id');
-    }
 }

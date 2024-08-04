@@ -9,6 +9,8 @@ class Campus extends Model
 {
     use HasFactory;
 
+    protected $table = 'campuses'; // Matches the table name in your database
+
     protected $primaryKey = 'campus_id';
 
     protected $fillable = ['campus_name'];

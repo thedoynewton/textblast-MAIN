@@ -9,15 +9,14 @@ class Office extends Model
 {
     use HasFactory;
 
+    protected $table = 'offices';
     protected $primaryKey = 'office_id';
 
-    protected $fillable = [
-        'campus_id',
-        'office_name',
-    ];
+    protected $fillable = ['office_name', 'campus_id'];
 
     public function campus()
     {
-        return $this->belongsTo(Campus::class, 'campus_id');
+        return $this->belongsTo(Campus::class, 'campus_id', 'campus_id');
     }
+
 }

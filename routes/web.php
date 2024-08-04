@@ -22,8 +22,9 @@ Route::get('auth/google', [AuthController::class, 'redirectToGoogle'])->name('go
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard')->middleware('auth');
 
 // Admin messages
-Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages')->middleware('auth');
-Route::post('/admin/send-messages', [AdminController::class, 'sendMessages'])->name('admin.send-messages')->middleware('auth');
+Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages');
+Route::post('/admin/broadcast', [MessageController::class, 'broadcastToRecipients'])->name('admin.broadcastToRecipients');
+// Route::post('/admin/send-messages', [AdminController::class, 'sendMessages'])->name('admin.send-messages')->middleware('auth');
 
 // Admin analytics route
 Route::get('/admin/analytics', [AdminController::class, 'analytics'])->name('admin.analytics')->middleware('auth');
@@ -44,7 +45,8 @@ Route::get('/admin/app-management', [AdminController::class, 'appManagement'])->
 Route::get('/subadmin/dashboard', [SubAdminController::class, 'dashboard'])->name('subadmin.dashboard')->middleware('auth');
 
 // Admin messages route
-Route::get('/subadmin/messages', [SubAdminController::class, 'messages'])->name('subadmin.messages')->middleware('auth');
+Route::get('/subadmin/messages', [SubAdminController::class, 'messages'])->name('subadmin.messages');
+Route::post('/subadmin/messages/broadcast', [SubAdminController::class, 'broadcastMessages'])->name('subadmin.broadcast');
 
 // Admin analytics route
 Route::get('/subadmin/analytics', [SubAdminController::class, 'analytics'])->name('subadmin.analytics')->middleware('auth');
@@ -52,3 +54,4 @@ Route::get('/subadmin/analytics', [SubAdminController::class, 'analytics'])->nam
 
 //subadmin send messages route
 Route::post('/admin/send-messages', [MessageController::class, 'sendBulkMessages'])->name('admin.send-messages');
+Route::post('/admin/broadcast-employees', [MessageController::class, 'broadcastToEmployees'])->name('admin.broadcastToEmployees');

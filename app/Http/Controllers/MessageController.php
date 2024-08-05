@@ -14,6 +14,8 @@ use App\Models\Type;
 use Illuminate\Http\Request;
 use App\Services\MoviderService;
 use Illuminate\Support\Facades\Log;
+use App\Jobs\SendScheduledMessage;
+use Carbon\Carbon;
 
 class MessageController extends Controller
 {
@@ -30,24 +32,25 @@ class MessageController extends Controller
     public function broadcastToRecipients(Request $request)
     {
         $broadcastType = $request->broadcast_type;
+        $campusId = $request->input('campus');
         $successCount = 0;
         $errorCount = 0;
-        $errorDetails = ''; // Initialize as an empty string
+        $errorDetails = '';
 
         // Handle broadcasting to students
-        if ($broadcastType === 'students' || $broadcastType === 'both') {
-            $studentResult = $this->sendBulkMessages($request, 'students');
+        if ($broadcastType === 'students' || $broadcastType === 'all') {
+            $studentResult = $this->sendBulkMessages($request, 'students', $campusId);
             $successCount += $studentResult['successCount'];
             $errorCount += $studentResult['errorCount'];
-            $errorDetails .= (string) $studentResult['errorDetails']; // Cast to string
+            $errorDetails .= $studentResult['errorDetails'];
         }
 
         // Handle broadcasting to employees
-        if ($broadcastType === 'employees' || $broadcastType === 'both') {
-            $employeeResult = $this->sendBulkMessages($request, 'employees');
+        if ($broadcastType === 'employees' || $broadcastType === 'all') {
+            $employeeResult = $this->sendBulkMessages($request, 'employees', $campusId);
             $successCount += $employeeResult['successCount'];
             $errorCount += $employeeResult['errorCount'];
-            $errorDetails .= (string) $employeeResult['errorDetails']; // Cast to string
+            $errorDetails .= $employeeResult['errorDetails'];
         }
 
         $successMessage = $successCount > 0 ? "Messages sent successfully to $successCount recipients." : '';
@@ -63,12 +66,12 @@ class MessageController extends Controller
     /**
      * Sends bulk messages to the specified recipient type (students or employees).
      */
-    protected function sendBulkMessages(Request $request, $recipientType)
+    protected function sendBulkMessages(Request $request, $recipientType, $campusId = null)
     {
         $query = $recipientType === 'students' ? Student::query() : Employee::query();
 
-        if ($request->filled('campus')) {
-            $query->where('campus_id', $request->input('campus'));
+        if ($campusId) {
+            $query->where('campus_id', $campusId);
         }
 
         if ($recipientType === 'students') {
@@ -102,30 +105,22 @@ class MessageController extends Controller
         $invalidRecipients = [];
 
         foreach ($recipients as $recipient) {
-            // Use appropriate fields for students and employees
-            $number = $recipientType === 'students' ? $recipient->stud_contact : $recipient->emp_contact;
-            $email = $recipientType === 'students' ? $recipient->stud_email : $recipient->emp_email;
+            $number = $recipientType === 'students' ? $recipient->stud_contact : $recipient->phone;
+            $email = $recipientType === 'students' ? $recipient->stud_email : $recipient->email;
 
-            // Ensure number and email are not NULL
-            $number = $number ?: 'N/A';
-            $email = $email ?: 'N/A';
-
-            // Validate and format the phone number
-            $number = preg_replace('/\D/', '', $number); // Remove all non-digit characters
-            $number = substr($number, -10); // Get the last 10 digits (which should be the actual phone number)
-
-            if (strlen($number) === 10) {
-                $formattedRecipients[] = '+63' . $number;
+            if (preg_match('/^\+639\d{9}$/', $number)) {
+                $formattedRecipients[] = $number;
+            } elseif (preg_match('/^09\d{9}$/', $number)) {
+                $formattedRecipients[] = '+63' . substr($number, 1);
             } else {
                 $invalidRecipients[] = [
-                    'name' => $recipientType === 'students' ? $recipient->stud_name : $recipient->emp_name,
+                    'name' => $recipientType === 'students' ? $recipient->stud_name : $recipient->name,
                     'number' => $number,
                     'email' => $email
                 ];
             }
         }
 
-        // Handle invalid recipients
         if (empty($formattedRecipients) && !empty($invalidRecipients)) {
             $errorMessage = 'The following numbers are invalid: ';
             foreach ($invalidRecipients as $invalidRecipient) {
@@ -139,9 +134,8 @@ class MessageController extends Controller
             ];
         }
 
-        // Proceed with sending messages
         $message = $request->input('message');
-        $batchSize = 100;
+        $batchSize = 100; // Adjust this number based on Movider's API limits
         $recipientBatches = array_chunk($formattedRecipients, $batchSize);
         $successCount = 0;
         $errorCount = 0;
@@ -178,4 +172,46 @@ class MessageController extends Controller
         ];
     }
 
+    /**
+     * Schedule a message to be sent at a later time.
+     */
+    public function scheduleMessage(Request $request)
+    {
+        $recipients = $this->getRecipients($request);
+        $message = $request->input('message');
+        $scheduledTime = Carbon::parse($request->input('scheduled_time'));
+
+        // Dispatch the job with a delay until the scheduled time
+        SendScheduledMessage::dispatch($recipients, $message)
+                            ->delay($scheduledTime);
+
+        return back()->with('success', 'Message scheduled successfully for ' . $scheduledTime->toDayDateTimeString());
+    }
+
+    /**
+     * Get recipients based on the selected filters.
+     */
+    protected function getRecipients(Request $request)
+    {
+        $broadcastType = $request->input('broadcast_type');
+        $recipients = [];
+
+        if ($broadcastType === 'students' || $broadcastType === 'all') {
+            $recipients = Student::query()
+                ->where('campus_id', $request->input('campus'))
+                // Additional student filters here
+                ->pluck('stud_contact')
+                ->toArray();
+        }
+
+        if ($broadcastType === 'employees' || $broadcastType === 'all') {
+            $recipients = array_merge($recipients, Employee::query()
+                ->where('campus_id', $request->input('campus'))
+                // Additional employee filters here
+                ->pluck('phone')
+                ->toArray());
+        }
+
+        return $recipients;
+    }
 }

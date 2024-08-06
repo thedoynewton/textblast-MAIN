@@ -14,8 +14,6 @@ use App\Models\Type;
 use Illuminate\Http\Request;
 use App\Services\MoviderService;
 use Illuminate\Support\Facades\Log;
-use App\Jobs\SendScheduledMessage;
-use Carbon\Carbon;
 
 class MessageController extends Controller
 {
@@ -26,49 +24,122 @@ class MessageController extends Controller
         $this->moviderService = $moviderService;
     }
 
+    /**
+     * Broadcast messages to either students, employees, or both.
+     */
     public function broadcastToRecipients(Request $request)
     {
-        $timing = $request->input('timing');
-        $recipients = $this->getRecipients($request);
+        $broadcastType = $request->broadcast_type;
+        $successCount = 0;
+        $errorCount = 0;
+        $errorDetails = ''; // Initialize as an empty string
 
-        if ($timing === 'realtime') {
-            // Send the message immediately
-            return $this->sendBulkMessages($request, $recipients);
-        } elseif ($timing === 'scheduled') {
-            // Schedule the message
-            return $this->scheduleMessage($request, $recipients);
+        // Handle broadcasting to students
+        if ($broadcastType === 'students' || $broadcastType === 'both') {
+            $studentResult = $this->sendBulkMessages($request, 'students');
+            $successCount += $studentResult['successCount'];
+            $errorCount += $studentResult['errorCount'];
+            $errorDetails .= (string) $studentResult['errorDetails']; // Cast to string
+        }
+
+        // Handle broadcasting to employees
+        if ($broadcastType === 'employees' || $broadcastType === 'both') {
+            $employeeResult = $this->sendBulkMessages($request, 'employees');
+            $successCount += $employeeResult['successCount'];
+            $errorCount += $employeeResult['errorCount'];
+            $errorDetails .= (string) $employeeResult['errorDetails']; // Cast to string
+        }
+
+        $successMessage = $successCount > 0 ? "Messages sent successfully to $successCount recipients." : '';
+        $errorMessage = $errorCount > 0 ? "Failed to send messages to $errorCount recipients." : '';
+
+        if ($successCount > 0) {
+            return redirect()->back()->with('success', $successMessage . $errorDetails);
         } else {
-            return back()->with('error', 'Invalid timing option selected.');
+            return redirect()->back()->with('error', $errorMessage . $errorDetails);
         }
     }
 
-
-    protected function sendBulkMessages(Request $request, $recipients)
+    /**
+     * Sends bulk messages to the specified recipient type (students or employees).
+     */
+    protected function sendBulkMessages(Request $request, $recipientType)
     {
+        $query = $recipientType === 'students' ? Student::query() : Employee::query();
+
+        if ($request->filled('campus')) {
+            $query->where('campus_id', $request->input('campus'));
+        }
+
+        if ($recipientType === 'students') {
+            if ($request->filled('college')) {
+                $query->where('college_id', $request->input('college'));
+            }
+
+            if ($request->filled('program')) {
+                $query->where('program_id', $request->input('program'));
+            }
+
+            if ($request->filled('year')) {
+                $query->where('year_id', $request->input('year'));
+            }
+        } else { // employees
+            if ($request->filled('office')) {
+                $query->where('office_id', $request->input('office'));
+            }
+
+            if ($request->filled('status')) {
+                $query->where('status_id', $request->input('status'));
+            }
+
+            if ($request->filled('type')) {
+                $query->where('type_id', $request->input('type'));
+            }
+        }
+
+        $recipients = $query->get();
         $formattedRecipients = [];
         $invalidRecipients = [];
 
         foreach ($recipients as $recipient) {
-            $number = $recipient['contact'];
+            // Use appropriate fields for students and employees
+            $number = $recipientType === 'students' ? $recipient->stud_contact : $recipient->emp_contact;
+            $email = $recipientType === 'students' ? $recipient->stud_email : $recipient->emp_email;
 
-            if (preg_match('/^\+639\d{9}$/', $number)) {
-                $formattedRecipients[] = $number;
-            } elseif (preg_match('/^09\d{9}$/', $number)) {
-                $formattedRecipients[] = '+63' . substr($number, 1);
+            // Ensure number and email are not NULL
+            $number = $number ?: 'N/A';
+            $email = $email ?: 'N/A';
+
+            // Validate and format the phone number
+            $number = preg_replace('/\D/', '', $number); // Remove all non-digit characters
+            $number = substr($number, -10); // Get the last 10 digits (which should be the actual phone number)
+
+            if (strlen($number) === 10) {
+                $formattedRecipients[] = '+63' . $number;
             } else {
-                $invalidRecipients[] = $recipient;
+                $invalidRecipients[] = [
+                    'name' => $recipientType === 'students' ? $recipient->stud_name : $recipient->emp_name,
+                    'number' => $number,
+                    'email' => $email
+                ];
             }
         }
 
+        // Handle invalid recipients
         if (empty($formattedRecipients) && !empty($invalidRecipients)) {
             $errorMessage = 'The following numbers are invalid: ';
             foreach ($invalidRecipients as $invalidRecipient) {
-                $errorMessage .= $invalidRecipient['name'] . ' (Number: ' . $invalidRecipient['contact'] . ', Email: ' . $invalidRecipient['email'] . '), ';
+                $errorMessage .= $invalidRecipient['name'] . ' (Number: ' . $invalidRecipient['number'] . ', Email: ' . $invalidRecipient['email'] . '), ';
             }
             $errorMessage = rtrim($errorMessage, ', ');
-            return back()->with('error', $errorMessage);
+            return [
+                'successCount' => 0,
+                'errorCount' => count($invalidRecipients),
+                'errorDetails' => $errorMessage
+            ];
         }
 
+        // Proceed with sending messages
         $message = $request->input('message');
         $batchSize = 100;
         $recipientBatches = array_chunk($formattedRecipients, $batchSize);
@@ -87,61 +158,24 @@ class MessageController extends Controller
             }
         }
 
-        $successMessage = $successCount > 0 ? "Messages sent successfully to $successCount recipients." : '';
-        $errorMessage = $errorCount > 0 ? "Failed to send messages to $errorCount recipients." : '';
-        $errorDetails = !empty($batchErrors) ? implode(', ', $batchErrors) : '';
-
-        return back()->with('success', $successMessage)->with('error', $errorMessage . $errorDetails);
-    }
-
-    public function scheduleMessage(Request $request, $recipients)
-    {
-        $scheduledTime = Carbon::parse($request->input('scheduled_time'))->setTimezone('Asia/Manila');
-
-        // Log the scheduled time and recipients
-        Log::info('Scheduling Message', [
-            'scheduled_time' => $scheduledTime,
-            'recipients' => $recipients,
-            'message' => $request->input('message')
-        ]);
-
-        SendScheduledMessage::dispatch($recipients, $request->input('message'))
-            ->delay($scheduledTime);
-
-        return back()->with('success', 'Message scheduled successfully for ' . $scheduledTime->toDayDateTimeString());
-    }
-
-
-    protected function getRecipients(Request $request)
-    {
-        $broadcastType = $request->input('broadcast_type');
-        $recipients = [];
-
-        if ($broadcastType === 'students' || $broadcastType === 'all') {
-            $recipients = Student::query()
-                ->where('campus_id', $request->input('campus'))
-                ->select(['stud_contact as contact', 'stud_fname as name', 'stud_email as email'])
-                ->get()
-                ->toArray();
+        $errorDetails = '';
+        if (!empty($invalidRecipients)) {
+            $errorDetails = ' The following numbers are invalid: ';
+            foreach ($invalidRecipients as $invalidRecipient) {
+                $errorDetails .= $invalidRecipient['name'] . ' (Number: ' . $invalidRecipient['number'] . ', Email: ' . $invalidRecipient['email'] . '), ';
+            }
+            $errorDetails = rtrim($errorDetails, ', ');
         }
 
-        if ($broadcastType === 'employees' || $broadcastType === 'all') {
-            $employeeRecipients = Employee::query()
-                ->where('campus_id', $request->input('campus'))
-                ->select(['emp_contact as contact', 'emp_fname as name', 'emp_email as email'])
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'contact' => $item->contact,
-                        'name' => $item->name,
-                        'email' => $item->email,
-                    ];
-                })
-                ->toArray();
-
-            $recipients = array_merge($recipients, $employeeRecipients);
+        if (!empty($batchErrors)) {
+            $errorDetails .= ' ' . implode(', ', $batchErrors);
         }
 
-        return $recipients;
+        return [
+            'successCount' => $successCount,
+            'errorCount' => $errorCount,
+            'errorDetails' => $errorDetails
+        ];
     }
+
 }

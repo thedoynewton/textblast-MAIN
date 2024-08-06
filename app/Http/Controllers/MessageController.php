@@ -26,116 +26,51 @@ class MessageController extends Controller
         $this->moviderService = $moviderService;
     }
 
-    /**
-     * Broadcast messages to either students, employees, or both.
-     */
     public function broadcastToRecipients(Request $request)
     {
-        $broadcastType = $request->broadcast_type;
-        $campusId = $request->input('campus');
-        $successCount = 0;
-        $errorCount = 0;
-        $errorDetails = '';
+        $timing = $request->input('timing');
+        $recipients = $this->getRecipients($request);
 
-        // Handle broadcasting to students
-        if ($broadcastType === 'students' || $broadcastType === 'all') {
-            $studentResult = $this->sendBulkMessages($request, 'students', $campusId);
-            $successCount += $studentResult['successCount'];
-            $errorCount += $studentResult['errorCount'];
-            $errorDetails .= $studentResult['errorDetails'];
-        }
-
-        // Handle broadcasting to employees
-        if ($broadcastType === 'employees' || $broadcastType === 'all') {
-            $employeeResult = $this->sendBulkMessages($request, 'employees', $campusId);
-            $successCount += $employeeResult['successCount'];
-            $errorCount += $employeeResult['errorCount'];
-            $errorDetails .= $employeeResult['errorDetails'];
-        }
-
-        $successMessage = $successCount > 0 ? "Messages sent successfully to $successCount recipients." : '';
-        $errorMessage = $errorCount > 0 ? "Failed to send messages to $errorCount recipients." : '';
-
-        if ($successCount > 0) {
-            return redirect()->back()->with('success', $successMessage . $errorDetails);
+        if ($timing === 'realtime') {
+            // Send the message immediately
+            return $this->sendBulkMessages($request, $recipients);
+        } elseif ($timing === 'scheduled') {
+            // Schedule the message
+            return $this->scheduleMessage($request, $recipients);
         } else {
-            return redirect()->back()->with('error', $errorMessage . $errorDetails);
+            return back()->with('error', 'Invalid timing option selected.');
         }
     }
 
-    /**
-     * Sends bulk messages to the specified recipient type (students or employees).
-     */
-    protected function sendBulkMessages(Request $request, $recipientType, $campusId = null)
+
+    protected function sendBulkMessages(Request $request, $recipients)
     {
-        $query = $recipientType === 'students' ? Student::query() : Employee::query();
-
-        if ($campusId) {
-            $query->where('campus_id', $campusId);
-        }
-
-        if ($recipientType === 'students') {
-            if ($request->filled('college')) {
-                $query->where('college_id', $request->input('college'));
-            }
-
-            if ($request->filled('program')) {
-                $query->where('program_id', $request->input('program'));
-            }
-
-            if ($request->filled('year')) {
-                $query->where('year_id', $request->input('year'));
-            }
-        } else { // employees
-            if ($request->filled('office')) {
-                $query->where('office_id', $request->input('office'));
-            }
-
-            if ($request->filled('status')) {
-                $query->where('status_id', $request->input('status'));
-            }
-
-            if ($request->filled('type')) {
-                $query->where('type_id', $request->input('type'));
-            }
-        }
-
-        $recipients = $query->get();
         $formattedRecipients = [];
         $invalidRecipients = [];
 
         foreach ($recipients as $recipient) {
-            $number = $recipientType === 'students' ? $recipient->stud_contact : $recipient->phone;
-            $email = $recipientType === 'students' ? $recipient->stud_email : $recipient->email;
+            $number = $recipient['contact'];
 
             if (preg_match('/^\+639\d{9}$/', $number)) {
                 $formattedRecipients[] = $number;
             } elseif (preg_match('/^09\d{9}$/', $number)) {
                 $formattedRecipients[] = '+63' . substr($number, 1);
             } else {
-                $invalidRecipients[] = [
-                    'name' => $recipientType === 'students' ? $recipient->stud_name : $recipient->name,
-                    'number' => $number,
-                    'email' => $email
-                ];
+                $invalidRecipients[] = $recipient;
             }
         }
 
         if (empty($formattedRecipients) && !empty($invalidRecipients)) {
             $errorMessage = 'The following numbers are invalid: ';
             foreach ($invalidRecipients as $invalidRecipient) {
-                $errorMessage .= $invalidRecipient['name'] . ' (Number: ' . $invalidRecipient['number'] . ', Email: ' . $invalidRecipient['email'] . '), ';
+                $errorMessage .= $invalidRecipient['name'] . ' (Number: ' . $invalidRecipient['contact'] . ', Email: ' . $invalidRecipient['email'] . '), ';
             }
             $errorMessage = rtrim($errorMessage, ', ');
-            return [
-                'successCount' => 0,
-                'errorCount' => count($invalidRecipients),
-                'errorDetails' => $errorMessage
-            ];
+            return back()->with('error', $errorMessage);
         }
 
         $message = $request->input('message');
-        $batchSize = 100; // Adjust this number based on Movider's API limits
+        $batchSize = 100;
         $recipientBatches = array_chunk($formattedRecipients, $batchSize);
         $successCount = 0;
         $errorCount = 0;
@@ -152,45 +87,31 @@ class MessageController extends Controller
             }
         }
 
-        $errorDetails = '';
-        if (!empty($invalidRecipients)) {
-            $errorDetails = ' The following numbers are invalid: ';
-            foreach ($invalidRecipients as $invalidRecipient) {
-                $errorDetails .= $invalidRecipient['name'] . ' (Number: ' . $invalidRecipient['number'] . ', Email: ' . $invalidRecipient['email'] . '), ';
-            }
-            $errorDetails = rtrim($errorDetails, ', ');
-        }
+        $successMessage = $successCount > 0 ? "Messages sent successfully to $successCount recipients." : '';
+        $errorMessage = $errorCount > 0 ? "Failed to send messages to $errorCount recipients." : '';
+        $errorDetails = !empty($batchErrors) ? implode(', ', $batchErrors) : '';
 
-        if (!empty($batchErrors)) {
-            $errorDetails .= ' ' . implode(', ', $batchErrors);
-        }
-
-        return [
-            'successCount' => $successCount,
-            'errorCount' => $errorCount,
-            'errorDetails' => $errorDetails
-        ];
+        return back()->with('success', $successMessage)->with('error', $errorMessage . $errorDetails);
     }
 
-    /**
-     * Schedule a message to be sent at a later time.
-     */
-    public function scheduleMessage(Request $request)
+    public function scheduleMessage(Request $request, $recipients)
     {
-        $recipients = $this->getRecipients($request);
-        $message = $request->input('message');
-        $scheduledTime = Carbon::parse($request->input('scheduled_time'));
+        $scheduledTime = Carbon::parse($request->input('scheduled_time'))->setTimezone('Asia/Manila');
 
-        // Dispatch the job with a delay until the scheduled time
-        SendScheduledMessage::dispatch($recipients, $message)
-                            ->delay($scheduledTime);
+        // Log the scheduled time and recipients
+        Log::info('Scheduling Message', [
+            'scheduled_time' => $scheduledTime,
+            'recipients' => $recipients,
+            'message' => $request->input('message')
+        ]);
+
+        SendScheduledMessage::dispatch($recipients, $request->input('message'))
+            ->delay($scheduledTime);
 
         return back()->with('success', 'Message scheduled successfully for ' . $scheduledTime->toDayDateTimeString());
     }
 
-    /**
-     * Get recipients based on the selected filters.
-     */
+
     protected function getRecipients(Request $request)
     {
         $broadcastType = $request->input('broadcast_type');
@@ -199,17 +120,26 @@ class MessageController extends Controller
         if ($broadcastType === 'students' || $broadcastType === 'all') {
             $recipients = Student::query()
                 ->where('campus_id', $request->input('campus'))
-                // Additional student filters here
-                ->pluck('stud_contact')
+                ->select(['stud_contact as contact', 'stud_fname as name', 'stud_email as email'])
+                ->get()
                 ->toArray();
         }
 
         if ($broadcastType === 'employees' || $broadcastType === 'all') {
-            $recipients = array_merge($recipients, Employee::query()
+            $employeeRecipients = Employee::query()
                 ->where('campus_id', $request->input('campus'))
-                // Additional employee filters here
-                ->pluck('phone')
-                ->toArray());
+                ->select(['emp_contact as contact', 'emp_fname as name', 'emp_email as email'])
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'contact' => $item->contact,
+                        'name' => $item->name,
+                        'email' => $item->email,
+                    ];
+                })
+                ->toArray();
+
+            $recipients = array_merge($recipients, $employeeRecipients);
         }
 
         return $recipients;

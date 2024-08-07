@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\College;
-use App\Models\Program;
-use App\Models\Year;
 use App\Models\Office;
+use App\Models\Program;
 use App\Models\Status;
 use App\Models\Type;
+use App\Models\Year;
+use Illuminate\Http\Request;
 
 class FilterController extends Controller
 {
@@ -33,4 +33,3 @@ class FilterController extends Controller
         return response()->json($response);
     }
 }
-

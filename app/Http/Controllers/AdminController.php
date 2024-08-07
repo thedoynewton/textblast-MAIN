@@ -39,7 +39,6 @@ class AdminController extends Controller
         return view('admin.messages', compact('campuses', 'colleges', 'programs', 'years', 'offices', 'statuses', 'types'));
     }
 
-
     public function broadcastMessages(Request $request)
     {
         return app(MessageController::class)->broadcastToRecipients($request);

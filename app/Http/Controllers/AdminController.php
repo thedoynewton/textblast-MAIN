@@ -11,6 +11,7 @@ use App\Models\College;
 use App\Models\Program;
 use App\Models\Student;
 use App\Models\Employee;
+use App\Models\Major;
 use App\Models\Type;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -116,11 +117,31 @@ class AdminController extends Controller
 
     public function appManagement()
     {
-        $students = Student::with(['campus', 'college', 'program', 'major', 'year'])->get();
-        $employees = Employee::with(['campus', 'office', 'status', 'type'])->get();
+        $students = Student::all();
+        $campuses = Campus::all();
+        $colleges = College::all();
+        $programs = Program::all();
+        $majors = Major::all();
+        $years = Year::all();
+        $employees = Employee::all();
+        $offices = Office::all();
+        $statuses = Status::all();
+        $types = Type::all();
 
-        return view('admin.app-management', compact('students', 'employees'));
+        return view('admin.app-management', compact(
+            'students',
+            'campuses',
+            'colleges',
+            'programs',
+            'majors',
+            'years',
+            'employees',
+            'offices',
+            'statuses',
+            'types'
+        ));
     }
+
 
     public function importEmployees(Request $request)
     {
@@ -165,4 +186,3 @@ class AdminController extends Controller
         return redirect()->route('admin.user-management')->with('success', 'User access removed successfully.');
     }
 }
-

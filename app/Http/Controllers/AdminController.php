@@ -35,8 +35,6 @@ class AdminController extends Controller
         $types = Type::all();
 
         // Convert the collections to arrays for better visibility
-        //dd($campuses->toArray(), $colleges->toArray(), $programs->toArray(), $years->toArray(), $offices->toArray(), $statuses->toArray(), $types->toArray());
-
         return view('admin.messages', compact('campuses', 'colleges', 'programs', 'years', 'offices', 'statuses', 'types'));
     }
 
@@ -44,43 +42,6 @@ class AdminController extends Controller
     {
         return app(MessageController::class)->broadcastToRecipients($request);
     }
-
-    // public function sendMessages(Request $request)
-    // {
-    //     $message = $request->input('message');
-    //     $campusId = $request->input('campus');
-    //     $collegeId = $request->input('college');
-    //     $programId = $request->input('program');
-    //     $yearId = $request->input('year');
-
-    //     $query = Student::query();
-
-    //     if ($campusId) {
-    //         $query->where('campus_id', $campusId);
-    //     }
-
-    //     if ($collegeId) {
-    //         $query->where('college_id', $collegeId);
-    //     }
-
-    //     if ($programId) {
-    //         $query->where('program_id', $programId);
-    //     }
-
-    //     if ($yearId) {
-    //         $query->where('year_id', $yearId);
-    //     }
-
-    //     $students = $query->get();
-
-    //     // Send messages using Movider API
-    //     foreach ($students as $student) {
-    //         $response = $this->sendMoviderMessage($student->stud_contact, $message);
-    //         Log::info('Movider response for ' . $student->stud_contact . ': ' . $response->body());
-    //     }
-
-    //     return redirect()->route('admin.messages')->with('success', 'Messages sent successfully.');
-    // }
 
     protected function sendMoviderMessage($phoneNumber, $message)
     {

@@ -12,24 +12,29 @@ use Illuminate\Http\Request;
 
 class FilterController extends Controller
 {
-    public function getFilters($type, $campusId, Request $request)
+    public function getFilters($type, $campusId)
     {
-        $recipientType = $request->query('recipient_type', 'both');
-
         $response = [];
 
-        if ($type === 'students' || ($type === 'all' && $recipientType === 'students') || $recipientType === 'both') {
+        if ($type === 'students') {
             $response['colleges'] = College::where('campus_id', $campusId)->get(['college_id as id', 'college_name as name']);
-            $response['programs'] = Program::where('campus_id', $campusId)->get(['program_id as id', 'program_name as name']);
             $response['years'] = Year::all(['year_id as id', 'year_name as name']);
-        }
-
-        if ($type === 'employees' || ($type === 'all' && $recipientType === 'employees') || $recipientType === 'both') {
+        } else if ($type === 'employees') {
             $response['offices'] = Office::where('campus_id', $campusId)->get(['office_id as id', 'office_name as name']);
-            $response['statuses'] = Status::all(['status_id as id', 'status_name as name']);
-            $response['types'] = Type::where('campus_id', $campusId)->get(['type_id as id', 'type_name as name']);
         }
 
         return response()->json($response);
+    }
+
+    public function getProgramsByCollege($collegeId)
+    {
+        $programs = Program::where('college_id', $collegeId)->get(['program_id as id', 'program_name as name']);
+        return response()->json(['programs' => $programs]);
+    }
+
+    public function getTypesByOffice($officeId)
+    {
+        $types = Type::where('office_id', $officeId)->get(['type_id as id', 'type_name as name']);
+        return response()->json(['types' => $types]);
     }
 }

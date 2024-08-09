@@ -53,3 +53,7 @@ Route::middleware(['auth'])->group(function () {
 
 // API Route for fetching dependent filters
 Route::get('/api/filters/{type}/{campusId}', [FilterController::class, 'getFilters']);
+Route::get('/api/filters/college/{collegeId}/programs', [FilterController::class, 'getProgramsByCollege']);
+Route::get('/api/filters/office/{officeId}/types', [FilterController::class, 'getTypesByOffice']);
+
+

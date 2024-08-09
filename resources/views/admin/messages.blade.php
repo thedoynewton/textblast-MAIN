@@ -3,7 +3,6 @@
 @section('title', 'Messages')
 
 @section('content')
-    <h1 class="text-3xl font-bold mb-6">Messages</h1>
     <!-- Display Success or Error Messages -->
     @if(session('success'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
@@ -17,215 +16,212 @@
         </div>
     @endif
 
-    <!-- Broadcasting Form -->
-    <form action="{{ route('admin.reviewMessage') }}" method="POST">
-        @csrf
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <!-- Broadcasting Form -->
+        <form action="{{ route('admin.reviewMessage') }}" method="POST">
+            @csrf
 
-        <!-- Broadcast Type Selection -->
-        <div class="mb-4">
-            <label for="broadcast_type" class="block text-sm font-medium text-gray-700">Broadcast To</label>
-            <select name="broadcast_type" id="broadcast_type" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm" onchange="toggleFilters()">
-                <option value="students" {{ request('broadcast_type') == 'students' ? 'selected' : '' }}>Students</option>
-                <option value="employees" {{ request('broadcast_type') == 'employees' ? 'selected' : '' }}>Employees</option>
-                <option value="all" {{ request('broadcast_type') == 'all' ? 'selected' : '' }}>All Recipients</option>
-            </select>
-        </div>
-
-        <!-- Campus Selection (Always Visible) -->
-        <div class="mb-4" id="campus_filter">
-            <label for="campus" class="block text-sm font-medium text-gray-700">Campus</label>
-            <select name="campus" id="campus" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm" onchange="updateDependentFilters()">
-                <option value="">Select Campus</option>
-                @foreach($campuses as $campus)
-                    <option value="{{ $campus->campus_id }}" {{ request('campus') == $campus->campus_id ? 'selected' : '' }}>
-                        {{ $campus->campus_name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <!-- Additional Filters for "All Recipients" -->
-        <div id="all_recipients_filters" style="display: none;">
+            <!-- Broadcast Type Selection as Tabs -->
             <div class="mb-4">
-                <label for="recipient_type" class="block text-sm font-medium text-gray-700">Recipient Type</label>
-                <select name="recipient_type" id="recipient_type" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
-                    <option value="students" {{ request('recipient_type') == 'students' ? 'selected' : '' }}>All Students</option>
-                    <option value="employees" {{ request('recipient_type') == 'employees' ? 'selected' : '' }}>All Employees</option>
-                    <option value="both" {{ request('recipient_type') == 'both' ? 'selected' : '' }}>Both Students and Employees</option>
-                </select>
+                <div class="flex border-b border-gray-300">
+                    <button type="button" class="tab-button px-4 py-2 text-sm font-medium focus:outline-none" data-value="all">ALL</button>
+                    <button type="button" class="tab-button px-4 py-2 text-sm font-medium focus:outline-none" data-value="students">STUDENTS</button>
+                    <button type="button" class="tab-button px-4 py-2 text-sm font-medium focus:outline-none" data-value="employees">EMPLOYEES</button>
+                </div>
+                <input type="hidden" name="broadcast_type" id="broadcast_type" value="{{ request('broadcast_type', 'all') }}">
             </div>
-        </div>
 
-        <!-- Student-specific Filters -->
-        <div id="student_filters" style="display: none;">
-            <div class="mb-4">
-                <label for="college" class="block text-sm font-medium text-gray-700">College</label>
-                <select name="college" id="college" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
-                    <option value="">Select College</option>
-                    <!-- Pre-fill data if available -->
-                    @foreach($colleges as $college)
-                        <option value="{{ $college->college_id }}" {{ request('college') == $college->college_id ? 'selected' : '' }}>
-                            {{ $college->college_name }}
-                        </option>
+            <!-- Campus Selection (Always Visible) -->
+            <div class="mb-4" id="campus_filter">
+                <label for="campus" class="block text-sm font-medium text-gray-700">Campus</label>
+                <select name="campus" id="campus" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+                    <option value="" disabled selected>Campus</option>
+                    @foreach($campuses as $campus)
+                        <option value="{{ $campus->campus_id }}">{{ $campus->campus_name }}</option>
                     @endforeach
                 </select>
             </div>
 
-            <div class="mb-4">
-                <label for="program" class="block text-sm font-medium text-gray-700">Program</label>
-                <select name="program" id="program" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
-                    <option value="">Select Program</option>
-                    <!-- Pre-fill data if available -->
-                    @foreach($programs as $program)
-                        <option value="{{ $program->program_id }}" {{ request('program') == $program->program_id ? 'selected' : '' }}>
-                            {{ $program->program_name }}
-                        </option>
-                    @endforeach
-                </select>
+            <!-- Student-specific Filters -->
+            <div id="student_filters" style="display: none;">
+                <div class="mb-4">
+                    <label for="college" class="block text-sm font-medium text-gray-700">College</label>
+                    <select name="college" id="college" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm" onchange="updateProgramDropdown()">
+                        <option value="">Select College</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="program" class="block text-sm font-medium text-gray-700">Program</label>
+                    <select name="program" id="program" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+                        <option value="">Select Program</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
+                    <select name="year" id="year" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+                        <option value="">Select Year</option>
+                        @foreach($years as $year)
+                            <option value="{{ $year->year_id }}">{{ $year->year_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
-            <div class="mb-4">
-                <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
-                <select name="year" id="year" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
-                    <option value="">Select Year</option>
-                    <!-- Pre-fill data if available -->
-                    @foreach($years as $year)
-                        <option value="{{ $year->year_id }}" {{ request('year') == $year->year_id ? 'selected' : '' }}>
-                            {{ $year->year_name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
+            <!-- Employee-specific Filters -->
+            <div id="employee_filters" style="display: none;">
+                <div class="mb-4">
+                    <label for="office" class="block text-sm font-medium text-gray-700">Office</label>
+                    <select name="office" id="office" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm" onchange="updateStatusDropdown()">
+                        <option value="">Select Office</option>
+                    </select>
+                </div>
 
-        <!-- Employee-specific Filters -->
-        <div id="employee_filters" style="display: none;">
-            <div class="mb-4">
-                <label for="office" class="block text-sm font-medium text-gray-700">Office</label>
-                <select name="office" id="office" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
-                    <option value="">Select Office</option>
-                    <!-- Pre-fill data if available -->
-                    @foreach($offices as $office)
-                        <option value="{{ $office->office_id }}" {{ request('office') == $office->office_id ? 'selected' : '' }}>
-                            {{ $office->office_name }}
-                        </option>
-                    @endforeach
-                </select>
+                <div class="mb-4">
+                    <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                    <select name="status" id="status" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+                        <option value="">Select Status</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
+                    <select name="type" id="type" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+                        <option value="">Select Type</option>
+                    </select>
+                </div>
             </div>
 
+            <!-- Message Input -->
             <div class="mb-4">
-                <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                <select name="status" id="status" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
-                    <option value="">Select Status</option>
-                    <!-- Pre-fill data if available -->
-                    @foreach($statuses as $status)
-                        <option value="{{ $status->status_id }}" {{ request('status') == $status->status_id ? 'selected' : '' }}>
-                            {{ $status->status_name }}
-                        </option>
-                    @endforeach
-                </select>
+                <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+                <textarea name="message" id="message" placeholder="Enter your message here ..." rows="4" class="block w-full mt-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:ring-indigo-300 p-2 text-sm overflow-y-auto resize-none" style="height: 14rem">{{ request('message') }}</textarea>
             </div>
 
-            <div class="mb-4">
-                <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
-                <select name="type" id="type" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
-                    <option value="">Select Type</option>
-                    <!-- Pre-fill data if available -->
-                    @foreach($types as $type)
-                        <option value="{{ $type->type_id }}" {{ request('type') == $type->type_id ? 'selected' : '' }}>
-                            {{ $type->type_name }}
-                        </option>
-                    @endforeach
-                </select>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded-lg">Review</button>
             </div>
-        </div>
+        </form>
 
-        <!-- Message Input -->
-        <div class="mb-4">
-            <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
-            <textarea name="message" id="message" rows="4" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">{{ request('message') }}</textarea>
-        </div>
+        <!-- Directly embedded JavaScript -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize filters on page load
+                toggleFilters();
 
-        <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded-lg">Review</button>
-    </form>
+                // Add event listeners to the tab buttons
+                document.querySelectorAll('.tab-button').forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        // Update the hidden broadcast_type input based on the clicked tab
+                        document.getElementById('broadcast_type').value = this.getAttribute('data-value');
 
-    <!-- Directly embedded JavaScript -->
-    <script>
-        function toggleFilters() {
-            var broadcastType = document.getElementById('broadcast_type').value;
-            var studentFilters = document.getElementById('student_filters');
-            var employeeFilters = document.getElementById('employee_filters');
-            var allRecipientsFilters = document.getElementById('all_recipients_filters');
-            var campusSelect = document.getElementById('campus');
+                        // Highlight the active tab and remove highlight from others
+                        document.querySelectorAll('.tab-button').forEach(function(btn) {
+                            btn.classList.remove('border-b-2', 'border-indigo-500', 'text-indigo-500');
+                        });
+                        this.classList.add('border-b-2', 'border-indigo-500', 'text-indigo-500');
 
-            // Reset campus filter to default if editing the form
-            if (!{{ request()->has('campus') ? 'true' : 'false' }}) {
-                campusSelect.value = "";
-            }
+                        // Toggle the filters based on the selected tab
+                        toggleFilters();
+                    });
+                });
 
-            if (broadcastType === 'students') {
-                studentFilters.style.display = 'block';
-                employeeFilters.style.display = 'none';
-                allRecipientsFilters.style.display = 'none';
-            } else if (broadcastType === 'employees') {
-                studentFilters.style.display = 'none';
-                employeeFilters.style.display = 'block';
-                allRecipientsFilters.style.display = 'none';
-            } else {  // For "all" recipients
+                // Add event listener for campus dropdown change
+                document.getElementById('campus').addEventListener('change', updateDependentFilters);
+            });
+
+            function toggleFilters() {
+                var broadcastType = document.getElementById('broadcast_type').value;
+                var studentFilters = document.getElementById('student_filters');
+                var employeeFilters = document.getElementById('employee_filters');
+
+                // Hide all filters initially
                 studentFilters.style.display = 'none';
                 employeeFilters.style.display = 'none';
-                allRecipientsFilters.style.display = 'block';
+
+                // Display the appropriate filters based on the broadcast type
+                if (broadcastType === 'students') {
+                    studentFilters.style.display = 'block';
+                } else if (broadcastType === 'employees') {
+                    employeeFilters.style.display = 'block';
+                }
+
+                // Clear dropdown values when switching tabs
+                clearDropdownOptions('college');
+                clearDropdownOptions('program');
+                clearDropdownOptions('year');
+                clearDropdownOptions('office');
+                clearDropdownOptions('status');
+                clearDropdownOptions('type');
             }
 
-            // Trigger update for dependent filters
-            updateDependentFilters();
-        }
+            function updateDependentFilters() {
+                var campusId = document.getElementById('campus').value;
+                var broadcastType = document.getElementById('broadcast_type').value;
 
-        function updateDependentFilters() {
-            var campusId = document.getElementById('campus').value;
-            var broadcastType = document.getElementById('broadcast_type').value;
-            var recipientType = document.getElementById('recipient_type').value;
+                if (!campusId) return;
 
-            // Reset dependent filters
-            document.getElementById('college').innerHTML = '<option value="">Select College</option>';
-            document.getElementById('program').innerHTML = '<option value="">Select Program</option>';
-            document.getElementById('year').innerHTML = '<option value="">Select Year</option>';
-            document.getElementById('office').innerHTML = '<option value="">Select Office</option>';
-            document.getElementById('status').innerHTML = '<option value="">Select Status</option>';
-            document.getElementById('type').innerHTML = '<option value="">Select Type</option>';
-
-            if (campusId) {
-                // Make an AJAX request to get the dependent filters based on the selected campus and recipient type
-                fetch(`/api/filters/${broadcastType}/${campusId}?recipient_type=${recipientType}`)
+                // Make an AJAX request to get the dependent filters based on the selected campus
+                fetch(`/api/filters/${broadcastType}/${campusId}`)
                     .then(response => response.json())
                     .then(data => {
-                        if (broadcastType === 'students' || (broadcastType === 'all' && recipientType === 'students') || recipientType === 'both') {
+                        if (broadcastType === 'students') {
                             updateSelectOptions('college', data.colleges);
-                            updateSelectOptions('program', data.programs);
-                            updateSelectOptions('year', data.years);
-                        }
-                        if (broadcastType === 'employees' || (broadcastType === 'all' && recipientType === 'employees') || recipientType === 'both') {
+                            updateSelectOptions('year', data.years);  // Ensure years are always populated
+                        } else if (broadcastType === 'employees') {
                             updateSelectOptions('office', data.offices);
-                            updateSelectOptions('status', data.statuses);
-                            updateSelectOptions('type', data.types);
                         }
                     });
             }
-        }
 
-        function updateSelectOptions(selectId, options) {
-            var select = document.getElementById(selectId);
-            options.forEach(option => {
-                var opt = document.createElement('option');
-                opt.value = option.id;
-                opt.textContent = option.name;
-                select.appendChild(opt);
-            });
-        }
+            function updateSelectOptions(selectId, options) {
+                var select = document.getElementById(selectId);
+                clearDropdownOptions(selectId);
+                options.forEach(option => {
+                    var opt = document.createElement('option');
+                    opt.value = option.id;
+                    opt.textContent = option.name;
+                    select.appendChild(opt);
+                });
+            }
 
-        // Initialize filters on page load
-        window.onload = function() {
-            toggleFilters();
-        };
-    </script>
+            function clearDropdownOptions(selectId) {
+                var select = document.getElementById(selectId);
+                select.innerHTML = '<option value="">Select ' + selectId.charAt(0).toUpperCase() + selectId.slice(1) + '</option>';
+            }
+
+            function updateProgramDropdown() {
+                var collegeId = document.getElementById('college').value;
+
+                // Reset the program dropdown
+                clearDropdownOptions('program');
+
+                if (collegeId) {
+                    // Make an AJAX request to get the dependent programs based on the selected college
+                    fetch(`/api/filters/college/${collegeId}/programs`)
+                        .then(response => response.json())
+                        .then(data => {
+                            updateSelectOptions('program', data.programs);
+                        });
+                }
+            }
+
+            function updateStatusDropdown() {
+                var officeId = document.getElementById('office').value;
+
+                // Reset the type dropdown
+                clearDropdownOptions('type');
+
+                if (officeId) {
+                    // Make an AJAX request to get the dependent types based on the selected office
+                    fetch(`/api/filters/office/${officeId}/types`)
+                        .then(response => response.json())
+                        .then(data => {
+                            updateSelectOptions('type', data.types);
+                        });
+                }
+            }
+        </script>
+    </div>
 @endsection

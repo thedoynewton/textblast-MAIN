@@ -18,16 +18,16 @@
     @endif
 
     <!-- Broadcasting Form -->
-    <form action="{{ route('admin.broadcastToRecipients') }}" method="POST">
+    <form action="{{ route('admin.reviewMessage') }}" method="POST">
         @csrf
 
         <!-- Broadcast Type Selection -->
         <div class="mb-4">
             <label for="broadcast_type" class="block text-sm font-medium text-gray-700">Broadcast To</label>
             <select name="broadcast_type" id="broadcast_type" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm" onchange="toggleFilters()">
-                <option value="students">Students</option>
-                <option value="employees">Employees</option>
-                <option value="all">All Recipients</option>
+                <option value="students" {{ request('broadcast_type') == 'students' ? 'selected' : '' }}>Students</option>
+                <option value="employees" {{ request('broadcast_type') == 'employees' ? 'selected' : '' }}>Employees</option>
+                <option value="all" {{ request('broadcast_type') == 'all' ? 'selected' : '' }}>All Recipients</option>
             </select>
         </div>
 
@@ -37,29 +37,37 @@
             <select name="campus" id="campus" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm" onchange="updateDependentFilters()">
                 <option value="">Select Campus</option>
                 @foreach($campuses as $campus)
-                    <option value="{{ $campus->campus_id }}">{{ $campus->campus_name }}</option>
+                    <option value="{{ $campus->campus_id }}" {{ request('campus') == $campus->campus_id ? 'selected' : '' }}>
+                        {{ $campus->campus_name }}
+                    </option>
                 @endforeach
             </select>
         </div>
 
         <!-- Additional Filters for "All Recipients" -->
-        <div id="all_recipients_filters" style="display:none;">
+        <div id="all_recipients_filters" style="display: none;">
             <div class="mb-4">
                 <label for="recipient_type" class="block text-sm font-medium text-gray-700">Recipient Type</label>
                 <select name="recipient_type" id="recipient_type" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
-                    <option value="students">All Students</option>
-                    <option value="employees">All Employees</option>
-                    <option value="both">Both Students and Employees</option>
+                    <option value="students" {{ request('recipient_type') == 'students' ? 'selected' : '' }}>All Students</option>
+                    <option value="employees" {{ request('recipient_type') == 'employees' ? 'selected' : '' }}>All Employees</option>
+                    <option value="both" {{ request('recipient_type') == 'both' ? 'selected' : '' }}>Both Students and Employees</option>
                 </select>
             </div>
         </div>
 
         <!-- Student-specific Filters -->
-        <div id="student_filters" style="display:none;">
+        <div id="student_filters" style="display: none;">
             <div class="mb-4">
                 <label for="college" class="block text-sm font-medium text-gray-700">College</label>
                 <select name="college" id="college" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
                     <option value="">Select College</option>
+                    <!-- Pre-fill data if available -->
+                    @foreach($colleges as $college)
+                        <option value="{{ $college->college_id }}" {{ request('college') == $college->college_id ? 'selected' : '' }}>
+                            {{ $college->college_name }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
 
@@ -67,6 +75,12 @@
                 <label for="program" class="block text-sm font-medium text-gray-700">Program</label>
                 <select name="program" id="program" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
                     <option value="">Select Program</option>
+                    <!-- Pre-fill data if available -->
+                    @foreach($programs as $program)
+                        <option value="{{ $program->program_id }}" {{ request('program') == $program->program_id ? 'selected' : '' }}>
+                            {{ $program->program_name }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
 
@@ -74,16 +88,28 @@
                 <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
                 <select name="year" id="year" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
                     <option value="">Select Year</option>
+                    <!-- Pre-fill data if available -->
+                    @foreach($years as $year)
+                        <option value="{{ $year->year_id }}" {{ request('year') == $year->year_id ? 'selected' : '' }}>
+                            {{ $year->year_name }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
         </div>
 
         <!-- Employee-specific Filters -->
-        <div id="employee_filters" style="display:none;">
+        <div id="employee_filters" style="display: none;">
             <div class="mb-4">
                 <label for="office" class="block text-sm font-medium text-gray-700">Office</label>
                 <select name="office" id="office" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
                     <option value="">Select Office</option>
+                    <!-- Pre-fill data if available -->
+                    @foreach($offices as $office)
+                        <option value="{{ $office->office_id }}" {{ request('office') == $office->office_id ? 'selected' : '' }}>
+                            {{ $office->office_name }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
 
@@ -91,6 +117,12 @@
                 <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
                 <select name="status" id="status" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
                     <option value="">Select Status</option>
+                    <!-- Pre-fill data if available -->
+                    @foreach($statuses as $status)
+                        <option value="{{ $status->status_id }}" {{ request('status') == $status->status_id ? 'selected' : '' }}>
+                            {{ $status->status_name }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
 
@@ -98,6 +130,12 @@
                 <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
                 <select name="type" id="type" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
                     <option value="">Select Type</option>
+                    <!-- Pre-fill data if available -->
+                    @foreach($types as $type)
+                        <option value="{{ $type->type_id }}" {{ request('type') == $type->type_id ? 'selected' : '' }}>
+                            {{ $type->type_name }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
         </div>
@@ -105,10 +143,10 @@
         <!-- Message Input -->
         <div class="mb-4">
             <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
-            <textarea name="message" id="message" rows="4" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm"></textarea>
+            <textarea name="message" id="message" rows="4" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">{{ request('message') }}</textarea>
         </div>
 
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Send</button>
+        <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded-lg">Review</button>
     </form>
 
     <!-- Directly embedded JavaScript -->
@@ -120,8 +158,10 @@
             var allRecipientsFilters = document.getElementById('all_recipients_filters');
             var campusSelect = document.getElementById('campus');
 
-            // Reset campus filter to default
-            campusSelect.value = "";
+            // Reset campus filter to default if editing the form
+            if (!{{ request()->has('campus') ? 'true' : 'false' }}) {
+                campusSelect.value = "";
+            }
 
             if (broadcastType === 'students') {
                 studentFilters.style.display = 'block';

@@ -25,6 +25,36 @@ class MessageController extends Controller
     }
 
     /**
+     * Show the review page for the message before broadcasting.
+     */
+    public function reviewMessage(Request $request)
+{
+    // Retrieve the form data
+    $data = $request->all();
+
+    // Get the campus name
+    $campus = Campus::find($data['campus'])->campus_name ?? 'All Campuses';
+
+    // Get the other filter names depending on the broadcast type
+    $filterNames = [];
+
+    if ($data['broadcast_type'] === 'students' || $data['broadcast_type'] === 'all') {
+        $filterNames['college'] = College::find($data['college'])->college_name ?? 'All Colleges';
+        $filterNames['program'] = Program::find($data['program'])->program_name ?? 'All Programs';
+        $filterNames['year'] = Year::find($data['year'])->year_name ?? 'All Years';
+    }
+
+    if ($data['broadcast_type'] === 'employees' || $data['broadcast_type'] === 'all') {
+        $filterNames['office'] = Office::find($data['office'])->office_name ?? 'All Offices';
+        $filterNames['status'] = Status::find($data['status'])->status_name ?? 'All Statuses';
+        $filterNames['type'] = Type::find($data['type'])->type_name ?? 'All Types';
+    }
+
+    // Pass the data to the review view
+    return view('admin.review-message', compact('data', 'campus', 'filterNames'));
+}
+
+    /**
      * Broadcast messages to either students, employees, or both.
      */
     public function broadcastToRecipients(Request $request)
@@ -35,7 +65,7 @@ class MessageController extends Controller
         $errorDetails = ''; // Initialize as an empty string
 
         // Handle broadcasting to students
-        if ($broadcastType === 'students' || $broadcastType === 'both') {
+        if ($broadcastType === 'students' || $broadcastType === 'all' || $request->input('recipient_type') === 'students' || $request->input('recipient_type') === 'both') {
             $studentResult = $this->sendBulkMessages($request, 'students');
             $successCount += $studentResult['successCount'];
             $errorCount += $studentResult['errorCount'];
@@ -43,7 +73,7 @@ class MessageController extends Controller
         }
 
         // Handle broadcasting to employees
-        if ($broadcastType === 'employees' || $broadcastType === 'both') {
+        if ($broadcastType === 'employees' || $broadcastType === 'all' || $request->input('recipient_type') === 'employees' || $request->input('recipient_type') === 'both') {
             $employeeResult = $this->sendBulkMessages($request, 'employees');
             $successCount += $employeeResult['successCount'];
             $errorCount += $employeeResult['errorCount'];
@@ -54,9 +84,9 @@ class MessageController extends Controller
         $errorMessage = $errorCount > 0 ? "Failed to send messages to $errorCount recipients." : '';
 
         if ($successCount > 0) {
-            return redirect()->back()->with('success', $successMessage . $errorDetails);
+            return redirect()->route('admin.messages')->with('success', $successMessage . $errorDetails);
         } else {
-            return redirect()->back()->with('error', $errorMessage . $errorDetails);
+            return redirect()->route('admin.messages')->with('error', $errorMessage . $errorDetails);
         }
     }
 

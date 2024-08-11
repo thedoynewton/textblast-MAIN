@@ -113,6 +113,17 @@
                 </div>
             </div>
 
+            <!-- Message Template Selection -->
+            <div class="mb-4">
+                <label for="template" class="block text-sm font-medium text-gray-700">Select Template</label>
+                <select id="template" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+                    <option value="" disabled selected>Select a Template</option>
+                    @foreach ($messageTemplates as $template)
+                        <option value="{{ $template->content }}">{{ $template->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
             <!-- Message Input -->
             <div class="mb-4">
                 <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
@@ -158,6 +169,12 @@
                 document.getElementById('campus').addEventListener('change', updateDependentFilters);
                 document.getElementById('office').addEventListener('change', updateTypeDropdown);
                 document.getElementById('status').addEventListener('change', updateTypeDropdown);
+
+                // Add event listener for template selection
+                document.getElementById('template').addEventListener('change', function() {
+                    const templateContent = this.value;
+                    document.getElementById('message').value = templateContent;
+                });
             });
 
             function toggleFilters() {

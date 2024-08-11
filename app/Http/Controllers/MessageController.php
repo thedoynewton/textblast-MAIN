@@ -11,6 +11,7 @@ use App\Models\Program;
 use App\Models\Student;
 use App\Models\Employee;
 use App\Models\Type;
+use App\Models\MessageTemplate;
 use Illuminate\Http\Request;
 use App\Services\MoviderService;
 use Illuminate\Support\Facades\Log;
@@ -25,34 +26,49 @@ class MessageController extends Controller
     }
 
     /**
+     * Show the messaging form.
+     */
+    public function showMessagesForm()
+    {
+        $campuses = Campus::all();
+        $years = Year::all();
+        $messageTemplates = MessageTemplate::all();
+
+        return view('admin.messages', compact('campuses', 'years', 'messageTemplates'));
+    }
+
+    /**
      * Show the review page for the message before broadcasting.
      */
     public function reviewMessage(Request $request)
-{
-    // Retrieve the form data
-    $data = $request->all();
+    {
+        // Retrieve the form data
+        $data = $request->all();
 
-    // Get the campus name
-    $campus = Campus::find($data['campus'])->campus_name ?? 'All Campuses';
+        // Get the campus name
+        $campus = Campus::find($data['campus'])->campus_name ?? 'All Campuses';
 
-    // Get the other filter names depending on the broadcast type
-    $filterNames = [];
+        // Get the other filter names depending on the broadcast type
+        $filterNames = [];
 
-    if ($data['broadcast_type'] === 'students' || $data['broadcast_type'] === 'all') {
-        $filterNames['college'] = College::find($data['college'])->college_name ?? 'All Colleges';
-        $filterNames['program'] = Program::find($data['program'])->program_name ?? 'All Programs';
-        $filterNames['year'] = Year::find($data['year'])->year_name ?? 'All Years';
+        if ($data['broadcast_type'] === 'students' || $data['broadcast_type'] === 'all') {
+            $filterNames['college'] = College::find($data['college'])->college_name ?? 'All Colleges';
+            $filterNames['program'] = Program::find($data['program'])->program_name ?? 'All Programs';
+            $filterNames['year'] = Year::find($data['year'])->year_name ?? 'All Years';
+        }
+
+        if ($data['broadcast_type'] === 'employees' || $data['broadcast_type'] === 'all') {
+            $filterNames['office'] = Office::find($data['office'])->office_name ?? 'All Offices';
+            $filterNames['status'] = Status::find($data['status'])->status_name ?? 'All Statuses';
+            $filterNames['type'] = Type::find($data['type'])->type_name ?? 'All Types';
+        }
+
+        // Fetch message templates
+        $messageTemplates = MessageTemplate::all();
+
+        // Pass the data to the review view
+        return view('admin.review-message', compact('data', 'campus', 'filterNames', 'messageTemplates'));
     }
-
-    if ($data['broadcast_type'] === 'employees' || $data['broadcast_type'] === 'all') {
-        $filterNames['office'] = Office::find($data['office'])->office_name ?? 'All Offices';
-        $filterNames['status'] = Status::find($data['status'])->status_name ?? 'All Statuses';
-        $filterNames['type'] = Type::find($data['type'])->type_name ?? 'All Types';
-    }
-
-    // Pass the data to the review view
-    return view('admin.review-message', compact('data', 'campus', 'filterNames'));
-}
 
     /**
      * Broadcast messages to either students, employees, or both.

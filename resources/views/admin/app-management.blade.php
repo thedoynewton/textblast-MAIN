@@ -14,6 +14,11 @@
                             class="bg-white inline-block py-2 px-6 text-gray-500 hover:bg-gray-100 font-semibold transition duration-200 ease-in-out"
                             onclick="openTab(event, 'contacts')">Contacts</a>
                     </li>
+                    <li class="mr-2">
+                        <a href="#messageTemplates"
+                            class="bg-white inline-block py-2 px-6 text-gray-500 hover:bg-gray-100 font-semibold transition duration-200 ease-in-out"
+                            onclick="openTab(event, 'messageTemplates')">Message Templates</a>
+                    </li>
                 </ul>
             </div>
 
@@ -22,9 +27,10 @@
                 <!-- Campus Selection -->
                 <div class="mb-4">
                     <label for="campus" class="block text-sm font-medium text-gray-700">Select Campus</label>
-                    <select name="campus" id="campus" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+                    <select name="campus" id="campus"
+                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
                         <option value="all">All Campuses</option>
-                        @foreach($campuses as $campus)
+                        @foreach ($campuses as $campus)
                             <option value="{{ $campus->campus_id }}">{{ $campus->campus_name }}</option>
                         @endforeach
                     </select>
@@ -33,7 +39,8 @@
                 <!-- Filter Selection -->
                 <div class="mb-4">
                     <label for="filter" class="block text-sm font-medium text-gray-700">Filter By</label>
-                    <select name="filter" id="filter" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+                    <select name="filter" id="filter"
+                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
                         <option value="all">All Contacts</option>
                         <option value="students">Students</option>
                         <option value="employees">Employees</option>
@@ -43,7 +50,8 @@
                 <!-- Search Bar -->
                 <div class="mb-4">
                     <label for="contactsSearch" class="block text-sm font-medium text-gray-700">Search Contacts</label>
-                    <input type="text" id="contactsSearch" placeholder="Search for contacts..." class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+                    <input type="text" id="contactsSearch" placeholder="Search for contacts..."
+                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
                 </div>
 
                 <!-- Contacts Table -->
@@ -64,6 +72,51 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Message Templates Tab -->
+            <div id="messageTemplates" class="tab-content hidden">
+                <!-- Add Message Template Button -->
+                <div class="mb-4">
+                    <a href="{{ route('message_templates.create') }}"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200 ease-in-out">Add New Template</a>
+                </div>
+
+                <!-- Message Templates Table -->
+                <div class="overflow-x-auto overflow-y-auto max-h-96 mb-8">
+                    <table id="messageTemplatesTable" class="min-w-full bg-white border border-gray-300 rounded-lg">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Template Name</th>
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Message Content</th>
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($messageTemplates as $template)
+                                <tr class="hover:bg-gray-50 transition duration-150 ease-in-out">
+                                    <td class="py-3 px-4 border-b text-gray-600">{{ $template->name }}</td>
+                                    <td class="py-3 px-4 border-b text-gray-600">{{ $template->content }}</td>
+                                    <td class="py-3 px-4 border-b text-gray-600">
+                                        <a href="{{ route('message_templates.edit', $template->id) }}"
+                                            class="text-blue-500 hover:underline">Edit</a>
+                                        <form action="{{ route('message_templates.destroy', $template->id) }}"
+                                            method="POST" class="inline-block">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-500 hover:underline ml-2">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+
+                            @if ($messageTemplates->isEmpty())
+                                <p class="text-center text-gray-500 mt-4">No message templates found.</p>
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -81,7 +134,7 @@
         }
 
         // JavaScript to handle fetching, displaying, and searching contacts
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const campusSelect = document.getElementById('campus');
             const filterSelect = document.getElementById('filter');
             const contactsTableBody = document.getElementById('contactsTableBody');
@@ -98,7 +151,8 @@
                         contactsTableBody.innerHTML = ''; // Clear existing rows
 
                         if (data.length === 0) {
-                            contactsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4">No contacts found.</td></tr>';
+                            contactsTableBody.innerHTML =
+                                '<tr><td colspan="5" class="text-center py-4">No contacts found.</td></tr>';
                         } else {
                             data.forEach(contact => {
                                 const row = `<tr class="hover:bg-gray-50 transition duration-150 ease-in-out">
@@ -115,7 +169,8 @@
                         searchTable(); // Apply search filter after fetching contacts
                     })
                     .catch(error => {
-                        contactsTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-500">Error fetching contacts.</td></tr>';
+                        contactsTableBody.innerHTML =
+                            '<tr><td colspan="5" class="text-center py-4 text-red-500">Error fetching contacts.</td></tr>';
                     });
             }
 

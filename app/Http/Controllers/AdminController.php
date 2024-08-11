@@ -12,6 +12,7 @@ use App\Models\Program;
 use App\Models\Student;
 use App\Models\Employee;
 use App\Models\Major;
+use App\Models\MessageTemplate;
 use App\Models\Type;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -34,7 +35,6 @@ class AdminController extends Controller
         $statuses = Status::all();
         $types = Type::all();
 
-        // Convert the collections to arrays for better visibility
         return view('admin.messages', compact('campuses', 'colleges', 'programs', 'years', 'offices', 'statuses', 'types'));
     }
 
@@ -48,7 +48,6 @@ class AdminController extends Controller
         $apiKey = config('services.movider.api_key');
         $apiSecret = config('services.movider.api_secret');
 
-        // Log the API key and secret for debugging purposes (do not do this in production)
         Log::info('Movider API Key: ' . $apiKey);
         Log::info('Movider API Secret: ' . $apiSecret);
 
@@ -59,7 +58,6 @@ class AdminController extends Controller
             'text' => $message,
         ]);
 
-        // Log the response for debugging
         Log::info('Movider API Response: ', $response->json());
 
         return $response;
@@ -88,6 +86,7 @@ class AdminController extends Controller
         $offices = Office::all();
         $statuses = Status::all();
         $types = Type::all();
+        $messageTemplates = MessageTemplate::all(); // Fetch the message templates
 
         return view('admin.app-management', compact(
             'students',
@@ -99,14 +98,13 @@ class AdminController extends Controller
             'employees',
             'offices',
             'statuses',
-            'types'
+            'types',
+            'messageTemplates' // Pass the message templates to the view
         ));
     }
 
-
     public function importEmployees(Request $request)
     {
-        // Handle the import functionality here
         return redirect()->route('admin.app-management')->with('success', 'Employees imported successfully.');
     }
 

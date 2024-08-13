@@ -44,35 +44,44 @@ class MessageController extends Controller
      * Show the review page for the message before broadcasting.
      */
     public function reviewMessage(Request $request)
-    {
-        // Retrieve the form data
-        $data = $request->all();
+{
+    // Retrieve the form data
+    $data = $request->all();
 
-        // Get the campus name
-        $campus = Campus::find($data['campus'])->campus_name ?? 'All Campuses';
+    // Get the campus name
+    $campus = Campus::find($data['campus'])->campus_name ?? 'All Campuses';
 
-        // Get the other filter names depending on the broadcast type
-        $filterNames = [];
+    // Initialize the filter names array
+    $filterNames = [
+        'college' => 'All Colleges',
+        'program' => 'All Programs',
+        'year' => 'All Years',
+        'office' => 'All Offices',
+        'status' => 'All Statuses',
+        'type' => 'All Types'
+    ];
 
-        if ($data['broadcast_type'] === 'students' || $data['broadcast_type'] === 'all') {
-            $filterNames['college'] = College::find($data['college'])->college_name ?? 'All Colleges';
-            $filterNames['program'] = Program::find($data['program'])->program_name ?? 'All Programs';
-            $filterNames['year'] = Year::find($data['year'])->year_name ?? 'All Years';
-        }
-
-        if ($data['broadcast_type'] === 'employees' || $data['broadcast_type'] === 'all') {
-            $filterNames['office'] = Office::find($data['office'])->office_name ?? 'All Offices';
-            $filterNames['status'] = Status::find($data['status'])->status_name ?? 'All Statuses';
-            $filterNames['type'] = Type::find($data['type'])->type_name ?? 'All Types';
-        }
-
-        // Ensure schedule_type and scheduled_at are passed to the view
-        $data['schedule_type'] = $request->input('schedule', 'immediate');
-        $data['scheduled_at'] = $request->input('scheduled_date');
-
-        // Pass the data to the review view
-        return view('admin.review-message', compact('data', 'campus', 'filterNames'));
+    // Get the other filter names depending on the broadcast type
+    if ($data['broadcast_type'] === 'students' || $data['broadcast_type'] === 'all') {
+        $filterNames['college'] = isset($data['college']) ? College::find($data['college'])->college_name ?? 'All Colleges' : 'All Colleges';
+        $filterNames['program'] = isset($data['program']) ? Program::find($data['program'])->program_name ?? 'All Programs' : 'All Programs';
+        $filterNames['year'] = isset($data['year']) ? Year::find($data['year'])->year_name ?? 'All Years' : 'All Years';
     }
+
+    if ($data['broadcast_type'] === 'employees' || $data['broadcast_type'] === 'all') {
+        $filterNames['office'] = isset($data['office']) ? Office::find($data['office'])->office_name ?? 'All Offices' : 'All Offices';
+        $filterNames['status'] = isset($data['status']) ? Status::find($data['status'])->status_name ?? 'All Statuses' : 'All Statuses';
+        $filterNames['type'] = isset($data['type']) ? Type::find($data['type'])->type_name ?? 'All Types' : 'All Types';
+    }
+
+    // Ensure schedule_type and scheduled_at are passed to the view
+    $data['schedule_type'] = $request->input('schedule', 'immediate');
+    $data['scheduled_at'] = $request->input('scheduled_date');
+
+    // Pass the data to the review view
+    return view('admin.review-message', compact('data', 'campus', 'filterNames'));
+}
+
 
     /**
      * Broadcast messages to either students, employees, or both.

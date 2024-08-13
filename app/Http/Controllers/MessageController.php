@@ -12,9 +12,12 @@ use App\Models\Student;
 use App\Models\Employee;
 use App\Models\Type;
 use App\Models\MessageTemplate;
+use App\Models\MessageLog; // Import the MessageLog model
 use Illuminate\Http\Request;
 use App\Services\MoviderService;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth; // Import Auth to get the user ID
+use Carbon\Carbon;
+use App\Jobs\SendScheduledMessage; // Import the job for sending scheduled messages
 
 class MessageController extends Controller
 {
@@ -63,48 +66,72 @@ class MessageController extends Controller
             $filterNames['type'] = Type::find($data['type'])->type_name ?? 'All Types';
         }
 
-        // Fetch message templates
-        $messageTemplates = MessageTemplate::all();
+        // Ensure schedule_type and scheduled_at are passed to the view
+        $data['schedule_type'] = $request->input('schedule', 'immediate');
+        $data['scheduled_at'] = $request->input('scheduled_date');
 
         // Pass the data to the review view
-        return view('admin.review-message', compact('data', 'campus', 'filterNames', 'messageTemplates'));
+        return view('admin.review-message', compact('data', 'campus', 'filterNames'));
     }
 
     /**
      * Broadcast messages to either students, employees, or both.
      */
     public function broadcastToRecipients(Request $request)
-    {
-        $broadcastType = $request->broadcast_type;
-        $successCount = 0;
-        $errorCount = 0;
-        $errorDetails = ''; // Initialize as an empty string
+{
+    $broadcastType = $request->broadcast_type;
+    $scheduleType = $request->schedule; // 'immediate' or 'scheduled'
+    $scheduledDate = $request->scheduled_date; // Will be null if scheduleType is 'immediate'
+    $userId = Auth::id(); // Get the ID of the logged-in user
 
-        // Handle broadcasting to students
-        if ($broadcastType === 'students' || $broadcastType === 'all' || $request->input('recipient_type') === 'students' || $request->input('recipient_type') === 'both') {
-            $studentResult = $this->sendBulkMessages($request, 'students');
-            $successCount += $studentResult['successCount'];
-            $errorCount += $studentResult['errorCount'];
-            $errorDetails .= (string) $studentResult['errorDetails']; // Cast to string
-        }
+    if ($scheduleType === 'scheduled' && $scheduledDate) {
+        // Schedule the message for later
+        $scheduledAt = Carbon::parse($scheduledDate);
+        $this->scheduleMessage($request, $scheduledAt, $userId);
 
-        // Handle broadcasting to employees
-        if ($broadcastType === 'employees' || $broadcastType === 'all' || $request->input('recipient_type') === 'employees' || $request->input('recipient_type') === 'both') {
-            $employeeResult = $this->sendBulkMessages($request, 'employees');
-            $successCount += $employeeResult['successCount'];
-            $errorCount += $employeeResult['errorCount'];
-            $errorDetails .= (string) $employeeResult['errorDetails']; // Cast to string
-        }
+        // Store a log of the scheduled message
+        $this->logMessage($request, $userId, 'scheduled', $scheduledAt);
 
-        $successMessage = $successCount > 0 ? "Messages sent successfully to $successCount recipients." : '';
-        $errorMessage = $errorCount > 0 ? "Failed to send messages to $errorCount recipients." : '';
+        return redirect()->route('admin.messages')->with('success', 'Message scheduled successfully.');
+    } else {
+        // Send the message immediately
+        $this->sendMessageImmediately($request, $userId);
 
-        if ($successCount > 0) {
-            return redirect()->route('admin.messages')->with('success', $successMessage . $errorDetails);
-        } else {
-            return redirect()->route('admin.messages')->with('error', $errorMessage . $errorDetails);
-        }
+        return redirect()->route('admin.messages')->with('success', 'Messages sent successfully.');
     }
+}
+
+protected function sendMessageImmediately(Request $request, $userId)
+{
+    $broadcastType = $request->broadcast_type;
+    $successCount = 0;
+    $errorCount = 0;
+    $errorDetails = '';
+
+    if ($broadcastType === 'students' || $broadcastType === 'all') {
+        $studentResult = $this->sendBulkMessages($request, 'students');
+        $successCount += $studentResult['successCount'];
+        $errorCount += $studentResult['errorCount'];
+        $errorDetails .= (string) $studentResult['errorDetails'];
+    }
+
+    if ($broadcastType === 'employees' || $broadcastType === 'all') {
+        $employeeResult = $this->sendBulkMessages($request, 'employees');
+        $successCount += $employeeResult['successCount'];
+        $errorCount += $employeeResult['errorCount'];
+        $errorDetails .= (string) $employeeResult['errorDetails'];
+    }
+
+    $this->logMessage($request, $userId, 'immediate');
+
+    // Handle success or error messaging
+    if ($successCount > 0) {
+        session()->flash('success', "Messages sent successfully to $successCount recipients." . $errorDetails);
+    } else {
+        session()->flash('error', "Failed to send messages to $errorCount recipients." . $errorDetails);
+    }
+}
+
 
     /**
      * Sends bulk messages to the specified recipient type (students or employees).
@@ -224,4 +251,32 @@ class MessageController extends Controller
         ];
     }
 
+    protected function logMessage(Request $request, $userId, $scheduleType, $scheduledAt = null)
+    {
+        MessageLog::create([
+            'user_id' => $userId,
+            'recipient_type' => $request->broadcast_type,
+            'content' => $request->message,
+            'schedule' => $scheduleType === 'scheduled' && $scheduledAt ? 'scheduled' : 'immediate',
+            'scheduled_at' => $scheduledAt,
+            'created_at' => now(),
+        ]);
+    }
+
+
+    protected function scheduleMessage(Request $request, Carbon $scheduledAt, $userId)
+{
+    // Dispatch the job with the necessary data and delay
+    SendScheduledMessage::dispatch($request->all(), $userId)->delay($scheduledAt);
+
+    // Optionally log or take additional action here
+    $this->logMessage($request, $userId, 'scheduled', $scheduledAt);
+}
+
+
+    public function getMessageLogs()
+    {
+        $messageLogs = MessageLog::with('user')->orderBy('created_at', 'desc')->get();
+        return view('admin.app-management', compact('messageLogs'));
+    }
 }

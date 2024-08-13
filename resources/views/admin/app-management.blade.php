@@ -19,6 +19,11 @@
                             class="bg-white inline-block py-2 px-6 text-gray-500 hover:bg-gray-100 font-semibold transition duration-200 ease-in-out"
                             onclick="openTab(event, 'messageTemplates')">Message Templates</a>
                     </li>
+                    <li class="mr-2">
+                        <a href="#messageLogs"
+                            class="bg-white inline-block py-2 px-6 text-gray-500 hover:bg-gray-100 font-semibold transition duration-200 ease-in-out"
+                            onclick="openTab(event, 'messageLogs')">Message Logs</a>
+                    </li>
                 </ul>
             </div>
 
@@ -110,7 +115,45 @@
                             @endforeach
 
                             @if ($messageTemplates->isEmpty())
-                                <p class="text-center text-gray-500 mt-4">No message templates found.</p>
+                                <tr>
+                                    <td colspan="3" class="text-center py-4 text-gray-500">No message templates found.</td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Message Logs Tab -->
+            <div id="messageLogs" class="tab-content hidden">
+                <div class="overflow-x-auto overflow-y-auto max-h-96 mb-8">
+                    <table id="messageLogsTable" class="min-w-full bg-white border border-gray-300 rounded-lg">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Sent By</th>
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Recipient Type</th>
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Content</th>
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Schedule Type</th>
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Scheduled/Send Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($messageLogs as $log)
+                                <tr class="hover:bg-gray-50 transition duration-150 ease-in-out">
+                                    <td class="py-3 px-4 border-b text-gray-600">{{ $log->user->name }}</td>
+                                    <td class="py-3 px-4 border-b text-gray-600">{{ ucfirst($log->recipient_type) }}</td>
+                                    <td class="py-3 px-4 border-b text-gray-600">{{ Str::limit($log->content, 50) }}</td>
+                                    <td class="py-3 px-4 border-b text-gray-600">{{ ucfirst($log->schedule) }}</td>
+                                    <td class="py-3 px-4 border-b text-gray-600">
+                                        {{ $log->scheduled_at ? $log->scheduled_at->format('F j, Y g:i A') : $log->created_at->format('F j, Y g:i A') }}
+                                    </td>
+                                </tr>
+                            @endforeach
+
+                            @if ($messageLogs->isEmpty())
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-gray-500">No message logs found.</td>
+                                </tr>
                             @endif
                         </tbody>
                     </table>

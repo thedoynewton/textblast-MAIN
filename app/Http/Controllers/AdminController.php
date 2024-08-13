@@ -12,6 +12,7 @@ use App\Models\Program;
 use App\Models\Student;
 use App\Models\Employee;
 use App\Models\Major;
+use App\Models\MessageLog;
 use App\Models\MessageTemplate;
 use App\Models\Type;
 use Illuminate\Http\Request;
@@ -26,18 +27,18 @@ class AdminController extends Controller
     }
 
     public function messages()
-{
-    $campuses = Campus::all();
-    $colleges = College::all();
-    $programs = Program::all();
-    $years = Year::all();
-    $offices = Office::all();
-    $statuses = Status::all();
-    $types = Type::all();
-    $messageTemplates = MessageTemplate::all(); // Add this line to fetch all message templates
+    {
+        $campuses = Campus::all();
+        $colleges = College::all();
+        $programs = Program::all();
+        $years = Year::all();
+        $offices = Office::all();
+        $statuses = Status::all();
+        $types = Type::all();
+        $messageTemplates = MessageTemplate::all(); // Add this line to fetch all message templates
 
-    return view('admin.messages', compact('campuses', 'colleges', 'programs', 'years', 'offices', 'statuses', 'types', 'messageTemplates'));
-}
+        return view('admin.messages', compact('campuses', 'colleges', 'programs', 'years', 'offices', 'statuses', 'types', 'messageTemplates'));
+    }
 
 
     public function broadcastMessages(Request $request)
@@ -77,33 +78,41 @@ class AdminController extends Controller
     }
 
     public function appManagement()
-{
-    $students = Student::all();
-    $campuses = Campus::all();
-    $colleges = College::all();
-    $programs = Program::all();
-    $majors = Major::all();
-    $years = Year::all();
-    $employees = Employee::all();
-    $offices = Office::all();
-    $statuses = Status::all();
-    $types = Type::all();
-    $messageTemplates = MessageTemplate::all(); // Add this line to fetch all message templates
+    {
+        // Fetch all necessary data
+        $students = Student::all();
+        $campuses = Campus::all();
+        $colleges = College::all();
+        $programs = Program::all();
+        $majors = Major::all();
+        $years = Year::all();
+        $employees = Employee::all();
+        $offices = Office::all();
+        $statuses = Status::all();
+        $types = Type::all();
+        $messageTemplates = MessageTemplate::all();
 
-    return view('admin.app-management', compact(
-        'students',
-        'campuses',
-        'colleges',
-        'programs',
-        'majors',
-        'years',
-        'employees',
-        'offices',
-        'statuses',
-        'types',
-        'messageTemplates' // Pass the variable to the view
-    ));
-}
+        // Fetch the message logs
+        $messageLogs = MessageLog::with('user')->orderBy('created_at', 'desc')->get();
+
+        // Pass all the data to the view
+        return view('admin.app-management', compact(
+            'students',
+            'campuses',
+            'colleges',
+            'programs',
+            'majors',
+            'years',
+            'employees',
+            'offices',
+            'statuses',
+            'types',
+            'messageTemplates',
+            'messageLogs' // Pass the message logs to the view
+        )
+        );
+    }
+
 
 
     public function importEmployees(Request $request)

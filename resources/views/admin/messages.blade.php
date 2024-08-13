@@ -132,6 +132,27 @@
                     style="height: 14rem">{{ request('message') }}</textarea>
             </div>
 
+            <!-- Schedule Options -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Schedule</label>
+                <div class="flex items-center mt-2">
+                    <input type="radio" id="immediate" name="schedule" value="immediate" checked>
+                    <label for="immediate" class="ml-2">Send Immediately</label>
+                </div>
+                <div class="flex items-center mt-2">
+                    <input type="radio" id="scheduled" name="schedule" value="scheduled">
+                    <label for="scheduled" class="ml-2">Schedule for Later</label>
+                </div>
+            </div>
+
+            <!-- Date and Time Picker for Scheduling -->
+            <div id="schedule-options" style="display: none;" class="mb-4">
+                <label for="scheduled_date" class="block text-sm font-medium text-gray-700">Select Date and Time</label>
+                <input type="datetime-local" id="scheduled_date" name="scheduled_date"
+                    class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+            </div>
+
+
             <div class="flex justify-end">
                 <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded-lg">Review Message</button>
             </div>
@@ -174,6 +195,20 @@
                 document.getElementById('template').addEventListener('change', function() {
                     const templateContent = this.value;
                     document.getElementById('message').value = templateContent;
+                });
+
+                // Add event listener for schedule options
+                const scheduleRadios = document.querySelectorAll('input[name="schedule"]');
+                const scheduleOptions = document.getElementById('schedule-options');
+
+                scheduleRadios.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        if (this.value === 'scheduled') {
+                            scheduleOptions.style.display = 'block';
+                        } else {
+                            scheduleOptions.style.display = 'none';
+                        }
+                    });
                 });
             });
 

@@ -60,7 +60,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <label for="program" class="block text-sm font-medium text-gray-700">Program</label>
+                    <label for="program" class="block text-sm font-medium text-gray-700">Academic Program</label>
                     <select name="program" id="program"
                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
                         <option value="" disabled selected>Select Program</option>

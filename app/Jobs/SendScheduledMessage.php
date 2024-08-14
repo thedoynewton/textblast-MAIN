@@ -11,6 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\MessageLog;
 use App\Models\Student;
 use App\Models\Employee;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class SendScheduledMessage implements ShouldQueue
@@ -20,42 +21,30 @@ class SendScheduledMessage implements ShouldQueue
     protected $data;
     protected $userId;
 
-    /**
-     * Create a new job instance.
-     *
-     * @return void
-     */
     public function __construct($data, $userId)
     {
         $this->data = $data;
         $this->userId = $userId;
     }
 
-    /**
-     * Execute the job.
-     *
-     * @return void
-     */
     public function handle(MoviderService $moviderService)
-    {
-        $broadcastType = $this->data['broadcast_type'];
+{
+    $broadcastType = $this->data['broadcast_type'];
 
-        // Send the message to the recipients based on the broadcast type
-        if ($broadcastType === 'students' || $broadcastType === 'all') {
-            $this->sendBulkMessages($moviderService, 'students');
-        }
-
-        if ($broadcastType === 'employees' || $broadcastType === 'all') {
-            $this->sendBulkMessages($moviderService, 'employees');
-        }
-
-        // Log the sent message
-        $this->logMessage('scheduled');
+    // Send the message to the recipients based on the broadcast type
+    if ($broadcastType === 'students' || $broadcastType === 'all') {
+        $this->sendBulkMessages($moviderService, 'students');
     }
 
-    /**
-     * Send bulk messages to the specified recipient type (students or employees).
-     */
+    if ($broadcastType === 'employees' || $broadcastType === 'all') {
+        $this->sendBulkMessages($moviderService, 'employees');
+    }
+
+    // Log the sent message with the correct sent time
+    $this->logMessage('scheduled', now());
+}
+
+
     protected function sendBulkMessages(MoviderService $moviderService, $recipientType)
     {
         $query = $recipientType === 'students' ? Student::query() : Employee::query();
@@ -76,7 +65,7 @@ class SendScheduledMessage implements ShouldQueue
             if (isset($this->data['year']) && $this->data['year'] !== 'all') {
                 $query->where('year_id', $this->data['year']);
             }
-        } else { // employees
+        } else {
             if (isset($this->data['office']) && $this->data['office'] !== 'all') {
                 $query->where('office_id', $this->data['office']);
             }
@@ -95,12 +84,10 @@ class SendScheduledMessage implements ShouldQueue
         $invalidRecipients = [];
 
         foreach ($recipients as $recipient) {
-            // Use appropriate fields for students and employees
             $number = $recipientType === 'students' ? $recipient->stud_contact : $recipient->emp_contact;
 
-            // Validate and format the phone number
-            $number = preg_replace('/\D/', '', $number); // Remove all non-digit characters
-            $number = substr($number, -10); // Get the last 10 digits (which should be the actual phone number)
+            $number = preg_replace('/\D/', '', $number);
+            $number = substr($number, -10);
 
             if (strlen($number) === 10) {
                 $formattedRecipients[] = '+63' . $number;
@@ -112,13 +99,11 @@ class SendScheduledMessage implements ShouldQueue
             }
         }
 
-        // Handle invalid recipients
         if (empty($formattedRecipients) && !empty($invalidRecipients)) {
             Log::warning('The following numbers are invalid:', $invalidRecipients);
             return;
         }
 
-        // Proceed with sending messages
         $message = $this->data['message'];
         $batchSize = 100;
         $recipientBatches = array_chunk($formattedRecipients, $batchSize);
@@ -134,19 +119,20 @@ class SendScheduledMessage implements ShouldQueue
         }
     }
 
-    /**
-     * Log the message details after sending.
-     */
-    protected function logMessage($scheduleType)
-    {
-        MessageLog::create([
-            'user_id' => $this->userId,
-            'recipient_type' => $this->data['broadcast_type'],
-            'content' => $this->data['message'],
-            'schedule' => $scheduleType,
-            'scheduled_at' => now(), // Log the time the message was actually sent
-            'created_at' => now(),
-        ]);
-    }
+    protected function logMessage($scheduleType, $sentAt)
+{
+    $sentAt = Carbon::parse($sentAt)->timezone(config('app.timezone'));
+    
+    MessageLog::create([
+        'user_id' => $this->userId,
+        'recipient_type' => $this->data['broadcast_type'],
+        'content' => $this->data['message'],
+        'schedule' => $scheduleType,
+        'scheduled_at' => Carbon::parse($this->data['scheduled_at'])->timezone(config('app.timezone')),
+        'sent_at' => $sentAt,
+        'created_at' => now(),
+    ]);
 }
 
+
+}

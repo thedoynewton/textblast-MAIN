@@ -12,12 +12,12 @@ use App\Models\Student;
 use App\Models\Employee;
 use App\Models\Type;
 use App\Models\MessageTemplate;
-use App\Models\MessageLog; // Import the MessageLog model
+use App\Models\MessageLog;
 use Illuminate\Http\Request;
 use App\Services\MoviderService;
-use Illuminate\Support\Facades\Auth; // Import Auth to get the user ID
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use App\Jobs\SendScheduledMessage; // Import the job for sending scheduled messages
+use App\Jobs\SendScheduledMessage;
 
 class MessageController extends Controller
 {
@@ -28,9 +28,6 @@ class MessageController extends Controller
         $this->moviderService = $moviderService;
     }
 
-    /**
-     * Show the messaging form.
-     */
     public function showMessagesForm()
     {
         $campuses = Campus::all();
@@ -40,87 +37,68 @@ class MessageController extends Controller
         return view('admin.messages', compact('campuses', 'years', 'messageTemplates'));
     }
 
-    /**
-     * Show the review page for the message before broadcasting.
-     */
     public function reviewMessage(Request $request)
-{
-    // Retrieve the form data
-    $data = $request->all();
+    {
+        $data = $request->all();
 
-    // Handle the 'all' case for campus
-    if ($data['campus'] === 'all') {
-        $campus = 'All Campuses';
-    } else {
-        $campus = Campus::find($data['campus'])->campus_name ?? 'All Campuses';
+        $campus = $data['campus'] === 'all' ? 'All Campuses' : Campus::find($data['campus'])->campus_name ?? 'All Campuses';
+
+        $filterNames = [
+            'college' => 'All Colleges',
+            'program' => 'All Programs',
+            'year' => 'All Years',
+            'office' => 'All Offices',
+            'status' => 'All Statuses',
+            'type' => 'All Types'
+        ];
+
+        if ($data['broadcast_type'] === 'students' || $data['broadcast_type'] === 'all') {
+            if (isset($data['college']) && $data['college'] !== 'all') {
+                $filterNames['college'] = College::find($data['college'])->college_name ?? 'All Colleges';
+            }
+            if (isset($data['program']) && $data['program'] !== 'all') {
+                $filterNames['program'] = Program::find($data['program'])->program_name ?? 'All Programs';
+            }
+            if (isset($data['year']) && $data['year'] !== 'all') {
+                $filterNames['year'] = Year::find($data['year'])->year_name ?? 'All Years';
+            }
+        }
+
+        if ($data['broadcast_type'] === 'employees' || $data['broadcast_type'] === 'all') {
+            if (isset($data['office']) && $data['office'] !== 'all') {
+                $filterNames['office'] = Office::find($data['office'])->office_name ?? 'All Offices';
+            }
+            if (isset($data['status']) && $data['status'] !== 'all') {
+                $filterNames['status'] = Status::find($data['status'])->status_name ?? 'All Statuses';
+            }
+            if (isset($data['type']) && $data['type'] !== 'all') {
+                $filterNames['type'] = Type::find($data['type'])->type_name ?? 'All Types';
+            }
+        }
+
+        // Update the key name for schedule_type
+        $data['schedule_type'] = $request->input('schedule', 'immediate'); // This sets 'schedule_type' as 'immediate' or 'scheduled'
+        $data['scheduled_at'] = $request->input('scheduled_date');
+
+        return view('admin.review-message', compact('data', 'campus', 'filterNames'));
     }
 
-    // Initialize the filter names array
-    $filterNames = [
-        'college' => 'All Colleges',
-        'program' => 'All Programs',
-        'year' => 'All Years',
-        'office' => 'All Offices',
-        'status' => 'All Statuses',
-        'type' => 'All Types'
-    ];
 
-    // Get the other filter names depending on the broadcast type
-    if ($data['broadcast_type'] === 'students' || $data['broadcast_type'] === 'all') {
-        if (isset($data['college']) && $data['college'] !== 'all') {
-            $filterNames['college'] = College::find($data['college'])->college_name ?? 'All Colleges';
-        }
-        if (isset($data['program']) && $data['program'] !== 'all') {
-            $filterNames['program'] = Program::find($data['program'])->program_name ?? 'All Programs';
-        }
-        if (isset($data['year']) && $data['year'] !== 'all') {
-            $filterNames['year'] = Year::find($data['year'])->year_name ?? 'All Years';
-        }
-    }
-
-    if ($data['broadcast_type'] === 'employees' || $data['broadcast_type'] === 'all') {
-        if (isset($data['office']) && $data['office'] !== 'all') {
-            $filterNames['office'] = Office::find($data['office'])->office_name ?? 'All Offices';
-        }
-        if (isset($data['status']) && $data['status'] !== 'all') {
-            $filterNames['status'] = Status::find($data['status'])->status_name ?? 'All Statuses';
-        }
-        if (isset($data['type']) && $data['type'] !== 'all') {
-            $filterNames['type'] = Type::find($data['type'])->type_name ?? 'All Types';
-        }
-    }
-
-    // Ensure schedule_type and scheduled_at are passed to the view
-    $data['schedule_type'] = $request->input('schedule', 'immediate');
-    $data['scheduled_at'] = $request->input('scheduled_date');
-
-    // Pass the data to the review view
-    return view('admin.review-message', compact('data', 'campus', 'filterNames'));
-}
-
-
-
-    /**
-     * Broadcast messages to either students, employees, or both.
-     */
     public function broadcastToRecipients(Request $request)
     {
         $broadcastType = $request->broadcast_type;
-        $scheduleType = $request->schedule; // 'immediate' or 'scheduled'
-        $scheduledDate = $request->scheduled_date; // Will be null if scheduleType is 'immediate'
-        $userId = Auth::id(); // Get the ID of the logged-in user
+        $scheduleType = $request->schedule;
+        $scheduledDate = $request->scheduled_date;
+        $userId = Auth::id();
 
         if ($scheduleType === 'scheduled' && $scheduledDate) {
-            // Schedule the message for later
             $scheduledAt = Carbon::parse($scheduledDate);
             $this->scheduleMessage($request, $scheduledAt, $userId);
 
-            // Store a log of the scheduled message
             $this->logMessage($request, $userId, 'scheduled', $scheduledAt);
 
             return redirect()->route('admin.messages')->with('success', 'Message scheduled successfully.');
         } else {
-            // Send the message immediately
             $this->sendMessageImmediately($request, $userId);
 
             return redirect()->route('admin.messages')->with('success', 'Messages sent successfully.');
@@ -150,7 +128,6 @@ class MessageController extends Controller
 
         $this->logMessage($request, $userId, 'immediate');
 
-        // Handle success or error messaging
         if ($successCount > 0) {
             session()->flash('success', "Messages sent successfully to $successCount recipients." . $errorDetails);
         } else {
@@ -158,15 +135,10 @@ class MessageController extends Controller
         }
     }
 
-
-    /**
-     * Sends bulk messages to the specified recipient type (students or employees).
-     */
     protected function sendBulkMessages(Request $request, $recipientType)
     {
         $query = $recipientType === 'students' ? Student::query() : Employee::query();
 
-        // Handle the case where 'All Campuses' is selected
         if ($request->filled('campus') && $request->input('campus') !== 'all') {
             $query->where('campus_id', $request->input('campus'));
         }
@@ -183,7 +155,7 @@ class MessageController extends Controller
             if ($request->filled('year') && $request->input('year') !== 'all') {
                 $query->where('year_id', $request->input('year'));
             }
-        } else { // employees
+        } else {
             if ($request->filled('office') && $request->input('office') !== 'all') {
                 $query->where('office_id', $request->input('office'));
             }
@@ -197,23 +169,15 @@ class MessageController extends Controller
             }
         }
 
-        // Fetch all recipients matching the criteria
         $recipients = $query->get();
         $formattedRecipients = [];
         $invalidRecipients = [];
 
         foreach ($recipients as $recipient) {
-            // Use appropriate fields for students and employees
             $number = $recipientType === 'students' ? $recipient->stud_contact : $recipient->emp_contact;
-            $email = $recipientType === 'students' ? $recipient->stud_email : $recipient->emp_email;
 
-            // Ensure number and email are not NULL
-            $number = $number ?: 'N/A';
-            $email = $email ?: 'N/A';
-
-            // Validate and format the phone number
-            $number = preg_replace('/\D/', '', $number); // Remove all non-digit characters
-            $number = substr($number, -10); // Get the last 10 digits (which should be the actual phone number)
+            $number = preg_replace('/\D/', '', $number);
+            $number = substr($number, -10);
 
             if (strlen($number) === 10) {
                 $formattedRecipients[] = '+63' . $number;
@@ -221,16 +185,14 @@ class MessageController extends Controller
                 $invalidRecipients[] = [
                     'name' => $recipientType === 'students' ? $recipient->stud_name : $recipient->emp_name,
                     'number' => $number,
-                    'email' => $email
                 ];
             }
         }
 
-        // Handle invalid recipients
         if (empty($formattedRecipients) && !empty($invalidRecipients)) {
             $errorMessage = 'The following numbers are invalid: ';
             foreach ($invalidRecipients as $invalidRecipient) {
-                $errorMessage .= $invalidRecipient['name'] . ' (Number: ' . $invalidRecipient['number'] . ', Email: ' . $invalidRecipient['email'] . '), ';
+                $errorMessage .= $invalidRecipient['name'] . ' (Number: ' . $invalidRecipient['number'] . '), ';
             }
             $errorMessage = rtrim($errorMessage, ', ');
             return [
@@ -240,7 +202,6 @@ class MessageController extends Controller
             ];
         }
 
-        // Proceed with sending messages
         $message = $request->input('message');
         $batchSize = 100;
         $recipientBatches = array_chunk($formattedRecipients, $batchSize);
@@ -263,7 +224,7 @@ class MessageController extends Controller
         if (!empty($invalidRecipients)) {
             $errorDetails = ' The following numbers are invalid: ';
             foreach ($invalidRecipients as $invalidRecipient) {
-                $errorDetails .= $invalidRecipient['name'] . ' (Number: ' . $invalidRecipient['number'] . ', Email: ' . $invalidRecipient['email'] . '), ';
+                $errorDetails .= $invalidRecipient['name'] . ' (Number: ' . $invalidRecipient['number'] . '), ';
             }
             $errorDetails = rtrim($errorDetails, ', ');
         }
@@ -279,7 +240,6 @@ class MessageController extends Controller
         ];
     }
 
-
     protected function logMessage(Request $request, $userId, $scheduleType, $scheduledAt = null)
     {
         MessageLog::create([
@@ -292,20 +252,23 @@ class MessageController extends Controller
         ]);
     }
 
-
     protected function scheduleMessage(Request $request, Carbon $scheduledAt, $userId)
     {
-        // Dispatch the job with the necessary data and delay
         SendScheduledMessage::dispatch($request->all(), $userId)->delay($scheduledAt);
 
-        // Optionally log or take additional action here
         $this->logMessage($request, $userId, 'scheduled', $scheduledAt);
     }
 
-
     public function getMessageLogs()
-    {
-        $messageLogs = MessageLog::with('user')->orderBy('created_at', 'desc')->get();
-        return view('admin.app-management', compact('messageLogs'));
-    }
+{
+    $messageLogs = MessageLog::with('user')->orderBy('created_at', 'desc')->get();
+
+    // Ensure that scheduled_at is converted to a Carbon instance
+    $messageLogs->each(function($log) {
+        $log->scheduled_at = $log->scheduled_at ? Carbon::parse($log->scheduled_at) : null;
+    });
+
+    return view('admin.app-management', compact('messageLogs'));
+}
+
 }

@@ -48,12 +48,13 @@
         <input type="hidden" name="broadcast_type" value="{{ $data['broadcast_type'] }}">
         <input type="hidden" name="campus" value="{{ $data['campus'] }}">
         <input type="hidden" name="message" value="{{ $data['message'] }}">
-        <input type="hidden" name="schedule_type" value="{{ $data['schedule_type'] }}">
+        <input type="hidden" name="schedule" value="{{ $data['schedule_type'] }}">
 
-        @if ($data['schedule_type'] === 'schedule')
-            <input type="hidden" name="scheduled_at" value="{{ $data['scheduled_at'] }}">
+        @if ($data['schedule_type'] === 'scheduled')
+            <input type="hidden" name="scheduled_date" value="{{ $data['scheduled_at'] }}">
         @endif
 
+        <!-- Include other hidden fields as necessary -->
         @if (isset($data['college']))
             <input type="hidden" name="college" value="{{ $data['college'] }}">
         @endif

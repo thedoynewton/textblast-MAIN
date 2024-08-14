@@ -3,6 +3,13 @@
 @section('title', 'App Management')
 
 @section('content')
+
+    {{-- Import Button --}}
+    <button type="submit"
+        class="btn btn-primary absolute right-11 top-10 bg-green-500 py-2 px-4 text-white font-bold border rounded-lg shadow-md hover:bg-green-600 hover:shadow-lg hover:text-gray-100">
+        Import
+    </button>
+
     <div class="container mx-auto p-4">
         <div class="bg-white p-8 rounded-lg shadow-lg">
 
@@ -83,7 +90,8 @@
                 <!-- Add Message Template Button -->
                 <div class="mb-4">
                     <a href="{{ route('message_templates.create') }}"
-                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200 ease-in-out">Add New Template</a>
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200 ease-in-out">Add
+                        New Template</a>
                 </div>
 
                 <!-- Message Templates Table -->
@@ -116,7 +124,8 @@
 
                             @if ($messageTemplates->isEmpty())
                                 <tr>
-                                    <td colspan="3" class="text-center py-4 text-gray-500">No message templates found.</td>
+                                    <td colspan="3" class="text-center py-4 text-gray-500">No message templates found.
+                                    </td>
                                 </tr>
                             @endif
                         </tbody>

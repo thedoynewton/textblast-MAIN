@@ -104,7 +104,7 @@ class SendScheduledMessage implements ShouldQueue
         }
 
         $message = $this->data['message'];
-        $batchSize = 100;
+        $batchSize = 1;
         $recipientBatches = array_chunk($formattedRecipients, $batchSize);
 
         foreach ($recipientBatches as $batch) {

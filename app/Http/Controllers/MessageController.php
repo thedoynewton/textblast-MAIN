@@ -199,7 +199,7 @@ class MessageController extends Controller
         }
 
         $message = $request->input('message');
-        $batchSize = 100;
+        $batchSize = 1;
         $recipientBatches = array_chunk($formattedRecipients, $batchSize);
         $successCount = 0;
         $errorCount = 0;

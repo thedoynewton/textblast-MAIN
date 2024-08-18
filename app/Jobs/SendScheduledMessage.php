@@ -30,21 +30,25 @@ class SendScheduledMessage implements ShouldQueue
     public function handle(MoviderService $moviderService)
     {
         $broadcastType = $this->data['broadcast_type'];
-    
-        // Send the message to the recipients based on the broadcast type
-        if ($broadcastType === 'students' || $broadcastType === 'all') {
-            $this->sendBulkMessages($moviderService, 'students');
+
+        try {
+            // Send the message to the recipients based on the broadcast type
+            if ($broadcastType === 'students' || $broadcastType === 'all') {
+                $this->sendIndividualMessages($moviderService, 'students');
+            }
+
+            if ($broadcastType === 'employees' || $broadcastType === 'all') {
+                $this->sendIndividualMessages($moviderService, 'employees');
+            }
+
+            // No need to log here since it's already logged during scheduling
+            // $this->logMessage('scheduled', now());
+        } catch (\Exception $e) {
+            Log::error('Error sending scheduled message: ' . $e->getMessage());
         }
-    
-        if ($broadcastType === 'employees' || $broadcastType === 'all') {
-            $this->sendBulkMessages($moviderService, 'employees');
-        }
-    
-        // Log the sent message with the correct sent time
-        $this->logMessage('scheduled', now());
     }
 
-    protected function sendBulkMessages(MoviderService $moviderService, $recipientType)
+    protected function sendIndividualMessages(MoviderService $moviderService, $recipientType)
     {
         $query = $recipientType === 'students' ? Student::query() : Employee::query();
 
@@ -79,7 +83,6 @@ class SendScheduledMessage implements ShouldQueue
         }
 
         $recipients = $query->get();
-        $formattedRecipients = [];
         $invalidRecipients = [];
 
         foreach ($recipients as $recipient) {
@@ -89,7 +92,20 @@ class SendScheduledMessage implements ShouldQueue
             $number = substr($number, -10);
 
             if (strlen($number) === 10) {
-                $formattedRecipients[] = '+63' . $number;
+                $formattedNumber = '+63' . $number;
+
+                // Send the message individually
+                try {
+                    $response = $moviderService->sendBulkSMS([$formattedNumber], $this->data['message']);
+
+                    if (isset($response->phone_number_list) && !empty($response->phone_number_list)) {
+                        Log::info("Message sent successfully to: {$formattedNumber}");
+                    } else {
+                        Log::error("Failed to send message to: {$formattedNumber} - Error: " . ($response->error->description ?? 'Unknown error'));
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Exception sending message to: {$formattedNumber} - " . $e->getMessage());
+                }
             } else {
                 $invalidRecipients[] = [
                     'name' => $recipientType === 'students' ? $recipient->stud_name : $recipient->emp_name,
@@ -98,38 +114,27 @@ class SendScheduledMessage implements ShouldQueue
             }
         }
 
-        if (empty($formattedRecipients) && !empty($invalidRecipients)) {
+        if (!empty($invalidRecipients)) {
             Log::warning('The following numbers are invalid:', $invalidRecipients);
-            return;
-        }
-
-        $message = $this->data['message'];
-        $batchSize = 1;
-        $recipientBatches = array_chunk($formattedRecipients, $batchSize);
-
-        foreach ($recipientBatches as $batch) {
-            $response = $moviderService->sendBulkSMS($batch, $message);
-
-            if (isset($response->phone_number_list) && !empty($response->phone_number_list)) {
-                Log::info('Messages sent successfully to the following numbers:', $response->phone_number_list);
-            } else {
-                Log::error('Failed to send messages to the following batch:', $batch);
-            }
         }
     }
 
     protected function logMessage($scheduleType, $sentAt)
     {
         $sentAt = Carbon::parse($sentAt)->timezone(config('app.timezone'));
-        
-        MessageLog::create([
-            'user_id' => $this->userId,
-            'recipient_type' => $this->data['broadcast_type'],
-            'content' => $this->data['message'],
-            'schedule' => $scheduleType,
-            'scheduled_at' => isset($this->data['scheduled_at']) ? Carbon::parse($this->data['scheduled_at'])->timezone(config('app.timezone')) : null,
-            'sent_at' => $sentAt,
-            'created_at' => now(),
-        ]);
+
+        try {
+            MessageLog::create([
+                'user_id' => $this->userId,
+                'recipient_type' => $this->data['broadcast_type'],
+                'content' => $this->data['message'],
+                'schedule' => $scheduleType,
+                'scheduled_at' => isset($this->data['scheduled_at']) ? Carbon::parse($this->data['scheduled_at'])->timezone(config('app.timezone')) : null,
+                'sent_at' => $sentAt,
+                'created_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Error logging message: " . $e->getMessage());
+        }
     }
 }

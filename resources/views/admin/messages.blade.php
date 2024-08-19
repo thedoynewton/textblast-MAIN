@@ -113,6 +113,13 @@
                 </div>
             </div>
 
+            <!-- Display Total Recipients -->
+            <div class="mb-4">
+                <span id="total_recipients" class="block text-sm font-medium text-gray-700">Total recipients: </span>
+            </div>
+
+
+
             <!-- Message Template Selection -->
             <div class="mb-4">
                 <label for="template" class="block text-sm font-medium text-gray-700">Select Template</label>
@@ -152,7 +159,6 @@
                     class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
             </div>
 
-
             <div class="flex justify-end">
                 <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded-lg">Review Message</button>
             </div>
@@ -183,6 +189,9 @@
 
                         // Toggle the filters based on the selected tab
                         toggleFilters();
+
+                        // Update the recipient count
+                        updateRecipientCount();
                     });
                 });
 
@@ -190,6 +199,15 @@
                 document.getElementById('campus').addEventListener('change', updateDependentFilters);
                 document.getElementById('office').addEventListener('change', updateTypeDropdown);
                 document.getElementById('status').addEventListener('change', updateTypeDropdown);
+
+                // Event listeners for all dropdowns
+                document.getElementById('campus').addEventListener('change', updateRecipientCount);
+                document.getElementById('college').addEventListener('change', updateRecipientCount);
+                document.getElementById('program').addEventListener('change', updateRecipientCount);
+                document.getElementById('year').addEventListener('change', updateRecipientCount);
+                document.getElementById('office').addEventListener('change', updateRecipientCount);
+                document.getElementById('status').addEventListener('change', updateRecipientCount);
+                document.getElementById('type').addEventListener('change', updateRecipientCount);
 
                 // Add event listener for template selection
                 document.getElementById('template').addEventListener('change', function() {
@@ -210,6 +228,18 @@
                         }
                     });
                 });
+
+                // Call updateRecipientCount whenever filters change
+                document.getElementById('campus').addEventListener('change', updateRecipientCount);
+                document.getElementById('college').addEventListener('change', updateRecipientCount);
+                document.getElementById('program').addEventListener('change', updateRecipientCount);
+                document.getElementById('year').addEventListener('change', updateRecipientCount);
+                document.getElementById('office').addEventListener('change', updateRecipientCount);
+                document.getElementById('status').addEventListener('change', updateRecipientCount);
+                document.getElementById('type').addEventListener('change', updateRecipientCount);
+
+                // Initialize the recipient count on page load
+                updateRecipientCount();
             });
 
             function toggleFilters() {
@@ -329,6 +359,31 @@
                             updateSelectOptions('type', data.types);
                         });
                 }
+            }
+
+            function updateRecipientCount() {
+                const broadcastType = document.getElementById('broadcast_type').value;
+                const campusId = document.getElementById('campus').value;
+                const collegeId = document.getElementById('college') ? document.getElementById('college').value : null;
+                const programId = document.getElementById('program') ? document.getElementById('program').value : null;
+                const yearId = document.getElementById('year') ? document.getElementById('year').value : null;
+                const officeId = document.getElementById('office') ? document.getElementById('office').value : null;
+                const statusId = document.getElementById('status') ? document.getElementById('status').value : null;
+                const typeId = document.getElementById('type') ? document.getElementById('type').value : null;
+
+                // Set default total recipients to 0
+                document.getElementById('total_recipients').textContent = 'Total recipients: 0';
+
+                fetch(
+                        `/api/recipients/count?broadcast_type=${broadcastType}&campus_id=${campusId}&college_id=${collegeId}&program_id=${programId}&year_id=${yearId}&office_id=${officeId}&status_id=${statusId}&type_id=${typeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('total_recipients').textContent = `Total recipients: ${data.total}`;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching recipient count:', error);
+                        document.getElementById('total_recipients').textContent = 'Error fetching recipient count';
+                    });
             }
         </script>
     </div>

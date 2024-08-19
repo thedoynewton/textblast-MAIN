@@ -66,3 +66,4 @@ Route::get('/api/filters/{type}/{campusId}', [FilterController::class, 'getFilte
 Route::get('/api/filters/college/{collegeId}/programs', [FilterController::class, 'getProgramsByCollege']);
 Route::get('/api/filters/types/{campusId}/{officeId}/{statusId?}', [FilterController::class, 'getTypesByOffice']);
 Route::get('/api/contacts', [FilterController::class, 'getContacts']);
+Route::get('/api/recipients/count', [MessageController::class, 'getRecipientCount']);

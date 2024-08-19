@@ -10,6 +10,7 @@
         <h2 class="text-xl font-semibold">Recipients</h2>
         <p><strong>Broadcast To:</strong> {{ ucfirst($data['broadcast_type']) }}</p>
         <p><strong>Campus:</strong> {{ $campus }}</p>
+        <p><strong>Total Recipients:</strong> {{ $totalRecipients }}</p> <!-- Display Total Recipients -->
 
         @if ($data['broadcast_type'] === 'students' || $data['broadcast_type'] === 'all')
             <p><strong>College:</strong> {{ $filterNames['college'] }}</p>
@@ -40,7 +41,6 @@
         @endif
     </div>
 
-
     <!-- Form to confirm and send the message -->
     <form action="{{ route('admin.broadcastToRecipients') }}" method="POST" style="display: inline;">
         @csrf
@@ -49,6 +49,7 @@
         <input type="hidden" name="campus" value="{{ $data['campus'] }}">
         <input type="hidden" name="message" value="{{ $data['message'] }}">
         <input type="hidden" name="schedule" value="{{ $data['schedule_type'] }}">
+        <input type="hidden" name="total_recipients" value="{{ $totalRecipients }}">
 
         @if ($data['schedule_type'] === 'scheduled')
             <input type="hidden" name="scheduled_date" value="{{ $data['scheduled_at'] }}">

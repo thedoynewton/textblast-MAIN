@@ -48,7 +48,7 @@
                 @endif
                 @guest
                     <form>
-                        <img src="/images/SePhi Final Icon 1.png" class="w-1/2 h-auto mx-auto"/>
+                        <img src="/images/SePhi Icon.png" class="w-1/2 h-auto mx-auto"/>
                         <h1 class="font-bold text-4xl text-center">Welcome to USeP</h1>
                         <h1 class="font-semibold text-2xl mb-8 text-center">Text Broadcasting System</h1>
                         <div class="py-2">

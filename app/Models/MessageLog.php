@@ -15,7 +15,15 @@ class MessageLog extends Model
         'content',
         'schedule',
         'scheduled_at',
+        'sent_at',
+        'status', // Add status here
     ];
+
+    protected $casts = [
+        'scheduled_at' => 'datetime',
+        'sent_at' => 'datetime',
+    ];
+    
 
     /**
      * Get the user that sent the message.

@@ -41,8 +41,8 @@ class SendScheduledMessage implements ShouldQueue
                 $this->sendIndividualMessages($moviderService, 'employees');
             }
 
-            // No need to log here since it's already logged during scheduling
-            // $this->logMessage('scheduled', now());
+            // Update the status to "Sent" after all messages are sent
+            $this->updateMessageLogStatus();
         } catch (\Exception $e) {
             Log::error('Error sending scheduled message: ' . $e->getMessage());
         }
@@ -119,22 +119,16 @@ class SendScheduledMessage implements ShouldQueue
         }
     }
 
-    protected function logMessage($scheduleType, $sentAt)
+    protected function updateMessageLogStatus()
     {
-        $sentAt = Carbon::parse($sentAt)->timezone(config('app.timezone'));
+        $messageLog = MessageLog::where('id', $this->data['log_id'])->first();
 
-        try {
-            MessageLog::create([
-                'user_id' => $this->userId,
-                'recipient_type' => $this->data['broadcast_type'],
-                'content' => $this->data['message'],
-                'schedule' => $scheduleType,
-                'scheduled_at' => isset($this->data['scheduled_at']) ? Carbon::parse($this->data['scheduled_at'])->timezone(config('app.timezone')) : null,
-                'sent_at' => $sentAt,
-                'created_at' => now(),
-            ]);
-        } catch (\Exception $e) {
-            Log::error("Error logging message: " . $e->getMessage());
+        if ($messageLog) {
+            $messageLog->sent_at = now(); // Update the sent_at timestamp
+            $messageLog->status = 'Sent'; // Update the status to 'Sent'
+            $messageLog->save();
+        } else {
+            Log::error('MessageLog not found for ID: ' . $this->data['log_id']);
         }
     }
 }

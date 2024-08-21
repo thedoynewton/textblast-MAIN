@@ -124,7 +124,8 @@
 
                             @if ($messageTemplates->isEmpty())
                                 <tr>
-                                    <td colspan="3" class="text-center py-4 text-gray-500">No message templates found.</td>
+                                    <td colspan="3" class="text-center py-4 text-gray-500">No message templates found.
+                                    </td>
                                 </tr>
                             @endif
                         </tbody>
@@ -142,9 +143,12 @@
                                 <th class="py-3 px-4 border-b font-medium text-gray-700">User</th>
                                 <th class="py-3 px-4 border-b font-medium text-gray-700">Recipient Type</th>
                                 <th class="py-3 px-4 border-b font-medium text-gray-700">Message</th>
-                                <th class="py-3 px-4 border-b font-medium text-gray-700">Schedule</th>
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Message Type</th>
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Created At</th> <!-- New Header -->
                                 <th class="py-3 px-4 border-b font-medium text-gray-700">Scheduled At</th>
                                 <th class="py-3 px-4 border-b font-medium text-gray-700">Sent At</th>
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Status</th>
+                                <!-- Add Status Header -->
                             </tr>
                         </thead>
                         <tbody>
@@ -155,15 +159,14 @@
                                     <td class="py-3 px-4 border-b text-gray-600">{{ $log->content }}</td>
                                     <td class="py-3 px-4 border-b text-gray-600">{{ $log->schedule }}</td>
                                     <td class="py-3 px-4 border-b text-gray-600">
-                                        @if ($log->scheduled_at)
-                                            {{ \Carbon\Carbon::parse($log->scheduled_at)->format('F j, Y g:i A') }}
-                                        @else
-                                            N/A
-                                        @endif
+                                        {{ $log->created_at->format('F j, Y g:i A') }} <!-- Display Created At -->
                                     </td>
                                     <td class="py-3 px-4 border-b text-gray-600">
-                                        {{ $log->created_at->format('F j, Y g:i A') }}
-                                    </td>
+                                        {{ $log->scheduled_at ? $log->scheduled_at->format('F j, Y g:i A') : 'N/A' }}</td>
+                                    <td class="py-3 px-4 border-b text-gray-600">
+                                        {{ $log->sent_at ? $log->sent_at->format('F j, Y g:i A') : 'N/A' }}</td>
+                                    <td class="py-3 px-4 border-b text-gray-600">{{ $log->status }}</td>
+                                    <!-- Display Status -->
                                 </tr>
                             @endforeach
 
@@ -171,6 +174,7 @@
                                 <p class="text-center text-gray-500 mt-4">No message logs found.</p>
                             @endif
                         </tbody>
+
                     </table>
                 </div>
             </div>

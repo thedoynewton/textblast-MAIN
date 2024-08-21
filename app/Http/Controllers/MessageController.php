@@ -38,75 +38,73 @@ class MessageController extends Controller
     }
 
     public function reviewMessage(Request $request)
-{
-    $data = $request->all();
+    {
+        $data = $request->all();
 
-    $campus = $data['campus'] === 'all' ? 'All Campuses' : Campus::find($data['campus'])->campus_name ?? 'All Campuses';
+        $campus = $data['campus'] === 'all' ? 'All Campuses' : Campus::find($data['campus'])->campus_name ?? 'All Campuses';
 
-    $filterNames = [
-        'college' => 'All Colleges',
-        'program' => 'All Programs',
-        'year' => 'All Years',
-        'office' => 'All Offices',
-        'status' => 'All Statuses',
-        'type' => 'All Types'
-    ];
+        $filterNames = [
+            'college' => 'All Colleges',
+            'program' => 'All Programs',
+            'year' => 'All Years',
+            'office' => 'All Offices',
+            'status' => 'All Statuses',
+            'type' => 'All Types'
+        ];
 
-    $studentQuery = Student::query();
-    $employeeQuery = Employee::query();
+        $studentQuery = Student::query();
+        $employeeQuery = Employee::query();
 
-    if ($data['broadcast_type'] === 'students' || $data['broadcast_type'] === 'all') {
-        if (isset($data['campus']) && $data['campus'] !== 'all') {
-            $studentQuery->where('campus_id', $data['campus']);
+        if ($data['broadcast_type'] === 'students' || $data['broadcast_type'] === 'all') {
+            if (isset($data['campus']) && $data['campus'] !== 'all') {
+                $studentQuery->where('campus_id', $data['campus']);
+            }
+            if (isset($data['college']) && $data['college'] !== 'all') {
+                $filterNames['college'] = College::find($data['college'])->college_name ?? 'All Colleges';
+                $studentQuery->where('college_id', $data['college']);
+            }
+            if (isset($data['program']) && $data['program'] !== 'all') {
+                $filterNames['program'] = Program::find($data['program'])->program_name ?? 'All Programs';
+                $studentQuery->where('program_id', $data['program']);
+            }
+            if (isset($data['year']) && $data['year'] !== 'all') {
+                $filterNames['year'] = Year::find($data['year'])->year_name ?? 'All Years';
+                $studentQuery->where('year_id', $data['year']);
+            }
         }
-        if (isset($data['college']) && $data['college'] !== 'all') {
-            $filterNames['college'] = College::find($data['college'])->college_name ?? 'All Colleges';
-            $studentQuery->where('college_id', $data['college']);
+
+        if ($data['broadcast_type'] === 'employees' || $data['broadcast_type'] === 'all') {
+            if (isset($data['campus']) && $data['campus'] !== 'all') {
+                $employeeQuery->where('campus_id', $data['campus']);
+            }
+            if (isset($data['office']) && $data['office'] !== 'all') {
+                $filterNames['office'] = Office::find($data['office'])->office_name ?? 'All Offices';
+                $employeeQuery->where('office_id', $data['office']);
+            }
+            if (isset($data['status']) && $data['status'] !== 'all') {
+                $filterNames['status'] = Status::find($data['status'])->status_name ?? 'All Statuses';
+                $employeeQuery->where('status_id', $data['status']);
+            }
+            if (isset($data['type']) && $data['type'] !== 'all') {
+                $filterNames['type'] = Type::find($data['type'])->type_name ?? 'All Types';
+                $employeeQuery->where('type_id', $data['type']);
+            }
         }
-        if (isset($data['program']) && $data['program'] !== 'all') {
-            $filterNames['program'] = Program::find($data['program'])->program_name ?? 'All Programs';
-            $studentQuery->where('program_id', $data['program']);
+
+        // Calculate total recipients
+        if ($data['broadcast_type'] === 'all') {
+            $totalRecipients = $studentQuery->count() + $employeeQuery->count();
+        } elseif ($data['broadcast_type'] === 'students') {
+            $totalRecipients = $studentQuery->count();
+        } else {
+            $totalRecipients = $employeeQuery->count();
         }
-        if (isset($data['year']) && $data['year'] !== 'all') {
-            $filterNames['year'] = Year::find($data['year'])->year_name ?? 'All Years';
-            $studentQuery->where('year_id', $data['year']);
-        }
+
+        $data['schedule_type'] = $request->input('schedule', 'immediate');
+        $data['scheduled_at'] = $request->input('scheduled_date');
+
+        return view('admin.review-message', compact('data', 'campus', 'filterNames', 'totalRecipients'));
     }
-
-    if ($data['broadcast_type'] === 'employees' || $data['broadcast_type'] === 'all') {
-        if (isset($data['campus']) && $data['campus'] !== 'all') {
-            $employeeQuery->where('campus_id', $data['campus']);
-        }
-        if (isset($data['office']) && $data['office'] !== 'all') {
-            $filterNames['office'] = Office::find($data['office'])->office_name ?? 'All Offices';
-            $employeeQuery->where('office_id', $data['office']);
-        }
-        if (isset($data['status']) && $data['status'] !== 'all') {
-            $filterNames['status'] = Status::find($data['status'])->status_name ?? 'All Statuses';
-            $employeeQuery->where('status_id', $data['status']);
-        }
-        if (isset($data['type']) && $data['type'] !== 'all') {
-            $filterNames['type'] = Type::find($data['type'])->type_name ?? 'All Types';
-            $employeeQuery->where('type_id', $data['type']);
-        }
-    }
-
-    // Calculate total recipients
-    if ($data['broadcast_type'] === 'all') {
-        $totalRecipients = $studentQuery->count() + $employeeQuery->count();
-    } elseif ($data['broadcast_type'] === 'students') {
-        $totalRecipients = $studentQuery->count();
-    } else {
-        $totalRecipients = $employeeQuery->count();
-    }
-
-    $data['schedule_type'] = $request->input('schedule', 'immediate');
-    $data['scheduled_at'] = $request->input('scheduled_date');
-
-    return view('admin.review-message', compact('data', 'campus', 'filterNames', 'totalRecipients'));
-}
-
-
 
     public function broadcastToRecipients(Request $request)
     {
@@ -148,13 +146,16 @@ class MessageController extends Controller
             $errorDetails .= (string) $employeeResult['errorDetails'];
         }
 
-        $this->logMessage($request, $userId, 'immediate');
+        $logId = $this->logMessage($request, $userId, 'immediate');
 
         if ($successCount > 0) {
             session()->flash('success', "Messages sent successfully to $successCount recipients." . $errorDetails);
         } else {
             session()->flash('error', "Failed to send messages to $errorCount recipients." . $errorDetails);
         }
+
+        // Update the message log with status
+        $this->updateMessageLogStatus($logId, 'Sent');
     }
 
     protected function sendBulkMessages(Request $request, $recipientType)
@@ -264,33 +265,49 @@ class MessageController extends Controller
 
     protected function logMessage(Request $request, $userId, $scheduleType, $scheduledAt = null)
     {
-        MessageLog::create([
+        $status = $scheduleType === 'immediate' ? 'Sent' : 'Pending'; // Set status based on schedule type
+
+        $log = MessageLog::create([
             'user_id' => $userId,
             'recipient_type' => $request->broadcast_type,
             'content' => $request->message,
             'schedule' => $scheduleType === 'scheduled' && $scheduledAt ? 'scheduled' : 'immediate',
             'scheduled_at' => $scheduledAt,
-            'created_at' => now(),
+            'sent_at' => $scheduleType === 'immediate' ? now() : null, // Set sent_at for immediate messages
+            'status' => $status, // Save the status
         ]);
+
+        return $log->id; // Return the log ID
+    }
+
+    protected function updateMessageLogStatus($logId, $status)
+    {
+        $messageLog = MessageLog::find($logId);
+        if ($messageLog) {
+            $messageLog->sent_at = now();
+            $messageLog->status = $status;
+            $messageLog->save();
+        }
     }
 
     protected function scheduleMessage(Request $request, Carbon $scheduledAt, $userId)
     {
-        // Ensure the scheduled_at key is included when dispatching the job
         $data = $request->all();
         $data['scheduled_at'] = $scheduledAt;
 
+        // Log the message and get the log ID
+        $logId = $this->logMessage($request, $userId, 'scheduled', $scheduledAt);
+
+        // Pass the log ID to the job
+        $data['log_id'] = $logId;
+
         SendScheduledMessage::dispatch($data, $userId)->delay($scheduledAt);
-
-        $this->logMessage($request, $userId, 'scheduled', $scheduledAt);
     }
-
 
     public function getMessageLogs()
     {
         $messageLogs = MessageLog::with('user')->orderBy('created_at', 'desc')->get();
 
-        // Ensure that scheduled_at is converted to a Carbon instance
         $messageLogs->each(function ($log) {
             $log->scheduled_at = $log->scheduled_at ? Carbon::parse($log->scheduled_at) : null;
         });
@@ -346,7 +363,6 @@ class MessageController extends Controller
         }
 
         if ($broadcastType === 'all') {
-            // Sum the counts from both queries
             $total = $studentQuery->count() + $employeeQuery->count();
         } elseif ($broadcastType === 'students') {
             $total = $studentQuery->count();
@@ -356,5 +372,4 @@ class MessageController extends Controller
 
         return response()->json(['total' => $total ?: 0]); // Return 0 if no recipients are found
     }
-
 }

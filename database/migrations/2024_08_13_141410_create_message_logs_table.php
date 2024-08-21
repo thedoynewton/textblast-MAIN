@@ -15,11 +15,13 @@ class CreateMessageLogsTable extends Migration
     {
         Schema::create('message_logs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id'); // To store the ID of the sender
+            $table->unsignedBigInteger('user_id');
             $table->string('recipient_type');
             $table->text('content');
-            $table->string('schedule'); // 'immediate' or 'scheduled'
-            $table->timestamp('scheduled_at')->nullable(); // Null if sent immediately
+            $table->string('schedule');
+            $table->timestamp('scheduled_at')->nullable();
+            $table->timestamp('sent_at')->nullable(); // Place sent_at before status
+            $table->string('status')->default('Pending'); // Default status as Pending
             $table->timestamps();
 
             // Foreign key constraint

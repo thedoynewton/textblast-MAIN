@@ -18,6 +18,7 @@ use App\Services\MoviderService;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Jobs\SendScheduledMessage;
+use Illuminate\Support\Facades\Log;
 
 class MessageController extends Controller
 {
@@ -130,43 +131,126 @@ class MessageController extends Controller
         $broadcastType = $request->broadcast_type;
         $successCount = 0;
         $errorCount = 0;
+        $totalRecipients = 0;
         $errorDetails = '';
-
+    
         if ($broadcastType === 'students' || $broadcastType === 'all') {
             $studentResult = $this->sendBulkMessages($request, 'students');
             $successCount += $studentResult['successCount'];
             $errorCount += $studentResult['errorCount'];
+            $totalRecipients += ($studentResult['successCount'] + $studentResult['errorCount']);
             $errorDetails .= (string) $studentResult['errorDetails'];
         }
-
+    
         if ($broadcastType === 'employees' || $broadcastType === 'all') {
             $employeeResult = $this->sendBulkMessages($request, 'employees');
             $successCount += $employeeResult['successCount'];
             $errorCount += $employeeResult['errorCount'];
+            $totalRecipients += ($employeeResult['successCount'] + $employeeResult['errorCount']);
             $errorDetails .= (string) $employeeResult['errorDetails'];
         }
-
+    
+        // Attempt to log the message
         $logId = $this->logMessage($request, $userId, 'immediate');
-
+    
+        if ($logId === null) {
+            // If logging failed, handle the error appropriately
+            session()->flash('error', 'Message sending failed due to logging issues.');
+            return redirect()->route('admin.messages');
+        }
+    
+        // Update the message log with the calculated values
+        $messageLog = MessageLog::find($logId);
+        if ($messageLog) {
+            $messageLog->total_recipients = $totalRecipients;
+            $messageLog->sent_count = $successCount;
+            $messageLog->failed_count = $errorCount;
+            $messageLog->sent_at = now();
+            $messageLog->status = 'Sent';
+            $messageLog->save();
+        }
+    
         if ($successCount > 0) {
             session()->flash('success', "Messages sent successfully to $successCount recipients." . $errorDetails);
         } else {
             session()->flash('error', "Failed to send messages to $errorCount recipients." . $errorDetails);
         }
-
-        // Update the message log with status
-        $this->updateMessageLogStatus($logId, 'Sent');
-    }
-
+    
+        return redirect()->route('admin.messages');
+    }    
+    
     protected function sendBulkMessages(Request $request, $recipientType)
     {
-        $query = $recipientType === 'students' ? Student::query() : Employee::query();
+        $query = $this->buildRecipientQuery($request, $recipientType);
+        $recipients = $query->get();
+        $formattedRecipients = [];
+        $invalidRecipients = [];
+        $errorDetails = '';
+
+        foreach ($recipients as $recipient) {
+            $number = $recipientType === 'students' ? $recipient->stud_contact : $recipient->emp_contact;
+            $number = preg_replace('/\D/', '', $number);
+            $number = substr($number, -10);
+
+            if (strlen($number) === 10) {
+                $formattedRecipients[] = '+63' . $number;
+            } else {
+                $invalidRecipients[] = [
+                    'name' => $recipientType === 'students' ? $recipient->stud_name : $recipient->emp_name,
+                    'number' => $number,
+                ];
+            }
+        }
+
+        if (empty($formattedRecipients)) {
+            return [
+                'successCount' => 0,
+                'errorCount' => count($invalidRecipients),
+                'errorDetails' => 'All numbers are invalid.'
+            ];
+        }
+
+        $message = $request->input('message');
+        $successCount = 0;
+        $errorCount = 0;
+        $batchErrors = [];
+
+        foreach (array_chunk($formattedRecipients, 1) as $batch) {
+            $response = $this->moviderService->sendBulkSMS($batch, $message);
+            if (isset($response->phone_number_list)) {
+                $successCount += count($response->phone_number_list);
+            } else {
+                $errorCount += count($batch);
+                $batchErrors[] = $response->error->description ?? 'Unknown error';
+            }
+        }
+
+        if (!empty($invalidRecipients)) {
+            $errorDetails .= ' Invalid numbers: ' . implode(', ', array_map(function ($recipient) {
+                return $recipient['name'] . ' (' . $recipient['number'] . ')';
+            }, $invalidRecipients)) . '.';
+        }
+
+        if (!empty($batchErrors)) {
+            $errorDetails .= ' ' . implode(', ', $batchErrors);
+        }
+
+        return [
+            'successCount' => $successCount,
+            'errorCount' => $errorCount,
+            'errorDetails' => $errorDetails
+        ];
+    }
+
+    protected function buildRecipientQuery(Request $request, $type)
+    {
+        $query = $type === 'students' ? Student::query() : Employee::query();
 
         if ($request->filled('campus') && $request->input('campus') !== 'all') {
             $query->where('campus_id', $request->input('campus'));
         }
 
-        if ($recipientType === 'students') {
+        if ($type === 'students') {
             if ($request->filled('college') && $request->input('college') !== 'all') {
                 $query->where('college_id', $request->input('college'));
             }
@@ -192,93 +276,38 @@ class MessageController extends Controller
             }
         }
 
-        $recipients = $query->get();
-        $formattedRecipients = [];
-        $invalidRecipients = [];
-
-        foreach ($recipients as $recipient) {
-            $number = $recipientType === 'students' ? $recipient->stud_contact : $recipient->emp_contact;
-
-            $number = preg_replace('/\D/', '', $number);
-            $number = substr($number, -10);
-
-            if (strlen($number) === 10) {
-                $formattedRecipients[] = '+63' . $number;
-            } else {
-                $invalidRecipients[] = [
-                    'name' => $recipientType === 'students' ? $recipient->stud_name : $recipient->emp_name,
-                    'number' => $number,
-                ];
-            }
-        }
-
-        if (empty($formattedRecipients) && !empty($invalidRecipients)) {
-            $errorMessage = 'The following numbers are invalid: ';
-            foreach ($invalidRecipients as $invalidRecipient) {
-                $errorMessage .= $invalidRecipient['name'] . ' (Number: ' . $invalidRecipient['number'] . '), ';
-            }
-            $errorMessage = rtrim($errorMessage, ', ');
-            return [
-                'successCount' => 0,
-                'errorCount' => count($invalidRecipients),
-                'errorDetails' => $errorMessage
-            ];
-        }
-
-        $message = $request->input('message');
-        $batchSize = 1;
-        $recipientBatches = array_chunk($formattedRecipients, $batchSize);
-        $successCount = 0;
-        $errorCount = 0;
-        $batchErrors = [];
-
-        foreach ($recipientBatches as $batch) {
-            $response = $this->moviderService->sendBulkSMS($batch, $message);
-
-            if (isset($response->phone_number_list) && !empty($response->phone_number_list)) {
-                $successCount += count($response->phone_number_list);
-            } else {
-                $errorCount += count($batch);
-                $batchErrors[] = $response->error->description ?? 'Unknown error';
-            }
-        }
-
-        $errorDetails = '';
-        if (!empty($invalidRecipients)) {
-            $errorDetails = ' The following numbers are invalid: ';
-            foreach ($invalidRecipients as $invalidRecipient) {
-                $errorDetails .= $invalidRecipient['name'] . ' (Number: ' . $invalidRecipient['number'] . '), ';
-            }
-            $errorDetails = rtrim($errorDetails, ', ');
-        }
-
-        if (!empty($batchErrors)) {
-            $errorDetails .= ' ' . implode(', ', $batchErrors);
-        }
-
-        return [
-            'successCount' => $successCount,
-            'errorCount' => $errorCount,
-            'errorDetails' => $errorDetails
-        ];
+        return $query;
     }
 
     protected function logMessage(Request $request, $userId, $scheduleType, $scheduledAt = null)
     {
-        $status = $scheduleType === 'immediate' ? 'Sent' : 'Pending'; // Set status based on schedule type
-
-        $log = MessageLog::create([
-            'user_id' => $userId,
-            'recipient_type' => $request->broadcast_type,
-            'content' => $request->message,
-            'schedule' => $scheduleType === 'scheduled' && $scheduledAt ? 'scheduled' : 'immediate',
-            'scheduled_at' => $scheduledAt,
-            'sent_at' => $scheduleType === 'immediate' ? now() : null, // Set sent_at for immediate messages
-            'status' => $status, // Save the status
-        ]);
-
-        return $log->id; // Return the log ID
+        try {
+            $status = $scheduleType === 'immediate' ? 'Sent' : 'Pending';
+    
+            $log = MessageLog::create([
+                'user_id' => $userId,
+                'recipient_type' => $request->broadcast_type,
+                'content' => $request->message,
+                'schedule' => $scheduleType === 'scheduled' && $scheduledAt ? 'scheduled' : 'immediate',
+                'scheduled_at' => $scheduledAt,
+                'sent_at' => $scheduleType === 'immediate' ? now() : null,
+                'status' => $status,
+            ]);
+    
+            return $log->id;
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            Log::error('Error creating message log: ' . $e->getMessage());
+    
+            // Optionally, notify the user (if appropriate for your application)
+            session()->flash('error', 'There was an issue logging the message. Please try again.');
+    
+            // Return null or handle it as needed in the calling method
+            return null;
+        }
     }
+    
+    
 
     protected function updateMessageLogStatus($logId, $status)
     {
@@ -294,15 +323,30 @@ class MessageController extends Controller
     {
         $data = $request->all();
         $data['scheduled_at'] = $scheduledAt;
-
-        // Log the message and get the log ID
+    
+        // Calculate the total recipients when scheduling the message
+        $totalRecipients = 0;
+        if ($request->broadcast_type === 'students' || $request->broadcast_type === 'all') {
+            $studentQuery = $this->buildRecipientQuery($request, 'students');
+            $totalRecipients += $studentQuery->count();
+        }
+        if ($request->broadcast_type === 'employees' || $request->broadcast_type === 'all') {
+            $employeeQuery = $this->buildRecipientQuery($request, 'employees');
+            $totalRecipients += $employeeQuery->count();
+        }
+    
+        // Log the message with total recipients
         $logId = $this->logMessage($request, $userId, 'scheduled', $scheduledAt);
-
+        $messageLog = MessageLog::find($logId);
+        $messageLog->total_recipients = $totalRecipients;
+        $messageLog->save();
+    
         // Pass the log ID to the job
         $data['log_id'] = $logId;
-
+    
         SendScheduledMessage::dispatch($data, $userId)->delay($scheduledAt);
     }
+    
 
     public function getMessageLogs()
     {

@@ -26,6 +26,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/send-messages', [MessageController::class, 'sendBulkMessages'])->name('admin.send-messages');
     Route::post('/admin/broadcast-employees', [MessageController::class, 'broadcastToEmployees'])->name('admin.broadcastToEmployees');
 
+    // Message Logs
+    Route::get('/admin/message-logs', [MessageController::class, 'getMessageLogs'])->name('admin.messageLogs');
+
     // Message Templates CRUD
     Route::get('/admin/app-management/message-templates', [MessageTemplateController::class, 'index'])->name('message_templates.index'); // List templates
     Route::get('/admin/app-management/message-templates/create', [MessageTemplateController::class, 'create'])->name('message_templates.create');
@@ -33,7 +36,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/app-management/message-templates/{id}/edit', [MessageTemplateController::class, 'edit'])->name('message_templates.edit');
     Route::put('/admin/app-management/message-templates/{id}', [MessageTemplateController::class, 'update'])->name('message_templates.update');
     Route::delete('/admin/app-management/message-templates/{id}', [MessageTemplateController::class, 'destroy'])->name('message_templates.destroy');
-
 
     // Analytics
     Route::get('/admin/analytics', [AdminController::class, 'analytics'])->name('admin.analytics');

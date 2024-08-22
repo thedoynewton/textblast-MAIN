@@ -144,11 +144,13 @@
                                 <th class="py-3 px-4 border-b font-medium text-gray-700">Recipient Type</th>
                                 <th class="py-3 px-4 border-b font-medium text-gray-700">Message</th>
                                 <th class="py-3 px-4 border-b font-medium text-gray-700">Message Type</th>
-                                <th class="py-3 px-4 border-b font-medium text-gray-700">Created At</th> <!-- New Header -->
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Created At</th>
                                 <th class="py-3 px-4 border-b font-medium text-gray-700">Scheduled At</th>
                                 <th class="py-3 px-4 border-b font-medium text-gray-700">Sent At</th>
                                 <th class="py-3 px-4 border-b font-medium text-gray-700">Status</th>
-                                <!-- Add Status Header -->
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Total Recipients</th>
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Successful Deliveries</th>
+                                <th class="py-3 px-4 border-b font-medium text-gray-700">Failed Messages</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -159,14 +161,16 @@
                                     <td class="py-3 px-4 border-b text-gray-600">{{ $log->content }}</td>
                                     <td class="py-3 px-4 border-b text-gray-600">{{ $log->schedule }}</td>
                                     <td class="py-3 px-4 border-b text-gray-600">
-                                        {{ $log->created_at->format('F j, Y g:i A') }} <!-- Display Created At -->
+                                        {{ $log->created_at->format('F j, Y g:i A') }}
                                     </td>
                                     <td class="py-3 px-4 border-b text-gray-600">
                                         {{ $log->scheduled_at ? $log->scheduled_at->format('F j, Y g:i A') : 'N/A' }}</td>
                                     <td class="py-3 px-4 border-b text-gray-600">
                                         {{ $log->sent_at ? $log->sent_at->format('F j, Y g:i A') : 'N/A' }}</td>
                                     <td class="py-3 px-4 border-b text-gray-600">{{ $log->status }}</td>
-                                    <!-- Display Status -->
+                                    <td class="py-3 px-4 border-b text-gray-600">{{ $log->total_recipients }}</td>
+                                    <td class="py-3 px-4 border-b text-gray-600">{{ $log->sent_count }}</td>
+                                    <td class="py-3 px-4 border-b text-gray-600">{{ $log->failed_count }}</td>
                                 </tr>
                             @endforeach
 

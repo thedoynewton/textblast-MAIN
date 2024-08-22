@@ -11,7 +11,6 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\MessageLog;
 use App\Models\Student;
 use App\Models\Employee;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class SendScheduledMessage implements ShouldQueue
@@ -20,6 +19,10 @@ class SendScheduledMessage implements ShouldQueue
 
     protected $data;
     protected $userId;
+
+    protected $totalRecipients = 0;
+    protected $successCount = 0;
+    protected $failedCount = 0;
 
     public function __construct($data, $userId)
     {
@@ -41,7 +44,7 @@ class SendScheduledMessage implements ShouldQueue
                 $this->sendIndividualMessages($moviderService, 'employees');
             }
 
-            // Update the status to "Sent" after all messages are sent
+            // After sending messages, update the message log with the final counts
             $this->updateMessageLogStatus();
         } catch (\Exception $e) {
             Log::error('Error sending scheduled message: ' . $e->getMessage());
@@ -83,6 +86,7 @@ class SendScheduledMessage implements ShouldQueue
         }
 
         $recipients = $query->get();
+        $this->totalRecipients += $recipients->count();
         $invalidRecipients = [];
 
         foreach ($recipients as $recipient) {
@@ -99,14 +103,18 @@ class SendScheduledMessage implements ShouldQueue
                     $response = $moviderService->sendBulkSMS([$formattedNumber], $this->data['message']);
 
                     if (isset($response->phone_number_list) && !empty($response->phone_number_list)) {
+                        $this->successCount += count($response->phone_number_list);
                         Log::info("Message sent successfully to: {$formattedNumber}");
                     } else {
+                        $this->failedCount++;
                         Log::error("Failed to send message to: {$formattedNumber} - Error: " . ($response->error->description ?? 'Unknown error'));
                     }
                 } catch (\Exception $e) {
+                    $this->failedCount++;
                     Log::error("Exception sending message to: {$formattedNumber} - " . $e->getMessage());
                 }
             } else {
+                $this->failedCount++;
                 $invalidRecipients[] = [
                     'name' => $recipientType === 'students' ? $recipient->stud_name : $recipient->emp_name,
                     'number' => $number,
@@ -126,6 +134,9 @@ class SendScheduledMessage implements ShouldQueue
         if ($messageLog) {
             $messageLog->sent_at = now(); // Update the sent_at timestamp
             $messageLog->status = 'Sent'; // Update the status to 'Sent'
+            $messageLog->total_recipients = $this->totalRecipients; // Set the total recipients
+            $messageLog->sent_count = $this->successCount; // Set the number of successful deliveries
+            $messageLog->failed_count = $this->failedCount; // Set the number of failed messages
             $messageLog->save();
         } else {
             Log::error('MessageLog not found for ID: ' . $this->data['log_id']);

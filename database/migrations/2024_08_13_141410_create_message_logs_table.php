@@ -22,6 +22,9 @@ class CreateMessageLogsTable extends Migration
             $table->timestamp('scheduled_at')->nullable();
             $table->timestamp('sent_at')->nullable(); // Place sent_at before status
             $table->string('status')->default('Pending'); // Default status as Pending
+            $table->integer('total_recipients')->default(0); // Add total_recipients field
+            $table->integer('sent_count')->default(0); // Add sent_count field
+            $table->integer('failed_count')->default(0); // Add failed_count field
             $table->timestamps();
 
             // Foreign key constraint

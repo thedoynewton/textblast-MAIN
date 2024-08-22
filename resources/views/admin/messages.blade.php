@@ -7,6 +7,29 @@
     @if (session('success'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
             {{ session('success') }}
+
+            <!-- Progress Bar for Sending Messages -->
+            @if (session('logId'))
+                <div id="progress-container" class="mt-4">
+                    <div class="relative pt-1">
+                        <div class="flex mb-2 items-center justify-between">
+                            <div>
+                                <span id="progress-label" class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                                    0% Sent
+                                </span>
+                            </div>
+                            <div class="text-right">
+                                <span id="progress-percent" class="text-xs font-semibold inline-block text-blue-600">
+                                    0%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
+                            <div id="progress-bar" style="width:0%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"></div>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     @endif
 
@@ -118,7 +141,12 @@
                 <span id="total_recipients" class="block text-sm font-medium text-gray-700">Total recipients: </span>
             </div>
 
-
+            <!-- Batch Size Input -->
+            <div class="mb-4">
+                <label for="batch_size" class="block text-sm font-medium text-gray-700">Batch Size</label>
+                <input type="number" name="batch_size" id="batch_size" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm" value="1" min="1">
+                <small class="text-gray-600">Set the number of messages to send at once. Default is 1.</small>
+            </div>
 
             <!-- Message Template Selection -->
             <div class="mb-4">
@@ -229,17 +257,33 @@
                     });
                 });
 
-                // Call updateRecipientCount whenever filters change
-                document.getElementById('campus').addEventListener('change', updateRecipientCount);
-                document.getElementById('college').addEventListener('change', updateRecipientCount);
-                document.getElementById('program').addEventListener('change', updateRecipientCount);
-                document.getElementById('year').addEventListener('change', updateRecipientCount);
-                document.getElementById('office').addEventListener('change', updateRecipientCount);
-                document.getElementById('status').addEventListener('change', updateRecipientCount);
-                document.getElementById('type').addEventListener('change', updateRecipientCount);
-
                 // Initialize the recipient count on page load
                 updateRecipientCount();
+
+                // Polling for progress updates if a logId is present
+                @if(session('logId'))
+                    const logId = {{ session('logId') }};
+                    const pollInterval = 5000; // Poll every 5 seconds
+
+                    function updateProgress() {
+                        fetch(`/api/progress/${logId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                const percentageSent = data.percentageSent;
+                                document.getElementById('progress-label').textContent = `${percentageSent}% Sent`;
+                                document.getElementById('progress-percent').textContent = `${percentageSent}%`;
+                                document.getElementById('progress-bar').style.width = `${percentageSent}%`;
+
+                                if (percentageSent < 100) {
+                                    setTimeout(updateProgress, pollInterval);
+                                }
+                            })
+                            .catch(error => console.error('Error fetching progress:', error));
+                    }
+
+                    // Start polling
+                    updateProgress();
+                @endif
             });
 
             function toggleFilters() {

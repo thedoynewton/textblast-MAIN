@@ -112,17 +112,65 @@ class MessageController extends Controller
         $broadcastType = $request->broadcast_type;
         $scheduleType = $request->schedule;
         $scheduledDate = $request->scheduled_date;
+        $batchSize = $request->input('batch_size', 1); // Get batch size from the request
         $userId = Auth::id();
 
         if ($scheduleType === 'scheduled' && $scheduledDate) {
             $scheduledAt = Carbon::parse($scheduledDate);
-            $this->scheduleMessage($request, $scheduledAt, $userId);
+            $this->scheduleMessage($request, $scheduledAt, $userId, $batchSize);
 
             return redirect()->route('admin.messages')->with('success', 'Message scheduled successfully.');
         } else {
-            $this->sendMessageImmediately($request, $userId);
+            // Variables to track the counts
+            $successCount = 0;
+            $errorCount = 0;
+            $totalRecipients = 0;
+            $errorDetails = '';
 
-            return redirect()->route('admin.messages')->with('success', 'Messages sent successfully.');
+            // Handle sending messages to students
+            if ($broadcastType === 'students' || $broadcastType === 'all') {
+                $studentResult = $this->sendBulkMessages($request, 'students', $batchSize);
+                $successCount += $studentResult['successCount'];
+                $errorCount += $studentResult['errorCount'];
+                $totalRecipients += ($studentResult['successCount'] + $studentResult['errorCount']);
+                $errorDetails .= (string) $studentResult['errorDetails'];
+            }
+
+            // Handle sending messages to employees
+            if ($broadcastType === 'employees' || $broadcastType === 'all') {
+                $employeeResult = $this->sendBulkMessages($request, 'employees', $batchSize);
+                $successCount += $employeeResult['successCount'];
+                $errorCount += $employeeResult['errorCount'];
+                $totalRecipients += ($employeeResult['successCount'] + $employeeResult['errorCount']);
+                $errorDetails .= (string) $employeeResult['errorDetails'];
+            }
+
+            // Calculate the percentage of successful deliveries
+            $percentageSent = $totalRecipients > 0 ? ($successCount / $totalRecipients) * 100 : 0;
+
+            // Log the message and update the message log
+            $logId = $this->logMessage($request, $userId, 'immediate');
+            if ($logId !== null) {
+                $messageLog = MessageLog::find($logId);
+                if ($messageLog) {
+                    $messageLog->total_recipients = $totalRecipients;
+                    $messageLog->sent_count = $successCount;
+                    $messageLog->failed_count = $errorCount;
+                    $messageLog->sent_at = now();
+                    $messageLog->status = 'Sent';
+                    $messageLog->save();
+                }
+            } else {
+                // If logging failed, handle the error appropriately
+                session()->flash('error', 'Message sending failed due to logging issues.');
+                return redirect()->route('admin.messages');
+            }
+
+            // Store the log ID and the success message in the session
+            session()->flash('logId', $logId);
+            session()->flash('success', "Messages sent successfully to $successCount recipients out of $totalRecipients.");
+
+            return redirect()->route('admin.messages');
         }
     }
 
@@ -133,32 +181,38 @@ class MessageController extends Controller
         $errorCount = 0;
         $totalRecipients = 0;
         $errorDetails = '';
-    
+        $batchSize = $request->input('batch_size', 1); // Default to 1 if not set
+
         if ($broadcastType === 'students' || $broadcastType === 'all') {
-            $studentResult = $this->sendBulkMessages($request, 'students');
+            $studentResult = $this->sendBulkMessages($request, 'students', $batchSize);
             $successCount += $studentResult['successCount'];
             $errorCount += $studentResult['errorCount'];
             $totalRecipients += ($studentResult['successCount'] + $studentResult['errorCount']);
             $errorDetails .= (string) $studentResult['errorDetails'];
         }
-    
+
         if ($broadcastType === 'employees' || $broadcastType === 'all') {
-            $employeeResult = $this->sendBulkMessages($request, 'employees');
+            $employeeResult = $this->sendBulkMessages($request, 'employees', $batchSize);
             $successCount += $employeeResult['successCount'];
             $errorCount += $employeeResult['errorCount'];
             $totalRecipients += ($employeeResult['successCount'] + $employeeResult['errorCount']);
             $errorDetails .= (string) $employeeResult['errorDetails'];
         }
-    
+
+        // Calculate the progress percentage
+        $progress = $totalRecipients > 0 ? ($successCount / $totalRecipients) * 100 : 0;
+
+        // Store the progress in the session
+        session()->flash('progress', $progress);
+
         // Attempt to log the message
         $logId = $this->logMessage($request, $userId, 'immediate');
-    
+
         if ($logId === null) {
-            // If logging failed, handle the error appropriately
             session()->flash('error', 'Message sending failed due to logging issues.');
             return redirect()->route('admin.messages');
         }
-    
+
         // Update the message log with the calculated values
         $messageLog = MessageLog::find($logId);
         if ($messageLog) {
@@ -169,17 +223,17 @@ class MessageController extends Controller
             $messageLog->status = 'Sent';
             $messageLog->save();
         }
-    
+
         if ($successCount > 0) {
             session()->flash('success', "Messages sent successfully to $successCount recipients." . $errorDetails);
         } else {
             session()->flash('error', "Failed to send messages to $errorCount recipients." . $errorDetails);
         }
-    
+
         return redirect()->route('admin.messages');
-    }    
-    
-    protected function sendBulkMessages(Request $request, $recipientType)
+    }
+
+    protected function sendBulkMessages(Request $request, $recipientType, $batchSize)
     {
         $query = $this->buildRecipientQuery($request, $recipientType);
         $recipients = $query->get();
@@ -215,7 +269,7 @@ class MessageController extends Controller
         $errorCount = 0;
         $batchErrors = [];
 
-        foreach (array_chunk($formattedRecipients, 1) as $batch) {
+        foreach (array_chunk($formattedRecipients, $batchSize) as $batch) {
             $response = $this->moviderService->sendBulkSMS($batch, $message);
             if (isset($response->phone_number_list)) {
                 $successCount += count($response->phone_number_list);
@@ -283,7 +337,7 @@ class MessageController extends Controller
     {
         try {
             $status = $scheduleType === 'immediate' ? 'Sent' : 'Pending';
-    
+
             $log = MessageLog::create([
                 'user_id' => $userId,
                 'recipient_type' => $request->broadcast_type,
@@ -293,21 +347,19 @@ class MessageController extends Controller
                 'sent_at' => $scheduleType === 'immediate' ? now() : null,
                 'status' => $status,
             ]);
-    
+
             return $log->id;
         } catch (\Exception $e) {
             // Log the error for debugging
             Log::error('Error creating message log: ' . $e->getMessage());
-    
+
             // Optionally, notify the user (if appropriate for your application)
             session()->flash('error', 'There was an issue logging the message. Please try again.');
-    
+
             // Return null or handle it as needed in the calling method
             return null;
         }
     }
-    
-    
 
     protected function updateMessageLogStatus($logId, $status)
     {
@@ -319,11 +371,12 @@ class MessageController extends Controller
         }
     }
 
-    protected function scheduleMessage(Request $request, Carbon $scheduledAt, $userId)
+    protected function scheduleMessage(Request $request, Carbon $scheduledAt, $userId, $batchSize)
     {
         $data = $request->all();
         $data['scheduled_at'] = $scheduledAt;
-    
+        $data['batch_size'] = $batchSize; // Include batch size in the data
+
         // Calculate the total recipients when scheduling the message
         $totalRecipients = 0;
         if ($request->broadcast_type === 'students' || $request->broadcast_type === 'all') {
@@ -334,19 +387,18 @@ class MessageController extends Controller
             $employeeQuery = $this->buildRecipientQuery($request, 'employees');
             $totalRecipients += $employeeQuery->count();
         }
-    
+
         // Log the message with total recipients
         $logId = $this->logMessage($request, $userId, 'scheduled', $scheduledAt);
         $messageLog = MessageLog::find($logId);
         $messageLog->total_recipients = $totalRecipients;
         $messageLog->save();
-    
-        // Pass the log ID to the job
+
+        // Pass the log ID and batch size to the job
         $data['log_id'] = $logId;
-    
+
         SendScheduledMessage::dispatch($data, $userId)->delay($scheduledAt);
     }
-    
 
     public function getMessageLogs()
     {
@@ -415,5 +467,30 @@ class MessageController extends Controller
         }
 
         return response()->json(['total' => $total ?: 0]); // Return 0 if no recipients are found
+    }
+
+    public function getProgress($logId)
+    {
+        $log = MessageLog::find($logId);
+        if ($log) {
+            $totalRecipients = $log->total_recipients;
+            $sentCount = $log->sent_count;
+            $failedCount = $log->failed_count;
+            $percentageSent = $totalRecipients > 0 ? ($sentCount + $failedCount) / $totalRecipients * 100 : 0;
+
+            return response()->json([
+                'percentageSent' => round($percentageSent, 2),
+                'sentCount' => $sentCount,
+                'failedCount' => $failedCount,
+                'totalRecipients' => $totalRecipients,
+            ]);
+        }
+
+        return response()->json([
+            'percentageSent' => 0,
+            'sentCount' => 0,
+            'failedCount' => 0,
+            'totalRecipients' => 0,
+        ]);
     }
 }

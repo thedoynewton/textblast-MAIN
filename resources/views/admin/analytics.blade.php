@@ -37,8 +37,9 @@
             </div>
             <div class="bg-purple-100 p-4 rounded-lg">
                 <h2 class="text-xl font-bold">Remaining Balance</h2>
-                <p class="text-2xl font-semibold" id="remaining-balance">0</p>
+                <p class="text-2xl font-semibold" id="remaining-balance">{{ $balance }}</p>
             </div>
+            
         </div>
 
         <!-- Chart View -->

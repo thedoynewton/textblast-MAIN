@@ -15,6 +15,7 @@ use App\Models\Major;
 use App\Models\MessageLog;
 use App\Models\MessageTemplate;
 use App\Models\Type;
+use App\Services\MoviderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
@@ -66,10 +67,17 @@ class AdminController extends Controller
         return $response;
     }
 
-    public function analytics()
+    public function analytics(MoviderService $moviderService)
     {
-        return view('admin.analytics');
+        $balanceData = $moviderService->getBalance();
+        $balance = $balanceData['balance'] ?? 0;
+
+        // Log the balance value
+        Log::info('Movider Balance:', ['balance' => $balance]);
+
+        return view('admin.analytics', compact('balance'));
     }
+    
 
     public function userManagement()
     {

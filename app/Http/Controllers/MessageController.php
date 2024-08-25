@@ -493,4 +493,86 @@ class MessageController extends Controller
             'totalRecipients' => 0,
         ]);
     }
+
+    public function getAnalyticsData(Request $request)
+    {
+        try {
+            $dateRange = $request->query('date_range', 'last_7_days');
+            $startDate = $this->getDateRange($dateRange);
+    
+            // Fetching data from MessageLog
+            $totalSent = MessageLog::where('status', 'Sent')
+                ->where('created_at', '>=', $startDate)
+                ->sum('sent_count');
+    
+            $totalFailed = MessageLog::where('status', 'Sent')
+                ->where('created_at', '>=', $startDate)
+                ->sum('failed_count');
+    
+            $totalScheduled = MessageLog::where('schedule', 'scheduled')
+                ->where('created_at', '>=', $startDate)
+                ->count();
+    
+            $totalImmediate = MessageLog::where('schedule', 'immediate')
+                ->where('created_at', '>=', $startDate)
+                ->count();
+    
+            // Fetch balance from MoviderService
+            $balanceData = $this->moviderService->getBalance();
+            $balance = $balanceData['balance'] ?? 0;
+    
+            // Generate chart data
+            $chartData = $this->getChartData($startDate);
+    
+            return response()->json([
+                'total_sent' => $totalSent,
+                'total_failed' => $totalFailed,
+                'total_scheduled' => $totalScheduled,
+                'total_immediate' => $totalImmediate,
+                'balance' => $balance,
+                'chart_data' => $chartData,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching analytics data: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch analytics data'], 500);
+        }
+    }
+
+    private function getChartData($startDate)
+    {
+        $logs = MessageLog::selectRaw("CONVERT(DATE, created_at) as created_date, SUM(sent_count) as total_sent")
+                          ->where('created_at', '>=', $startDate)
+                          ->groupByRaw('CONVERT(DATE, created_at)')
+                          ->orderByRaw('CONVERT(DATE, created_at) asc')
+                          ->get();
+    
+        $labels = [];
+        $data = [];
+    
+        foreach ($logs as $log) {
+            $labels[] = $log->created_date;
+            $data[] = $log->total_sent;
+        }
+    
+        Log::info("Fetched chart data for start date {$startDate}: ", compact('labels', 'data'));
+    
+        return [
+            'labels' => $labels,
+            'data' => $data,
+        ];
+    }
+    
+    private function getDateRange($dateRange)
+    {
+        switch ($dateRange) {
+            case 'last_7_days':
+                return now()->subDays(7);
+            case 'last_30_days':
+                return now()->subDays(30);
+            case 'last_3_months':
+                return now()->subMonths(3);
+            default:
+                return now()->subDays(7);
+        }
+    }
 }

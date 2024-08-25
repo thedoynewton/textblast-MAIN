@@ -20,17 +20,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
     // Messages
-    Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages');
+    Route::get('/admin/messages', [MessageController::class, 'showMessagesForm'])->name('admin.messages');
     Route::post('/admin/broadcast', [MessageController::class, 'broadcastToRecipients'])->name('admin.broadcastToRecipients');
     Route::post('/admin/review-message', [MessageController::class, 'reviewMessage'])->name('admin.reviewMessage');
     Route::post('/admin/send-messages', [MessageController::class, 'sendBulkMessages'])->name('admin.send-messages');
-    Route::post('/admin/broadcast-employees', [MessageController::class, 'broadcastToEmployees'])->name('admin.broadcastToEmployees');
 
     // Message Logs
     Route::get('/admin/message-logs', [MessageController::class, 'getMessageLogs'])->name('admin.messageLogs');
 
     // Message Templates CRUD
-    Route::get('/admin/app-management/message-templates', [MessageTemplateController::class, 'index'])->name('message_templates.index'); // List templates
+    Route::get('/admin/app-management/message-templates', [MessageTemplateController::class, 'index'])->name('message_templates.index');
     Route::get('/admin/app-management/message-templates/create', [MessageTemplateController::class, 'create'])->name('message_templates.create');
     Route::post('/admin/app-management/message-templates', [MessageTemplateController::class, 'store'])->name('message_templates.store');
     Route::get('/admin/app-management/message-templates/{id}/edit', [MessageTemplateController::class, 'edit'])->name('message_templates.edit');
@@ -70,4 +69,4 @@ Route::get('/api/filters/types/{campusId}/{officeId}/{statusId?}', [FilterContro
 Route::get('/api/contacts', [FilterController::class, 'getContacts']);
 Route::get('/api/recipients/count', [MessageController::class, 'getRecipientCount']);
 Route::get('/api/progress/{logId}', [MessageController::class, 'getProgress']);
-
+Route::get('/api/analytics', [MessageController::class, 'getAnalyticsData'])->name('api.analytics');

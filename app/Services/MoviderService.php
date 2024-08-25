@@ -30,4 +30,26 @@ class MoviderService
 
         return json_decode($response->getBody()->getContents());
     }
+    
+    // Corrected method to fetch account balance using POST request
+    public function getBalance()
+    {
+        try {
+            $response = $this->client->post('balance', [
+                'form_params' => [
+                    'api_key' => env('MOVIDER_API_KEY'),
+                    'api_secret' => env('MOVIDER_API_SECRET'),
+                ],
+                'headers' => [
+                    'accept' => 'application/json',
+                    'content-type' => 'application/x-www-form-urlencoded',
+                ],
+            ]);
+
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (\Exception $e) {
+            // Handle the exception and return a default value
+            return ['balance' => 0, 'error' => $e->getMessage()];
+        }
+    }
 }

@@ -24,6 +24,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/broadcast', [MessageController::class, 'broadcastToRecipients'])->name('admin.broadcastToRecipients');
     Route::post('/admin/review-message', [MessageController::class, 'reviewMessage'])->name('admin.reviewMessage');
     Route::post('/admin/send-messages', [MessageController::class, 'sendBulkMessages'])->name('admin.send-messages');
+    Route::post('/admin/messages/cancel/{id}', [MessageController::class, 'cancelScheduledMessage'])->name('admin.cancelScheduledMessage');
 
     // Message Logs
     Route::get('/admin/message-logs', [MessageController::class, 'getMessageLogs'])->name('admin.messageLogs');

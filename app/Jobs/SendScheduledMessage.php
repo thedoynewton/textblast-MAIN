@@ -32,6 +32,20 @@ class SendScheduledMessage implements ShouldQueue
 
     public function handle(MoviderService $moviderService)
     {
+        // Fetch the message log to check its status before proceeding
+        $messageLog = MessageLog::find($this->data['log_id']);
+
+        if (!$messageLog) {
+            Log::error("MessageLog not found for ID: {$this->data['log_id']}");
+            return;
+        }
+
+        if ($messageLog->status === 'Cancelled') {
+            // If the message was cancelled, log this and stop the job
+            Log::info("Scheduled message [ID: {$this->data['log_id']}] has been cancelled. Aborting sending process.");
+            return;
+        }
+
         $broadcastType = $this->data['broadcast_type'];
 
         try {
@@ -131,13 +145,15 @@ class SendScheduledMessage implements ShouldQueue
     {
         $messageLog = MessageLog::where('id', $this->data['log_id'])->first();
 
-        if ($messageLog) {
+        if ($messageLog && $messageLog->status !== 'Cancelled') {
             $messageLog->sent_at = now(); // Update the sent_at timestamp
             $messageLog->status = 'Sent'; // Update the status to 'Sent'
             $messageLog->total_recipients = $this->totalRecipients; // Set the total recipients
             $messageLog->sent_count = $this->successCount; // Set the number of successful deliveries
             $messageLog->failed_count = $this->failedCount; // Set the number of failed messages
             $messageLog->save();
+        } elseif ($messageLog->status === 'Cancelled') {
+            Log::info("Message [ID: {$messageLog->id}] was cancelled. Not updating status to Sent.");
         } else {
             Log::error('MessageLog not found for ID: ' . $this->data['log_id']);
         }

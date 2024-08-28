@@ -17,14 +17,16 @@ class MessageLog extends Model
         'scheduled_at',
         'sent_at',
         'status',
-        'total_recipients',       // Add total_recipients field
-        'sent_count',             // Add sent_count field
-        'failed_count',           // Add failed_count field
+        'total_recipients',       // Field to track the total number of recipients
+        'sent_count',             // Field to track the number of successfully sent messages
+        'failed_count',           // Field to track the number of failed messages
+        'cancelled_at',           // Field to track the timestamp when a message was cancelled
     ];
 
     protected $casts = [
         'scheduled_at' => 'datetime',
         'sent_at' => 'datetime',
+        'cancelled_at' => 'datetime',  // Cast cancelled_at to datetime
     ];
 
     /**
@@ -57,5 +59,15 @@ class MessageLog extends Model
     public function getIsFullyDeliveredAttribute()
     {
         return $this->total_recipients === $this->sent_count;
+    }
+
+    /**
+     * Check if the message was cancelled.
+     *
+     * @return bool
+     */
+    public function getIsCancelledAttribute()
+    {
+        return !is_null($this->cancelled_at);
     }
 }

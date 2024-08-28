@@ -31,8 +31,6 @@
         <!-- Hidden Input to Store Selected Tab -->
         <input type="hidden" name="selected_tab" id="selected_tab" value="contacts">
 
-
-
         <!-- Contacts Tab -->
         <div id="contacts" class="tab-content">
             <!-- Filters Selection (Updated to be inline) -->
@@ -145,10 +143,12 @@
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Created At</th>
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Scheduled At</th>
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Sent At</th>
+                            <th class="py-3 px-4 border-b font-medium text-gray-700">Cancelled At</th> <!-- Added Cancelled At column -->
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Status</th>
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Total Recipients</th>
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Successful Deliveries</th>
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Failed Messages</th>
+                            <th class="py-3 px-4 border-b font-medium text-gray-700">Actions</th> <!-- Added Actions column -->
                         </tr>
                     </thead>
                     <tbody>
@@ -158,24 +158,31 @@
                             <td class="py-3 px-4 border-b text-gray-600">{{ $log->recipient_type }}</td>
                             <td class="py-3 px-4 border-b text-gray-600">{{ $log->content }}</td>
                             <td class="py-3 px-4 border-b text-gray-600">{{ $log->schedule }}</td>
-                            <td class="py-3 px-4 border-b text-gray-600">
-                                {{ $log->created_at->format('F j, Y g:i A') }}
-                            </td>
-                            <td class="py-3 px-4 border-b text-gray-600">
-                                {{ $log->scheduled_at ? $log->scheduled_at->format('F j, Y g:i A') : 'N/A' }}
-                            </td>
-                            <td class="py-3 px-4 border-b text-gray-600">
-                                {{ $log->sent_at ? $log->sent_at->format('F j, Y g:i A') : 'N/A' }}
-                            </td>
+                            <td class="py-3 px-4 border-b text-gray-600">{{ $log->created_at->format('F j, Y g:i A') }}</td>
+                            <td class="py-3 px-4 border-b text-gray-600">{{ $log->scheduled_at ? $log->scheduled_at->format('F j, Y g:i A') : 'N/A' }}</td>
+                            <td class="py-3 px-4 border-b text-gray-600">{{ $log->sent_at ? $log->sent_at->format('F j, Y g:i A') : 'N/A' }}</td>
+                            <td class="py-3 px-4 border-b text-gray-600">{{ $log->cancelled_at ? $log->cancelled_at->format('F j, Y g:i A') : 'N/A' }}</td> <!-- Display Cancelled At -->
                             <td class="py-3 px-4 border-b text-gray-600">{{ $log->status }}</td>
                             <td class="py-3 px-4 border-b text-gray-600">{{ $log->total_recipients }}</td>
                             <td class="py-3 px-4 border-b text-gray-600">{{ $log->sent_count }}</td>
                             <td class="py-3 px-4 border-b text-gray-600">{{ $log->failed_count }}</td>
+                            <td class="py-3 px-4 border-b text-gray-600">
+                                @if ($log->status === 'Pending')
+                                    <form action="{{ route('admin.cancelScheduledMessage', $log->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="text-red-500 hover:underline">Cancel</button>
+                                    </form>
+                                @else
+                                    <span class="text-gray-400">Cannot Cancel</span>
+                                @endif
+                            </td>
                         </tr>
                         @endforeach
 
                         @if ($messageLogs->isEmpty())
-                        <p class="text-center text-gray-500 mt-4">No message logs found.</p>
+                        <tr>
+                            <td colspan="13" class="text-center py-4 text-gray-500">No message logs found.</td>
+                        </tr>
                         @endif
                     </tbody>
                 </table>

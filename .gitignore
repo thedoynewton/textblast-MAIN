@@ -18,3 +18,9 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# Ignore Docker-related files
+.dockerignore
+compose.yaml
+Dockerfile
+README.Docker.md

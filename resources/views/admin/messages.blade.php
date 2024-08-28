@@ -3,432 +3,202 @@
 @section('title', 'Messages')
 
 @section('content')
-    <!-- Display Success or Error Messages -->
-    @if (session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {{ session('success') }}
+<!-- Display Success or Error Messages -->
+@if (session('success'))
+<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+    {{ session('success') }}
 
-            <!-- Progress Bar for Sending Messages -->
-            @if (session('logId'))
-                <div id="progress-container" class="mt-4">
-                    <div class="relative pt-1">
-                        <div class="flex mb-2 items-center justify-between">
-                            <div>
-                                <span id="progress-label" class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
-                                    0% Sent
-                                </span>
-                            </div>
-                            <div class="text-right">
-                                <span id="progress-percent" class="text-xs font-semibold inline-block text-blue-600">
-                                    0%
-                                </span>
-                            </div>
-                        </div>
-                        <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
-                            <div id="progress-bar" style="width:0%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"></div>
-                        </div>
-                    </div>
+    <!-- Progress Bar for Sending Messages -->
+    @if (session('logId'))
+    <div id="progress-container" data-log-id="{{ session('logId') }}" class="mt-4">
+        <div class="relative pt-1">
+            <div class="flex mb-2 items-center justify-between">
+                <div>
+                    <span id="progress-label" class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                        0% Sent
+                    </span>
                 </div>
-            @endif
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {{ session('error') }}
-        </div>
-    @endif
-
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <!-- Broadcasting Form -->
-        <form action="{{ route('admin.reviewMessage') }}" method="POST">
-            @csrf
-
-            <!-- Broadcast Type Selection as Tabs -->
-            <div class="mb-4">
-                <div class="flex border-b border-gray-300">
-                    <button type="button" class="tab-button px-4 py-2 text-sm font-medium focus:outline-none"
-                        data-value="all">ALL</button>
-                    <button type="button" class="tab-button px-4 py-2 text-sm font-medium focus:outline-none"
-                        data-value="students">STUDENTS</button>
-                    <button type="button" class="tab-button px-4 py-2 text-sm font-medium focus:outline-none"
-                        data-value="employees">EMPLOYEES</button>
+                <div class="text-right">
+                    <span id="progress-percent" class="text-xs font-semibold inline-block text-blue-600">
+                        0%
+                    </span>
                 </div>
-                <input type="hidden" name="broadcast_type" id="broadcast_type"
-                    value="{{ request('broadcast_type', 'all') }}">
             </div>
+            <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
+                <div id="progress-bar" style="width:0%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"></div>
+            </div>
+        </div>
+    </div>
+    @endif
+</div>
+@endif
 
-            <!-- Campus Selection (Always Visible) -->
-            <div class="mb-4" id="campus_filter">
-                <label for="campus" class="block text-sm font-medium text-gray-700">Campus</label>
-                <select name="campus" id="campus" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
-                    <option value="" disabled selected>Select Campus</option>
-                    <option value="all">All Campuses</option>
-                    @foreach ($campuses as $campus)
+@if (session('error'))
+<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    {{ session('error') }}
+</div>
+@endif
+
+<div class="bg-white p-6 rounded-lg shadow-md">
+    <!-- Broadcasting Form -->
+    <form action="{{ route('admin.reviewMessage') }}" method="POST">
+        @csrf
+
+        <!-- Broadcast Type Selection as Tabs -->
+        <div class="mb-4">
+            <div class="flex border-b border-gray-300">
+                <button type="button" class="tab-button px-4 py-2 text-sm font-medium focus:outline-none"
+                    data-value="all">ALL</button>
+                <button type="button" class="tab-button px-4 py-2 text-sm font-medium focus:outline-none"
+                    data-value="students">STUDENTS</button>
+                <button type="button" class="tab-button px-4 py-2 text-sm font-medium focus:outline-none"
+                    data-value="employees">EMPLOYEES</button>
+            </div>
+            <input type="hidden" name="broadcast_type" id="broadcast_type" value="{{ request('broadcast_type', 'all') }}">
+        </div>
+
+        <!-- Filters Container -->
+        <div class="mb-4">
+            <div class="flex space-x-4 mb-4">
+
+                <!-- Campus Selection (Always Visible) -->
+                <div class="flex-grow" id="campus_filter">
+                    <label for="campus" class="block text-sm font-medium">Campus</label>
+                    <select name="campus" id="campus" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
+                        <option value="" disabled selected>Select Campus</option>
+                        <option value="all">All Campuses</option>
+                        @foreach ($campuses as $campus)
                         <option value="{{ $campus->campus_id }}">{{ $campus->campus_name }}</option>
-                    @endforeach
-                </select>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Message Template Selection -->
+                <div class="flex-grow">
+                    <label for="template" class="block text-sm font-medium">Select Template</label>
+                    <select id="template" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
+                        <option value="" disabled selected>Select a Template</option>
+                        @foreach ($messageTemplates as $template)
+                        <option value="{{ $template->content }}">{{ $template->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
+            <!-- End: class flex space-x-4 mb-4 -->
 
             <!-- Student-specific Filters -->
-            <div id="student_filters" style="display: none;">
-                <div class="mb-4">
-                    <label for="college" class="block text-sm font-medium text-gray-700">College</label>
+            <div class="flex space-x-4 mb-4" id="student_filters" style="display: none;">
+                <div class="w-1/3">
+                    <label for="college" class="block text-sm font-medium">College</label>
                     <select name="college" id="college"
-                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm"
+                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2"
                         onchange="updateProgramDropdown()">
                         <option value="" disabled selected>Select College</option>
                         <option value="all">All Colleges</option>
                     </select>
                 </div>
 
-                <div class="mb-4">
-                    <label for="program" class="block text-sm font-medium text-gray-700">Academic Program</label>
+                <div class="w-1/3">
+                    <label for="program" class="block text-sm font-medium">Academic Program</label>
                     <select name="program" id="program"
-                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
                         <option value="" disabled selected>Select Program</option>
                         <option value="all">All Programs</option>
                     </select>
                 </div>
 
-                <div class="mb-4">
-                    <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
+                <div class="w-1/3">
+                    <label for="year" class="block text-sm font-medium">Year</label>
                     <select name="year" id="year"
-                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
                         <option value="" disabled selected>Select Year</option>
                         <option value="all">All Year Levels</option>
                         @foreach ($years as $year)
-                            <option value="{{ $year->year_id }}">{{ $year->year_name }}</option>
+                        <option value="{{ $year->year_id }}">{{ $year->year_name }}</option>
                         @endforeach
                     </select>
                 </div>
             </div>
 
             <!-- Employee-specific Filters -->
-            <div id="employee_filters" style="display: none;">
-                <div class="mb-4">
-                    <label for="office" class="block text-sm font-medium text-gray-700">Office</label>
+            <div class="flex space-x-4 mb-4" id="employee_filters" style="display: none;">
+                <div class="w-1/3">
+                    <label for="office" class="block text-sm font-medium">Office</label>
                     <select name="office" id="office"
-                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm"
+                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2"
                         onchange="updateTypeDropdown()">
                         <option value="" disabled selected>Select Office</option>
                         <option value="all">All Offices</option>
                     </select>
                 </div>
 
-                <div class="mb-4">
-                    <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                <div class="w-1/3">
+                    <label for="status" class="block text-sm font-medium">Status</label>
                     <select name="status" id="status"
-                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm"
+                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2"
                         onchange="updateTypeDropdown()">
                         <option value="" disabled selected>Select Status</option>
                         <option value="all">All Statuses</option>
                     </select>
                 </div>
 
-                <div class="mb-4">
-                    <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
+                <div class="w-1/3">
+                    <label for="type" class="block text-sm font-medium">Type</label>
                     <select name="type" id="type"
-                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
                         <option value="" disabled selected>Select Type</option>
                         <option value="all">All Types</option>
                     </select>
                 </div>
             </div>
+        </div>
+        <!-- End: Filters Container -->
+
+        <!-- Message Input -->
+        <div class="mb-4">
+            <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+            <textarea name="message" id="message" placeholder="Enter your message here ..." rows="4"
+                class="block w-full mt-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:ring-indigo-300 p-2 text-sm overflow-y-auto resize-none"
+                style="color: var(--primary-text); height: 14rem">{{ request('message') }}</textarea>
+        </div>
+
+
+        <div class="mb-6 flex items-center space-x-8">
+            <!-- Batch Size Input -->
+            <div>
+                <label for="batch_size" class="block text-sm font-medium">Send Message by</label>
+                <input type="number" name="batch_size" id="batch_size" class="w-full border rounded-md shadow-sm p-1" value="1" min="1">
+            </div>
 
             <!-- Display Total Recipients -->
-            <div class="mb-4">
-                <span id="total_recipients" class="block text-sm font-medium text-gray-700">Total recipients: </span>
+            <div>
+                <label class="block text-sm font-medium">Total Recipients</label>
+                <input type="text" id="total_recipients" class="w-full p-1.5 border rounded-md shadow-sm text-center text-sm font-medium" readonly>
             </div>
 
-            <!-- Batch Size Input -->
-            <div class="mb-4">
-                <label for="batch_size" class="block text-sm font-medium text-gray-700">Batch Size</label>
-                <input type="number" name="batch_size" id="batch_size" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm" value="1" min="1">
-                <small class="text-gray-600">Set the number of messages to send at once. Default is 1.</small>
-            </div>
-
-            <!-- Message Template Selection -->
-            <div class="mb-4">
-                <label for="template" class="block text-sm font-medium text-gray-700">Select Template</label>
-                <select id="template" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
-                    <option value="" disabled selected>Select a Template</option>
-                    @foreach ($messageTemplates as $template)
-                        <option value="{{ $template->content }}">{{ $template->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <!-- Message Input -->
-            <div class="mb-4">
-                <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
-                <textarea name="message" id="message" placeholder="Enter your message here ..." rows="4"
-                    class="block w-full mt-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:ring-indigo-300 p-2 text-sm overflow-y-auto resize-none"
-                    style="height: 14rem">{{ request('message') }}</textarea>
-            </div>
-
-            <!-- Schedule Options -->
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700">Schedule</label>
-                <div class="flex items-center mt-2">
+            <!-- Send Message Options -->
+            <div>
+                <label class="block text-sm font-medium">Send Message</label>
+                <div class="p-1 flex items-center space-x-2">
                     <input type="radio" id="immediate" name="schedule" value="immediate" checked>
-                    <label for="immediate" class="ml-2">Send Immediately</label>
-                </div>
-                <div class="flex items-center mt-2">
+                    <label for="immediate">Now</label>
                     <input type="radio" id="scheduled" name="schedule" value="scheduled">
-                    <label for="scheduled" class="ml-2">Schedule for Later</label>
+                    <label for="scheduled">Send Later</label>
                 </div>
             </div>
 
             <!-- Date and Time Picker for Scheduling -->
-            <div id="schedule-options" style="display: none;" class="mb-4">
-                <label for="scheduled_date" class="block text-sm font-medium text-gray-700">Select Date and Time</label>
-                <input type="datetime-local" id="scheduled_date" name="scheduled_date"
-                    class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm">
+            <div id="schedule-options" style="display: none;">
+                <label for="scheduled_date" class="block text-sm font-medium">Select Date and Time:</label>
+                <input type="datetime-local" id="scheduled_date" name="scheduled_date" class="w-full h-8 border border-gray-300 rounded-md shadow-sm">
             </div>
+        </div>
 
-            <div class="flex justify-end">
-                <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded-lg">Review Message</button>
-            </div>
-        </form>
-
-        <!-- Directly embedded JavaScript -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Initialize filters on page load
-                toggleFilters();
-
-                // Add event listeners to the tab buttons
-                document.querySelectorAll('.tab-button').forEach(function(button) {
-                    button.addEventListener('click', function() {
-                        // Update the hidden broadcast_type input based on the clicked tab
-                        document.getElementById('broadcast_type').value = this.getAttribute(
-                            'data-value');
-
-                        // Highlight the active tab and remove highlight from others
-                        document.querySelectorAll('.tab-button').forEach(function(btn) {
-                            btn.classList.remove('border-b-2', 'border-indigo-500',
-                                'text-indigo-500');
-                        });
-                        this.classList.add('border-b-2', 'border-indigo-500', 'text-indigo-500');
-
-                        // Reset the Campus dropdown to its default placeholder
-                        resetCampusDropdown();
-
-                        // Toggle the filters based on the selected tab
-                        toggleFilters();
-
-                        // Update the recipient count
-                        updateRecipientCount();
-                    });
-                });
-
-                // Add event listeners for dropdown changes
-                document.getElementById('campus').addEventListener('change', updateDependentFilters);
-                document.getElementById('office').addEventListener('change', updateTypeDropdown);
-                document.getElementById('status').addEventListener('change', updateTypeDropdown);
-
-                // Event listeners for all dropdowns
-                document.getElementById('campus').addEventListener('change', updateRecipientCount);
-                document.getElementById('college').addEventListener('change', updateRecipientCount);
-                document.getElementById('program').addEventListener('change', updateRecipientCount);
-                document.getElementById('year').addEventListener('change', updateRecipientCount);
-                document.getElementById('office').addEventListener('change', updateRecipientCount);
-                document.getElementById('status').addEventListener('change', updateRecipientCount);
-                document.getElementById('type').addEventListener('change', updateRecipientCount);
-
-                // Add event listener for template selection
-                document.getElementById('template').addEventListener('change', function() {
-                    const templateContent = this.value;
-                    document.getElementById('message').value = templateContent;
-                });
-
-                // Add event listener for schedule options
-                const scheduleRadios = document.querySelectorAll('input[name="schedule"]');
-                const scheduleOptions = document.getElementById('schedule-options');
-
-                scheduleRadios.forEach(radio => {
-                    radio.addEventListener('change', function() {
-                        if (this.value === 'scheduled') {
-                            scheduleOptions.style.display = 'block';
-                        } else {
-                            scheduleOptions.style.display = 'none';
-                        }
-                    });
-                });
-
-                // Initialize the recipient count on page load
-                updateRecipientCount();
-
-                // Polling for progress updates if a logId is present
-                @if(session('logId'))
-                    const logId = {{ session('logId') }};
-                    const pollInterval = 5000; // Poll every 5 seconds
-
-                    function updateProgress() {
-                        fetch(`/api/progress/${logId}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                const percentageSent = data.percentageSent;
-                                document.getElementById('progress-label').textContent = `${percentageSent}% Sent`;
-                                document.getElementById('progress-percent').textContent = `${percentageSent}%`;
-                                document.getElementById('progress-bar').style.width = `${percentageSent}%`;
-
-                                if (percentageSent < 100) {
-                                    setTimeout(updateProgress, pollInterval);
-                                }
-                            })
-                            .catch(error => console.error('Error fetching progress:', error));
-                    }
-
-                    // Start polling
-                    updateProgress();
-                @endif
-            });
-
-            function toggleFilters() {
-                var broadcastType = document.getElementById('broadcast_type').value;
-                var studentFilters = document.getElementById('student_filters');
-                var employeeFilters = document.getElementById('employee_filters');
-
-                // Hide all filters initially
-                studentFilters.style.display = 'none';
-                employeeFilters.style.display = 'none';
-
-                // Display the appropriate filters based on the broadcast type
-                if (broadcastType === 'students') {
-                    studentFilters.style.display = 'block';
-                } else if (broadcastType === 'employees') {
-                    employeeFilters.style.display = 'block';
-                }
-
-                // Clear dropdown values when switching tabs
-                clearDropdownOptions('college');
-                clearDropdownOptions('program');
-                clearDropdownOptions('year');
-                clearDropdownOptions('office');
-                clearDropdownOptions('status');
-                clearDropdownOptions('type');
-            }
-
-            function resetCampusDropdown() {
-                var campusSelect = document.getElementById('campus');
-                campusSelect.value = ''; // Reset to default "Select Campus"
-            }
-
-            function updateDependentFilters() {
-                var campusId = document.getElementById('campus').value;
-                var broadcastType = document.getElementById('broadcast_type').value;
-
-                if (campusId === 'all') {
-                    // If "All Campuses" is chosen, clear all other dropdowns
-                    clearDropdownOptions('college');
-                    clearDropdownOptions('program');
-                    clearDropdownOptions('year');
-                    clearDropdownOptions('office');
-                    clearDropdownOptions('status');
-                    clearDropdownOptions('type');
-                    return;
-                }
-
-                if (!campusId) return;
-
-                // Make an AJAX request to get the dependent filters based on the selected campus
-                fetch(`/api/filters/${broadcastType}/${campusId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (broadcastType === 'students') {
-                            updateSelectOptions('college', data.colleges);
-                            updateSelectOptions('year', data.years); // Ensure years are always populated
-                        } else if (broadcastType === 'employees') {
-                            updateSelectOptions('office', data.offices);
-                            updateSelectOptions('status', data.statuses); // Populate statuses for employees
-                            updateSelectOptions('type', data.types); // Populate types for employees
-                        }
-                    });
-            }
-
-            function updateSelectOptions(selectId, options) {
-                var select = document.getElementById(selectId);
-                clearDropdownOptions(selectId);
-                options.forEach(option => {
-                    var opt = document.createElement('option');
-                    opt.value = option.id;
-                    opt.textContent = option.name;
-                    select.appendChild(opt);
-                });
-            }
-
-            function clearDropdownOptions(selectId) {
-                var select = document.getElementById(selectId);
-                select.innerHTML = '<option value="" disabled selected>Select ' + selectId.charAt(0).toUpperCase() + selectId
-                    .slice(1) + '</option>';
-                select.innerHTML += '<option value="all">All ' + selectId.charAt(0).toUpperCase() + selectId.slice(1) +
-                    '</option>';
-            }
-
-            function updateProgramDropdown() {
-                var collegeId = document.getElementById('college').value;
-
-                // Reset the program dropdown
-                clearDropdownOptions('program');
-
-                if (collegeId === 'all') {
-                    return;
-                }
-
-                if (collegeId) {
-                    // Make an AJAX request to get the dependent programs based on the selected college
-                    fetch(`/api/filters/college/${collegeId}/programs`)
-                        .then(response => response.json())
-                        .then(data => {
-                            updateSelectOptions('program', data.programs);
-                        });
-                }
-            }
-
-            function updateTypeDropdown() {
-                var campusId = document.getElementById('campus').value;
-                var officeId = document.getElementById('office').value;
-                var statusId = document.getElementById('status').value;
-
-                // Reset the type dropdown
-                clearDropdownOptions('type');
-
-                if (campusId && officeId) {
-                    // Make an AJAX request to get the dependent types based on the selected campus, office, and status
-                    fetch(`/api/filters/types/${campusId}/${officeId}/${statusId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            updateSelectOptions('type', data.types);
-                        });
-                }
-            }
-
-            function updateRecipientCount() {
-                const broadcastType = document.getElementById('broadcast_type').value;
-                const campusId = document.getElementById('campus').value;
-                const collegeId = document.getElementById('college') ? document.getElementById('college').value : null;
-                const programId = document.getElementById('program') ? document.getElementById('program').value : null;
-                const yearId = document.getElementById('year') ? document.getElementById('year').value : null;
-                const officeId = document.getElementById('office') ? document.getElementById('office').value : null;
-                const statusId = document.getElementById('status') ? document.getElementById('status').value : null;
-                const typeId = document.getElementById('type') ? document.getElementById('type').value : null;
-
-                // Set default total recipients to 0
-                document.getElementById('total_recipients').textContent = 'Total recipients: 0';
-
-                fetch(
-                        `/api/recipients/count?broadcast_type=${broadcastType}&campus_id=${campusId}&college_id=${collegeId}&program_id=${programId}&year_id=${yearId}&office_id=${officeId}&status_id=${statusId}&type_id=${typeId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById('total_recipients').textContent = `Total recipients: ${data.total}`;
-                    })
-                    .catch(error => {
-                        console.error('Error fetching recipient count:', error);
-                        document.getElementById('total_recipients').textContent = 'Error fetching recipient count';
-                    });
-            }
-        </script>
-    </div>
+        <div class="flex justify-end">
+            <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded-lg">Review Message</button>
+        </div>
+    </form>
+</div>
+<!-- This loads the script in resources/js -->
+@vite(['resources/js/messages.js'])
 @endsection

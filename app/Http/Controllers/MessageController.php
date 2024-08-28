@@ -469,23 +469,55 @@ class MessageController extends Controller
         return response()->json(['total' => $total ?: 0]); // Return 0 if no recipients are found
     }
 
+    // public function getProgress($logId)
+    // {
+    //     $log = MessageLog::find($logId);
+    //     if ($log) {
+    //         $totalRecipients = $log->total_recipients;
+    //         $sentCount = $log->sent_count;
+    //         $failedCount = $log->failed_count;
+    //         $percentageSent = $totalRecipients > 0 ? ($sentCount + $failedCount) / $totalRecipients * 100 : 0;
+
+    //         return response()->json([
+    //             'percentageSent' => round($percentageSent, 2),
+    //             'sentCount' => $sentCount,
+    //             'failedCount' => $failedCount,
+    //             'totalRecipients' => $totalRecipients,
+    //         ]);
+    //     }
+
+    //     return response()->json([
+    //         'percentageSent' => 0,
+    //         'sentCount' => 0,
+    //         'failedCount' => 0,
+    //         'totalRecipients' => 0,
+    //     ]);
+    // }
+
     public function getProgress($logId)
     {
+        // Fetch the log entry by its ID
         $log = MessageLog::find($logId);
+
         if ($log) {
+            // Retrieve the necessary counts from the log
             $totalRecipients = $log->total_recipients;
             $sentCount = $log->sent_count;
             $failedCount = $log->failed_count;
+
+            // Calculate the percentage of messages sent successfully or failed
             $percentageSent = $totalRecipients > 0 ? ($sentCount + $failedCount) / $totalRecipients * 100 : 0;
 
+            // Return a JSON response with the progress details
             return response()->json([
-                'percentageSent' => round($percentageSent, 2),
+                'percentageSent' => round($percentageSent, 2), // Round to 2 decimal places
                 'sentCount' => $sentCount,
                 'failedCount' => $failedCount,
                 'totalRecipients' => $totalRecipients,
             ]);
         }
 
+        // If the log entry was not found, return a response with zeros
         return response()->json([
             'percentageSent' => 0,
             'sentCount' => 0,
@@ -494,36 +526,37 @@ class MessageController extends Controller
         ]);
     }
 
+
     public function getAnalyticsData(Request $request)
     {
         try {
             $dateRange = $request->query('date_range', 'last_7_days');
             $startDate = $this->getDateRange($dateRange);
-    
+
             // Fetching data from MessageLog
             $totalSent = MessageLog::where('status', 'Sent')
                 ->where('created_at', '>=', $startDate)
                 ->sum('sent_count');
-    
+
             $totalFailed = MessageLog::where('status', 'Sent')
                 ->where('created_at', '>=', $startDate)
                 ->sum('failed_count');
-    
+
             $totalScheduled = MessageLog::where('schedule', 'scheduled')
                 ->where('created_at', '>=', $startDate)
                 ->count();
-    
+
             $totalImmediate = MessageLog::where('schedule', 'immediate')
                 ->where('created_at', '>=', $startDate)
                 ->count();
-    
+
             // Fetch balance from MoviderService
             $balanceData = $this->moviderService->getBalance();
             $balance = $balanceData['balance'] ?? 0;
-    
+
             // Generate chart data
             $chartData = $this->getChartData($startDate);
-    
+
             return response()->json([
                 'total_sent' => $totalSent,
                 'total_failed' => $totalFailed,
@@ -541,27 +574,27 @@ class MessageController extends Controller
     private function getChartData($startDate)
     {
         $logs = MessageLog::selectRaw("CONVERT(DATE, created_at) as created_date, SUM(sent_count) as total_sent")
-                          ->where('created_at', '>=', $startDate)
-                          ->groupByRaw('CONVERT(DATE, created_at)')
-                          ->orderByRaw('CONVERT(DATE, created_at) asc')
-                          ->get();
-    
+            ->where('created_at', '>=', $startDate)
+            ->groupByRaw('CONVERT(DATE, created_at)')
+            ->orderByRaw('CONVERT(DATE, created_at) asc')
+            ->get();
+
         $labels = [];
         $data = [];
-    
+
         foreach ($logs as $log) {
             $labels[] = $log->created_date;
             $data[] = $log->total_sent;
         }
-    
+
         Log::info("Fetched chart data for start date {$startDate}: ", compact('labels', 'data'));
-    
+
         return [
             'labels' => $labels,
             'data' => $data,
         ];
     }
-    
+
     private function getDateRange($dateRange)
     {
         switch ($dateRange) {

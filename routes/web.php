@@ -3,7 +3,6 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FilterController;
-use App\Http\Controllers\ImportController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\MessageTemplateController;
 use App\Http\Controllers\SubAdminController;
@@ -71,6 +70,3 @@ Route::get('/api/contacts', [FilterController::class, 'getContacts']);
 Route::get('/api/recipients/count', [MessageController::class, 'getRecipientCount']);
 Route::get('/api/progress/{logId}', [MessageController::class, 'getProgress']);
 Route::get('/api/analytics', [MessageController::class, 'getAnalyticsData'])->name('api.analytics');
-
-// Import
-Route::post('/import', [ImportController::class, 'importData'])->name('import.data');

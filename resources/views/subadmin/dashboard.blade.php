@@ -3,6 +3,11 @@
 @section('title', 'Subadmin Dashboard')
 
 @section('content')
-    <h1 class="text-3xl font-bold mb-6">Subadmin Dashboard</h1>
-    <p>Welcome, Subadmin!</p>
+<div class="container mx-auto">
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <p>
+            Welcome to the Sub-admin Dashboard. Here you can manage certain parts of your application.
+        </p>
+    </div>
+</div>
 @endsection

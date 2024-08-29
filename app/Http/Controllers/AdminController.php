@@ -23,26 +23,9 @@ use Illuminate\Support\Facades\Http;
 
 class AdminController extends Controller
 {
-    public function dashboard(MoviderService $moviderService)
+    public function dashboard()
     {
-        // Fetch balance from Movider Service
-        $balanceData = $moviderService->getBalance();
-        $balance = $balanceData['balance'] ?? 0;
-
-        // Set the threshold for low balance
-        $warningThreshold = 0.065; // Adjust as needed
-
-        // Check if the balance is low
-        $lowBalance = $balance < $warningThreshold;
-
-        // Fetch message statistics
-        $totalMessagesSent = MessageLog::count();
-        $immediateMessagesSent = MessageLog::where('scheduled_at', null)->count();
-        $scheduledMessagesSent = MessageLog::whereNotNull('scheduled_at')->count();
-        $failedMessagesSent = MessageLog::where('status', 'failed')->count();
-
-        // Pass all the data to the dashboard view
-        return view('admin.dashboard', compact('balance', 'lowBalance', 'totalMessagesSent', 'immediateMessagesSent', 'scheduledMessagesSent', 'failedMessagesSent'));
+        return view('admin.dashboard');
     }
 
     public function messages()

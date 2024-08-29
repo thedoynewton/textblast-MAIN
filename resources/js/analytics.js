@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('total-failed').textContent = data.total_failed;
                 document.getElementById('total-scheduled').textContent = data.total_scheduled;
                 document.getElementById('total-immediate').textContent = data.total_immediate;
+                document.getElementById('total-cancelled').textContent = data.total_cancelled; // Update cancelled messages
                 document.getElementById('remaining-balance').textContent = data.balance;
 
                 // Update the chart
@@ -97,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Restore the original state
         ctx.restore();
     });
-    
 
     // Export as Excel (using a library like SheetJS)
     document.getElementById('exportExcel').addEventListener('click', function () {

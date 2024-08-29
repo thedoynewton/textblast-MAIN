@@ -581,36 +581,42 @@ class MessageController extends Controller
         try {
             $dateRange = $request->query('date_range', 'last_7_days');
             $startDate = $this->getDateRange($dateRange);
-
+    
             // Fetching data from MessageLog
             $totalSent = MessageLog::where('status', 'Sent')
                 ->where('created_at', '>=', $startDate)
                 ->sum('sent_count');
-
+    
             $totalFailed = MessageLog::where('status', 'Sent')
                 ->where('created_at', '>=', $startDate)
                 ->sum('failed_count');
-
+    
             $totalScheduled = MessageLog::where('schedule', 'scheduled')
                 ->where('created_at', '>=', $startDate)
                 ->count();
-
+    
             $totalImmediate = MessageLog::where('schedule', 'immediate')
                 ->where('created_at', '>=', $startDate)
                 ->count();
-
+    
+            // Calculate total cancelled messages
+            $totalCancelled = MessageLog::where('status', 'Cancelled')
+                ->where('created_at', '>=', $startDate)
+                ->count();
+    
             // Fetch balance from MoviderService
             $balanceData = $this->moviderService->getBalance();
             $balance = $balanceData['balance'] ?? 0;
-
+    
             // Generate chart data
             $chartData = $this->getChartData($startDate);
-
+    
             return response()->json([
                 'total_sent' => $totalSent,
                 'total_failed' => $totalFailed,
                 'total_scheduled' => $totalScheduled,
                 'total_immediate' => $totalImmediate,
+                'total_cancelled' => $totalCancelled, // Include total_cancelled in the response
                 'balance' => $balance,
                 'chart_data' => $chartData,
             ]);
@@ -619,6 +625,7 @@ class MessageController extends Controller
             return response()->json(['error' => 'Failed to fetch analytics data'], 500);
         }
     }
+    
 
     private function getChartData($startDate)
     {

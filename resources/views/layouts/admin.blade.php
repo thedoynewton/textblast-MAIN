@@ -12,9 +12,136 @@
     <link rel="icon" href="/images/SePhi Favicon.png" type="image/png" sizes="64x64">
     <link rel="icon" href="/images/SePhi Favicon.png" type="image/png" sizes="128x128">
 
-    <!-- Link to Vite CSS and JS -->
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/theme.js'])
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
+        :root {
+            --primary-bg: #C3CBDC;
+            --primary-text: #000000;
+            --secondary-bg: #FFFFFF;
+            --secondary-text: #757575;
+
+            /* For the Navigation Link Button State */
+            --button-text: #291E13;
+            --button-hover-text: #6A6A6A;
+            --button-selected-text: #000000;
+            --button-selected-bg: #E5E7EB;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--secondary-bg);
+            color: var(--secondary-text);
+        }
+
+        .bg-primary {
+            background-color: var(--primary-bg);
+        }
+
+        .text-primary {
+            color: var(--primary-text);
+        }
+
+        .w-73 {
+            width: 18.25rem;
+            /* 73 x 0.25rem */
+        }
+
+        .ml-73 {
+            margin-left: 18.25rem;
+            /* 73 x 0.25rem */
+        }
+
+        /* LOGO */
+        .text-gradient {
+            background: linear-gradient(90deg, #614514, #C78E29);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .z-50 {
+            z-index: 50;
+        }
+
+        .dropdown-item {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            text-align: left;
+            display: block;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3f3f3;
+        }
+
+        /* BUTTON STATES */
+        .button-default {
+            color: var(--button-text);
+        }
+
+        .button-hover:hover {
+            color: var(--button-hover-text);
+        }
+
+        .button-selected {
+            color: var(--button-selected-text);
+            background-color: var(--button-selected-bg);
+        }
+
+        /* SYSTEM THEMES */
+        [data-theme="dark"] {
+            --primary-bg: #1C4E80;
+            --primary-text: #000000;
+            --secondary-bg: #7C909A;
+            --secondary-text: #000000;
+        }
+
+        [data-theme="light"] {
+            --primary-text: #000000;
+            --secondary-bg: #FFFFFF;
+            --secondary-text: #757575;
+        }
+
+        [data-theme="rosyred"] {
+            --primary-bg: #66070e;
+            --primary-text: #000000;
+            --secondary-bg: #ffcdcd94;
+            --secondary-text: #000000;
+        }
+
+        [data-theme="slimegreen"] {
+            --primary-bg: #1A5319;
+            --primary-text: #000000;
+            --secondary-bg: #80AF81;
+            --secondary-text: #000000;
+        }
+
+        [data-theme="bluesky"] {
+            --primary-bg: #008DDA;
+            --primary-text: #000000;
+            --secondary-bg: #a7cdff;
+            --secondary-text: #000000;
+        }
+    </style>
+    
+    <script>
+        function toggleDropdown() {
+            document.getElementById("dropdown").classList.toggle("hidden");
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            toggleDropdown(); // Hide the dropdown after selection
+        }
+
+        function loadTheme() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        window.onload = loadTheme;
+    </script>
 </head>
 
 <body class="h-screen flex">

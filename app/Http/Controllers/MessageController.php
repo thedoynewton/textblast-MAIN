@@ -40,34 +40,6 @@ class MessageController extends Controller
 
     public function reviewMessage(Request $request)
     {
-        // Calculate the number of messages to be sent
-        $broadcastType = $request->input('broadcast_type');
-        $totalRecipients = 0;
-
-        if ($broadcastType === 'students' || $broadcastType === 'all') {
-            $studentQuery = $this->buildRecipientQuery($request, 'students');
-            $totalRecipients += $studentQuery->count();
-        }
-        if ($broadcastType === 'employees' || $broadcastType === 'all') {
-            $employeeQuery = $this->buildRecipientQuery($request, 'employees');
-            $totalRecipients += $employeeQuery->count();
-        }
-
-        // Calculate the total cost
-        $messageCost = 0.0065; // cost per message
-        $totalCost = $totalRecipients * $messageCost;
-
-        // Fetch the current balance
-        $balanceData = $this->moviderService->getBalance();
-        $currentBalance = $balanceData['balance'] ?? 0;
-
-        // Check if the balance is sufficient
-        if ($currentBalance < $totalCost) {
-            return redirect()->route('admin.messages')
-                ->with('error', 'Insufficient balance to send the messages.');
-        }
-
-        // Proceed with the usual review process if balance is sufficient
         $data = $request->all();
 
         $campus = $data['campus'] === 'all' ? 'All Campuses' : Campus::find($data['campus'])->campus_name ?? 'All Campuses';
@@ -235,7 +207,6 @@ class MessageController extends Controller
 
         // Attempt to log the message
         $logId = $this->logMessage($request, $userId, 'immediate');
-
         if ($logId === null) {
             session()->flash('error', 'Message sending failed due to logging issues.');
             return redirect()->route('admin.messages');
@@ -431,24 +402,24 @@ class MessageController extends Controller
     public function cancelScheduledMessage($id)
     {
         $messageLog = MessageLog::find($id);
-
+    
         if (!$messageLog || $messageLog->status !== 'Pending') {
             return redirect()->route('admin.app-management')
                 ->with('error', 'Message cannot be canceled because it has already been sent, canceled, or does not exist.');
         }
-
+    
         // Set the status to 'Cancelled' and update the cancelled_at timestamp
         $messageLog->status = 'Cancelled';
         $messageLog->cancelled_at = now(); // Set the current timestamp
         $messageLog->save();
-
+    
         // Log the cancellation
         Log::info("Scheduled message [ID: {$messageLog->id}] has been cancelled.");
-
+    
         return redirect()->route('admin.app-management')
             ->with('success', 'Scheduled message has been canceled successfully.');
     }
-
+    
     public function getMessageLogs()
     {
         $messageLogs = MessageLog::with('user')->orderBy('created_at', 'desc')->get();
@@ -518,31 +489,6 @@ class MessageController extends Controller
         return response()->json(['total' => $total ?: 0]); // Return 0 if no recipients are found
     }
 
-    // public function getProgress($logId)
-    // {
-    //     $log = MessageLog::find($logId);
-    //     if ($log) {
-    //         $totalRecipients = $log->total_recipients;
-    //         $sentCount = $log->sent_count;
-    //         $failedCount = $log->failed_count;
-    //         $percentageSent = $totalRecipients > 0 ? ($sentCount + $failedCount) / $totalRecipients * 100 : 0;
-
-    //         return response()->json([
-    //             'percentageSent' => round($percentageSent, 2),
-    //             'sentCount' => $sentCount,
-    //             'failedCount' => $failedCount,
-    //             'totalRecipients' => $totalRecipients,
-    //         ]);
-    //     }
-
-    //     return response()->json([
-    //         'percentageSent' => 0,
-    //         'sentCount' => 0,
-    //         'failedCount' => 0,
-    //         'totalRecipients' => 0,
-    //     ]);
-    // }
-
     public function getProgress($logId)
     {
         // Fetch the log entry by its ID
@@ -574,7 +520,6 @@ class MessageController extends Controller
             'totalRecipients' => 0,
         ]);
     }
-
 
     public function getAnalyticsData(Request $request)
     {

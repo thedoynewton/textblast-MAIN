@@ -143,12 +143,12 @@
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Created At</th>
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Scheduled At</th>
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Sent At</th>
-                            <th class="py-3 px-4 border-b font-medium text-gray-700">Cancelled At</th>
+                            <th class="py-3 px-4 border-b font-medium text-gray-700">Cancelled At</th> <!-- Added Cancelled At column -->
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Status</th>
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Total Recipients</th>
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Successful Deliveries</th>
                             <th class="py-3 px-4 border-b font-medium text-gray-700">Failed Messages</th>
-                            <th class="py-3 px-4 border-b font-medium text-gray-700">Actions</th>
+                            <th class="py-3 px-4 border-b font-medium text-gray-700">Actions</th> <!-- Added Actions column -->
                         </tr>
                     </thead>
                     <tbody>
@@ -168,12 +168,12 @@
                             <td class="py-3 px-4 border-b text-gray-600">{{ $log->failed_count }}</td>
                             <td class="py-3 px-4 border-b text-gray-600">
                                 @if ($log->status === 'Pending')
-                                <form action="{{ route('admin.cancelScheduledMessage', $log->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="text-red-500 hover:underline">Cancel</button>
-                                </form>
+                                    <form action="{{ route('admin.cancelScheduledMessage', $log->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="text-red-500 hover:underline">Cancel</button>
+                                    </form>
                                 @else
-                                <span class="text-gray-400">Cannot Cancel</span>
+                                    <span class="text-gray-400">Cannot Cancel</span>
                                 @endif
                             </td>
                         </tr>

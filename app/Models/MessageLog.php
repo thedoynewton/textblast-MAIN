@@ -26,7 +26,7 @@ class MessageLog extends Model
     protected $casts = [
         'scheduled_at' => 'datetime',
         'sent_at' => 'datetime',
-        'cancelled_at' => 'datetime',  // Cast cancelled_at to datetime
+        'cancelled_at' => 'datetime', // Cast cancelled_at to datetime
     ];
 
     /**
@@ -60,7 +60,6 @@ class MessageLog extends Model
     {
         return $this->total_recipients === $this->sent_count;
     }
-
     /**
      * Check if the message was cancelled.
      *

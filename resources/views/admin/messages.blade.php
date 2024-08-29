@@ -41,7 +41,7 @@
 
 <div class="bg-white p-6 rounded-lg shadow-md">
     <!-- Broadcasting Form -->
-    <form action="{{ route('admin.reviewMessage') }}" method="POST">
+    <form action="{{ route('admin.reviewMessage') }}" method="POST" id="broadcast-form" novalidate>
         @csrf
 
         <!-- Broadcast Type Selection as Tabs -->
@@ -64,7 +64,7 @@
                 <!-- Campus Selection (Always Visible) -->
                 <div class="flex-grow" id="campus_filter">
                     <label for="campus" class="block text-sm font-medium">Campus</label>
-                    <select name="campus" id="campus" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
+                    <select name="campus" id="campus" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2" required>
                         <option value="" disabled selected>Select Campus</option>
                         <option value="all">All Campuses</option>
                         @foreach ($campuses as $campus)
@@ -90,7 +90,7 @@
             <div class="flex space-x-4 mb-4" id="student_filters" style="display: none;">
                 <div class="w-1/3">
                     <label for="college" class="block text-sm font-medium">College</label>
-                    <select name="college" id="college"
+                    <select name="college" id="college" required
                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2"
                         onchange="updateProgramDropdown()">
                         <option value="" disabled selected>Select College</option>
@@ -100,7 +100,7 @@
 
                 <div class="w-1/3">
                     <label for="program" class="block text-sm font-medium">Academic Program</label>
-                    <select name="program" id="program"
+                    <select name="program" id="program" required
                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
                         <option value="" disabled selected>Select Program</option>
                         <option value="all">All Programs</option>
@@ -109,7 +109,7 @@
 
                 <div class="w-1/3">
                     <label for="year" class="block text-sm font-medium">Year</label>
-                    <select name="year" id="year"
+                    <select name="year" id="year" required
                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
                         <option value="" disabled selected>Select Year</option>
                         <option value="all">All Year Levels</option>
@@ -124,7 +124,7 @@
             <div class="flex space-x-4 mb-4" id="employee_filters" style="display: none;">
                 <div class="w-1/3">
                     <label for="office" class="block text-sm font-medium">Office</label>
-                    <select name="office" id="office"
+                    <select name="office" id="office" required
                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2"
                         onchange="updateTypeDropdown()">
                         <option value="" disabled selected>Select Office</option>
@@ -134,7 +134,7 @@
 
                 <div class="w-1/3">
                     <label for="status" class="block text-sm font-medium">Status</label>
-                    <select name="status" id="status"
+                    <select name="status" id="status" required
                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2"
                         onchange="updateTypeDropdown()">
                         <option value="" disabled selected>Select Status</option>
@@ -144,7 +144,7 @@
 
                 <div class="w-1/3">
                     <label for="type" class="block text-sm font-medium">Type</label>
-                    <select name="type" id="type"
+                    <select name="type" id="type" required
                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
                         <option value="" disabled selected>Select Type</option>
                         <option value="all">All Types</option>
@@ -159,9 +159,8 @@
             <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
             <textarea name="message" id="message" placeholder="Enter your message here ..." rows="4"
                 class="block w-full mt-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:ring-indigo-300 p-2 text-sm overflow-y-auto resize-none"
-                style="color: var(--primary-text); height: 14rem">{{ request('message') }}</textarea>
+                style="color: var(--primary-text); height: 14rem" required>{{ request('message') }}</textarea>
         </div>
-
 
         <div class="mb-6 flex items-center space-x-8">
             <!-- Batch Size Input -->
@@ -201,4 +200,5 @@
 </div>
 <!-- This loads the script in resources/js -->
 @vite(['resources/js/messages.js'])
+@vite(['resources/js/messagesWarning.js'])
 @endsection

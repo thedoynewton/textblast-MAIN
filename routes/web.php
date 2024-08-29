@@ -39,6 +39,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Analytics
     Route::get('/admin/analytics', [AdminController::class, 'analytics'])->name('admin.analytics');
+    route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
     // User Management
     Route::get('/admin/user-management', [AdminController::class, 'userManagement'])->name('admin.user-management');

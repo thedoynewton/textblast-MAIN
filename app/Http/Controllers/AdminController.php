@@ -23,9 +23,26 @@ use Illuminate\Support\Facades\Http;
 
 class AdminController extends Controller
 {
-    public function dashboard()
+    public function dashboard(MoviderService $moviderService)
     {
-        return view('admin.dashboard');
+        // Fetch balance from Movider Service
+        $balanceData = $moviderService->getBalance();
+        $balance = $balanceData['balance'] ?? 0;
+
+        // Set the threshold for low balance
+        $warningThreshold = 0.065; // Adjust as needed
+
+        // Check if the balance is low
+        $lowBalance = $balance < $warningThreshold;
+
+        // Fetch message statistics
+        $totalMessagesSent = MessageLog::count();
+        $immediateMessagesSent = MessageLog::where('scheduled_at', null)->count();
+        $scheduledMessagesSent = MessageLog::whereNotNull('scheduled_at')->count();
+        $failedMessagesSent = MessageLog::where('status', 'failed')->count();
+
+        // Pass all the data to the dashboard view
+        return view('admin.dashboard', compact('balance', 'lowBalance', 'totalMessagesSent', 'immediateMessagesSent', 'scheduledMessagesSent', 'failedMessagesSent'));
     }
 
     public function messages()
@@ -73,12 +90,18 @@ class AdminController extends Controller
         $balanceData = $moviderService->getBalance();
         $balance = $balanceData['balance'] ?? 0;
 
+        // Set the threshold for low balance
+        $warningThreshold = 0.065; // Adjust as needed
+
+        // Check if the balance is low
+        $lowBalance = $balance < $warningThreshold;
+
         // Log the balance value
         Log::info('Movider Balance:', ['balance' => $balance]);
 
-        return view('admin.analytics', compact('balance'));
+        return view('admin.analytics', compact('balance', 'lowBalance'));
     }
-    
+
 
     public function userManagement()
     {
@@ -105,20 +128,22 @@ class AdminController extends Controller
         $messageLogs = MessageLog::with('user')->orderBy('created_at', 'desc')->get();
 
         // Pass all the data to the view
-        return view('admin.app-management', compact(
-            'students',
-            'campuses',
-            'colleges',
-            'programs',
-            'majors',
-            'years',
-            'employees',
-            'offices',
-            'statuses',
-            'types',
-            'messageTemplates',
-            'messageLogs' // Pass the message logs to the view
-        )
+        return view(
+            'admin.app-management',
+            compact(
+                'students',
+                'campuses',
+                'colleges',
+                'programs',
+                'majors',
+                'years',
+                'employees',
+                'offices',
+                'statuses',
+                'types',
+                'messageTemplates',
+                'messageLogs' // Pass the message logs to the view
+            )
         );
     }
 

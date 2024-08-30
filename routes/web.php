@@ -6,6 +6,7 @@ use App\Http\Controllers\FilterController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\MessageTemplateController;
 use App\Http\Controllers\SubAdminController;
+use App\Http\Middleware\CheckRole;
 use Illuminate\Support\Facades\Route;
 
 // Authentication Routes
@@ -14,8 +15,8 @@ Route::get('auth/google', [AuthController::class, 'redirectToGoogle'])->name('go
 Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 
-// Admin Routes (with authentication middleware)
-Route::middleware(['auth'])->group(function () {
+// Admin Routes (with authentication and role middleware)
+Route::middleware(['auth', CheckRole::class . ':admin'])->group(function () {
     // Dashboard
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
@@ -50,8 +51,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/app-management', [AdminController::class, 'appManagement'])->name('admin.app-management');
 });
 
-// Sub-Admin Routes (with authentication middleware)
-Route::middleware(['auth'])->group(function () {
+// Sub-Admin Routes (with authentication and role middleware)
+Route::middleware(['auth', CheckRole::class . ':subadmin'])->group(function () {
     // Dashboard
     Route::get('/subadmin/dashboard', [SubAdminController::class, 'dashboard'])->name('subadmin.dashboard');
 

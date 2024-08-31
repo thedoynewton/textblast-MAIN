@@ -57,8 +57,14 @@ Route::middleware(['auth', CheckRole::class . ':subadmin'])->group(function () {
     Route::get('/subadmin/dashboard', [SubAdminController::class, 'dashboard'])->name('subadmin.dashboard');
 
     // Messages
-    Route::get('/subadmin/messages', [SubAdminController::class, 'messages'])->name('subadmin.messages');
-    Route::post('/subadmin/messages/broadcast', [SubAdminController::class, 'broadcastMessages'])->name('subadmin.broadcast');
+    Route::get('/subadmin/messages', [MessageController::class, 'showMessagesForm'])->name('subadmin.messages');
+    Route::post('/subadmin/broadcast', [MessageController::class, 'broadcastToRecipients'])->name('subadmin.broadcastToRecipients');
+    Route::post('/subadmin/review-message', [MessageController::class, 'reviewMessage'])->name('subadmin.reviewMessage');
+    Route::post('/subadmin/send-messages', [MessageController::class, 'sendBulkMessages'])->name('subadmin.send-messages');
+    //Route::post('/subadmin/messages/cancel/{id}', [MessageController::class, 'cancelScheduledMessage'])->name('subadmin.cancelScheduledMessage');
+
+    // Message Logs
+    //Route::get('/admin/message-logs', [MessageController::class, 'getMessageLogs'])->name('admin.messageLogs');
 
     // Analytics
     Route::get('/subadmin/analytics', [SubAdminController::class, 'analytics'])->name('subadmin.analytics');

@@ -14,106 +14,133 @@
     <link rel="icon" href="/images/SePhi Favicon.png" type="image/png" sizes="128x128">
 
     <style>
-        .bg-opacity-50 {
-            background-color: rgba(0, 0, 0, 0.5);
+        :root {
+            --primary-color: #800000;
         }
 
-        .bg-cover {
-            background-size: cover;
+        .bg-primary {
+            background-color: var(--primary-color);
         }
 
-        .bg-white-transparent {
-            background-color: rgba(255, 255, 255, 0.8);
-            /* Adjust the transparency here */
+        .text-primary {
+            color: var(--primary-color);
         }
 
-        .eagle-image {
-            background-image: url('/images/eagle.jpg');
-            background-size: cover;
-            background-position: right;
-            opacity: 0.5;
-            /* Adjust the transparency here */
+        .border-primary {
+            border-color: var(--primary-color);
+        }
+
+        .floating-panel {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            transform: translateY(-10px);
+            z-index: 10;
+            position: relative;
+            margin-left: auto;
+            margin-right: 5%;
         }
     </style>
 
-@if (Auth::check())
-    <script>
-        window.onload = function() {
-            @if (Auth::user()->role === 'admin')
-                window.location.href = "{{ route('admin.dashboard') }}";
-            @elseif (Auth::user()->role === 'subadmin')
-                window.location.href = "{{ route('subadmin.dashboard') }}";
-            @endif
-        };
+    @if (Auth::check())
+    <script type="module">
+        window.userRole = "{{ Auth::user()->role }}";
+        window.adminDashboardUrl = "{{ route('admin.dashboard') }}";
+        window.subadminDashboardUrl = "{{ route('subadmin.dashboard') }}";
+
+        import '/resources/js/redirect.js';
     </script>
-@endif
+    @endif
 
 </head>
 
-<body class="bg-gray-900 h-screen">
-    <div class="flex flex-col md:flex-row h-full">
-        <div class="flex items-center justify-center p-10 eagle-image relative w-full md:w-1/2">
-        </div>
-        <div class="flex flex-col items-center justify-center p-10 bg-gray-200 w-full md:w-1/2">
-            <div class="bg-white-transparent shadow-xl rounded-lg p-8 w-full max-w-md relative z-10">
-                @if (session('error'))
-                <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
-                    {{ session('error') }}
+<body class="bg-gray-100 h-screen relative">
+    <div class="h-full flex flex-col justify-center">
+        <!-- Left Side Content -->
+        <div class="absolute inset-0 flex justify-start items-center">
+            <div class="flex flex-col items-center ml-40 mb-16">
+                <h1 class="font-semibold text-2xl text-center text-primary">USeP TEXT BROADCASTING SYSTEM</h1>
+                <!-- Using the SVG file as an image source -->
+                <img src="{{ asset('svg/loginIllus.svg') }}" alt="Broadcasting Image" class="w-[400px] h-auto lg:w-[500px] lg:h-auto">
+                <p class="text-gray-500 text-sm">
+                    Copyright © 2024. All Rights Reserved.
+                </p>
+                <div class="">
+                    <a href="#" class="text-primary hover:underline mx-2">Terms of Use</a> |
+                    <a href="#" class="text-primary hover:underline mx-2">Privacy Policy</a>
                 </div>
-                @endif
-                @guest
-                <form>
-                    <img src="/images/SePhi Icon.png" class="w-1/2 h-auto mx-auto" />
-                    <h1 class="font-bold text-4xl text-center">Welcome to USeP</h1>
-                    <h1 class="font-semibold text-2xl mb-8 text-center">Text Broadcasting System</h1>
-                    <div class="py-2">
-                        <div>
-                            <label for="email">Email</label>
-                        </div>
-                        <input type="email" placeholder="usep.edu.ph" id="email" class="border rounded border-gray-500 p-1 w-full"></input>
-                    </div>
-                    <div class="py-2">
-                        <div>
-                            <label for="password">Password</label>
-                        </div>
-                        <input type="password" placeholder="**********" id="password" class="border rounded border-gray-500 py-1 px-2 w-full"></input>
-                    </div>
-                    <div class="flex justify-center items-center">
-                        <button class="bg-gradient-to-r from-[#dc7171] to-[#973939] font-semibold text-white px-4 py-2 border rounded w-full">
-                            Login
-                        </button>
-                    </div>
-                    <div class="text-center">
-                        <p class="py-2">Login using your USeP Email Account</p>
-                        <a href="{{ url('auth/google') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-[#dc7171] to-[#973939] text-white font-semibold rounded shadow-md w-full">
-                            Login with Google
-                        </a>
-                    </div>
-                </form>
-                @else
-                <div class="text-center">
-                    <h1 class="text-2xl font-bold mb-4">Hello! You Don't have permissions to access the system please contact us at email.usep.edu.ph</h1>
-                    <img src="{{ Auth::user()->avatar }}" alt="user profile" class="w-24 h-24 rounded-full mx-auto mb-4">
-                    <h2 class="text-xl font-semibold">{{ Auth::user()->name }}</h2>
-                    <p class="text-gray-600">{{ Auth::user()->email }}</p>
-                    <a href="{{ url('logout') }}" class="inline-flex items-center px-4 py-2 mt-4 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
-                        Logout
-                    </a>
-                    <div class="mt-4">
-                        @if (Auth::user()->role === 'admin')
-                        <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
-                            Go to Admin Dashboard
-                        </a>
-                        @elseif (Auth::user()->role === 'subadmin')
-                        <a href="{{ route('subadmin.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
-                            Go to Subadmin Dashboard
-                        </a>
-                        @endif
-                    </div>
-                </div>
-                @endguest
             </div>
         </div>
+
+
+        <!-- Right Side Login Form -->
+        <div class="floating-panel w-full max-w-md p-8 text-center bg-white">
+            @if (session('error'))
+            <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
+                {{ session('error') }}
+            </div>
+            @endif
+            @guest
+            <img src="/images/SePhi Favicon.png" alt="USeP Logo" class="w-24 h-24 mx-auto">
+            <h1 class="font-bold text-2xl text-center mt-4 text-primary">WELCOME BACK</h1>
+            <p class="text-center text-gray-600 mt-2 mb-12">Proceed to login by selecting login options</p>
+            <form>
+                <!-- Google Login Button -->
+                <a href="{{ url('auth/google') }}" class="inline-flex items-center justify-center px-4 py-2 mb-4 bg-primary text-white font-semibold rounded-lg shadow-md w-full">
+                    Continue with Google
+                </a>
+
+                <!-- Divider -->
+                <div class="flex items-center my-4">
+                    <hr class="flex-grow border-gray-300">
+                    <span class="mx-4 text-gray-500">or</span>
+                    <hr class="flex-grow border-gray-300">
+                </div>
+
+                <!-- Email Input -->
+                <div class="mb-4">
+                    <label for="email" class="block text-gray-700 text-left mb-2">Email</label>
+                    <input type="email" id="email" placeholder="Enter your USeP email" class="border rounded border-gray-500 py-2 px-3 w-full">
+                </div>
+
+                <!-- Email Login Button -->
+                <button type="submit" class="bg-primary text-white font-semibold px-4 py-2 rounded-lg w-full">
+                    Continue with email
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="mt-14">
+                <div class="text-center">
+                    <p class="text-gray-500 mb-2">Having Trouble?</p>
+                    <a href="#" class="text-primary">Send us a message</a>
+                </div>
+            </div>
+            @else
+            <div class="text-center">
+                <img src="{{ Auth::user()->avatar }}" alt="user profile" class="w-24 h-24 rounded-full mx-auto mb-4">
+                <h2 class="text-xl font-semibold">{{ Auth::user()->name }}</h2>
+                <p class="text-gray-600">{{ Auth::user()->email }}</p>
+                <a href="{{ url('logout') }}" class="inline-flex items-center px-4 py-2 mt-4 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-75">
+                    Logout
+                </a>
+                <div class="mt-4">
+                    @if (Auth::user()->role === 'admin')
+                    <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-75">
+                        Go to Admin Dashboard
+                    </a>
+                    @elseif (Auth::user()->role === 'subadmin')
+                    <a href="{{ route('subadmin.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-75">
+                        Go to Subadmin Dashboard
+                    </a>
+                    @endif
+                </div>
+                <h3 class="font-medium text-primary mt-6">Hello! You don't have permissions to access the system please contact us at <a href="#">sdmd@usep.edu.ph</a></h3>
+            </div>
+            @endguest
+        </div>
+
+        <!-- Wave SVG -->
+        <img src="/images/wave.png" alt="Wave Effect" class="absolute bottom-0 left-0 w-full h-auto z-0">
     </div>
 </body>
 

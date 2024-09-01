@@ -6,6 +6,7 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css', 
+                'resources/js/redirect.js', 
                 'resources/js/app.js',
                 'resources/js/theme.js',
                 'resources/js/messages.js',

@@ -38,13 +38,13 @@
                 <div class="relative">
                     <img src="/images/SettingsIcon.png" class="ml-2 w-5 h-5 cursor-pointer" onclick="toggleDropdown()">
                     <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg hidden">
-                        <a href="{{ url('logout') }}" class="dropdown-item text-gray-800 hover:bg-gray-200">Logout</a>
-                        <hr class="border-t-2 border-gray-200 my-2">
                         <button onclick="setTheme('light')" class="dropdown-item text-gray-800 hover:bg-gray-200">Light Theme</button>
                         <button onclick="setTheme('dark')" class="dropdown-item text-gray-800 hover:bg-gray-200">Dark Theme</button>
                         <button onclick="setTheme('rosyred')" class="dropdown-item text-gray-800 hover:bg-gray-200">Rosy Red</button>
                         <button onclick="setTheme('theme2')" class="dropdown-item text-gray-800 hover:bg-gray-200">Theme 2</button>
                         <button onclick="setTheme('theme3')" class="dropdown-item text-gray-800 hover:bg-gray-200">Theme 3</button>
+                        <hr class="border-t-2 border-gray-200 my-2">
+                        <a href="{{ url('logout') }}" class="dropdown-item text-gray-800 hover:bg-gray-200">Logout</a>
                     </div>
                 </div>
             </div>

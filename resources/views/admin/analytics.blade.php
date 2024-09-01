@@ -44,7 +44,7 @@
             </div>
             <div class="bg-purple-100 p-4 rounded-lg">
                 <h2 class="text-xl font-bold">Cancelled Messages</h2>
-                <p class="text-2xl font-semibold" id="total-cancelled">0</p> <!-- New Section -->
+                <p class="text-2xl font-semibold" id="total-cancelled">0</p>
             </div>
             <div class="bg-purple-100 p-4 rounded-lg">
                 <h2 class="text-xl font-bold">Remaining Balance</h2>

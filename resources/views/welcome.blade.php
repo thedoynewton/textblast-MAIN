@@ -82,23 +82,38 @@
             <img src="/images/SePhi Favicon.png" alt="USeP Logo" class="w-24 h-24 mx-auto">
             <h1 class="font-bold text-2xl text-center mt-4 text-primary">WELCOME BACK</h1>
             <p class="text-center text-gray-600 mt-2 mb-12">Proceed to login by selecting login options</p>
-            <form>
-                <!-- Google Login Button -->
-                <a href="{{ url('auth/google') }}" class="inline-flex items-center justify-center px-4 py-2 mb-4 bg-primary text-white font-semibold rounded-lg shadow-md w-full">
-                    Continue with Google
-                </a>
 
-                <!-- Divider -->
-                <div class="flex items-center my-4">
-                    <hr class="flex-grow border-gray-300">
-                    <span class="mx-4 text-gray-500">or</span>
-                    <hr class="flex-grow border-gray-300">
-                </div>
+            <!-- Google Login Button -->
+            <a href="{{ url('auth/google') }}" class="inline-flex items-center justify-center px-4 py-2 mb-4 bg-primary text-white font-semibold rounded-lg shadow-md w-full">
+                Continue with Google
+            </a>
+
+            <!-- Divider -->
+            <div class="flex items-center my-4">
+                <hr class="flex-grow border-gray-300">
+                <span class="mx-4 text-gray-500">or</span>
+                <hr class="flex-grow border-gray-300">
+            </div>
+
+            <!-- Email Login Form -->
+            <form action="{{ route('login.email') }}" method="POST">
+                @csrf
+
+                <!-- Display Validation Errors -->
+                @if ($errors->any())
+                    <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
+                        <ul class="list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
                 <!-- Email Input -->
                 <div class="mb-4">
                     <label for="email" class="block text-gray-700 text-left mb-2">Email</label>
-                    <input type="email" id="email" placeholder="Enter your USeP email" class="border rounded border-gray-500 py-2 px-3 w-full">
+                    <input type="email" id="email" name="email" placeholder="Enter your USeP email" class="border rounded border-gray-500 py-2 px-3 w-full" required>
                 </div>
 
                 <!-- Email Login Button -->

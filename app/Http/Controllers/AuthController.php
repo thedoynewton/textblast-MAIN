@@ -7,6 +7,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
@@ -57,6 +58,34 @@ class AuthController extends Controller
             return redirect('/')->with('error', 'Access denied. You do not have the required permissions.');
         }
     }
+
+    public function loginWithEmail(Request $request)
+{
+    // Validate the email input
+    $validator = Validator::make($request->all(), [
+        'email' => 'required|email|exists:users,email',
+    ]);
+
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
+    }
+
+    // Find the user by email
+    $user = User::where('email', $request->input('email'))->first();
+
+    if ($user) {
+        Auth::login($user);
+
+        // Redirect to the appropriate dashboard
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        } elseif ($user->role === 'subadmin') {
+            return redirect()->route('subadmin.dashboard');
+        }
+    }
+
+    return redirect()->back()->with('error', 'Login failed. Please try again.');
+}
 
     public function logout()
     {

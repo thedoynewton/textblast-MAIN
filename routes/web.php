@@ -23,6 +23,8 @@ Route::get('/access-denied', function () {
     return view('access-denied');
 })->name('access.denied');
 
+Route::post('login/email', [AuthController::class, 'loginWithEmail'])->name('login.email');
+
 // Admin Routes (with authentication and role middleware)
 Route::middleware(['auth', CheckRole::class . ':admin'])->group(function () {
     // Dashboard

@@ -19,17 +19,17 @@ class CheckRole
     public function handle($request, Closure $next, $role)
     {
         // Check if the user is authenticated
-        if (Auth::check()) {
-            // Check if the authenticated user's role matches the required role
-            if (Auth::user()->role === $role) {
-                return $next($request);
-            }
-
-            // If the user's role does not match, redirect them with an error message
-            return redirect('/')->with('error', 'You do not have access to this page.');
+        if (!Auth::check()) {
+            return redirect()->route('google.login')->with('error', 'Please log in to access this page.');
         }
-
-        // If the user is not authenticated, redirect them to the login page
-        return redirect()->route('login')->with('error', 'Please log in to access this page.');
+    
+        // Check if the authenticated user's role matches the required role
+        if (Auth::user()->role === $role) {
+            return $next($request);
+        }
+    
+        // If the user's role does not match, redirect them to the access denied page
+        return redirect()->route('access.denied');
     }
+    
 }

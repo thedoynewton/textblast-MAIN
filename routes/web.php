@@ -15,6 +15,14 @@ Route::get('auth/google', [AuthController::class, 'redirectToGoogle'])->name('go
 Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 
+Route::get('/login', function () {
+    return redirect()->route('google.login');
+})->name('login');
+
+Route::get('/access-denied', function () {
+    return view('access-denied');
+})->name('access.denied');
+
 // Admin Routes (with authentication and role middleware)
 Route::middleware(['auth', CheckRole::class . ':admin'])->group(function () {
     // Dashboard

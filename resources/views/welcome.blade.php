@@ -71,7 +71,6 @@
             </div>
         </div>
 
-
         <!-- Right Side Login Form -->
         <div class="floating-panel w-full max-w-md p-8 text-center bg-white">
             @if (session('error'))
@@ -114,27 +113,6 @@
                     <p class="text-gray-500 mb-2">Having Trouble?</p>
                     <a href="#" class="text-primary">Send us a message</a>
                 </div>
-            </div>
-            @else
-            <div class="text-center">
-                <img src="{{ Auth::user()->avatar }}" alt="user profile" class="w-24 h-24 rounded-full mx-auto mb-4">
-                <h2 class="text-xl font-semibold">{{ Auth::user()->name }}</h2>
-                <p class="text-gray-600">{{ Auth::user()->email }}</p>
-                <a href="{{ url('logout') }}" class="inline-flex items-center px-4 py-2 mt-4 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-75">
-                    Logout
-                </a>
-                <div class="mt-4">
-                    @if (Auth::user()->role === 'admin')
-                    <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-75">
-                        Go to Admin Dashboard
-                    </a>
-                    @elseif (Auth::user()->role === 'subadmin')
-                    <a href="{{ route('subadmin.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-75">
-                        Go to Subadmin Dashboard
-                    </a>
-                    @endif
-                </div>
-                <h3 class="font-medium text-primary mt-6">Hello! You don't have permissions to access the system please contact us at <a href="#">sdmd@usep.edu.ph</a></h3>
             </div>
             @endguest
         </div>

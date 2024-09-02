@@ -67,7 +67,18 @@ class AuthController extends Controller
 
     public function index()
     {
-        //return to welcome page
+        if (Auth::check()) {
+            // Redirect authenticated users to their appropriate dashboard
+            $user = Auth::user();
+            if ($user->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            } elseif ($user->role === 'subadmin') {
+                return redirect()->route('subadmin.dashboard');
+            }
+        }
+    
+        // If not authenticated, show the welcome page
         return view('welcome');
     }
+    
 }

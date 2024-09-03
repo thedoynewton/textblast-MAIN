@@ -95,7 +95,7 @@ class FilterController extends Controller
     } elseif ($filter === 'employees') {
         $results = $employeesQuery->get();
     } else {
-        $results = $studentsQuery->get()->merge($employeesQuery->get());
+        $results = $studentsQuery->get()->concat($employeesQuery->get());
     }
 
     $formattedResults = $results->map(function ($item) {

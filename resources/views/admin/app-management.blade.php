@@ -10,6 +10,14 @@
     Import
 </button>
 
+<style>
+    .highlight {
+        background-color: yellow;
+        font-weight: bold;
+    }
+</style>
+
+
 <div class="container mx-auto">
     <div class="bg-white p-6 rounded-lg shadow-lg">
 
@@ -131,9 +139,38 @@
 
         <!-- Message Logs Tab -->
         <div id="messageLogs" class="tab-content hidden">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                <!-- Search Bar -->
+                <div>
+                    <label for="search" class="block text-sm font-medium text-gray-700">Search Logs</label>
+                    <input type="text" id="search" placeholder="Search for logs..." class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
+                </div>
+
+                <!-- Recipient Type Filter -->
+                <div>
+                    <label for="recipientType" class="block text-sm font-medium text-gray-700">Filter Recipient</label>
+                    <select id="recipientType" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
+                        <option value="all" selected>All Recipients</option>
+                        <option value="students">Students</option>
+                        <option value="employees">Employees</option>
+                    </select>
+                </div>
+
+                <!-- Message Type Filter -->
+                <div>
+                    <label for="messageType" class="block text-sm font-medium text-gray-700">Filter Message Type</label>
+                    <select id="messageType" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
+                        <option value="all" selected>All Message Types</option>
+                        <option value="immediate">Immediate</option>
+                        <option value="scheduled">Scheduled</option>
+                    </select>
+                </div>
+            </div>
+
             <!-- Message Logs Table -->
             <div class="overflow-x-auto overflow-y-auto max-h-96 mb-8">
-                <table id="messageLogsTable" class="min-w-full bg-white border border-gray-300 rounded-lg">
+                <table id="messageLogsTable" class="min-w-full bg-white border border-gray-300 rounded-lg divide-y divide-gray-200">
                     <thead class="bg-gray-100">
                         <tr>
                             <th class="py-3 px-4 border-b font-medium text-gray-700">User</th>
@@ -191,5 +228,5 @@
     </div>
 </div>
 
-@vite(['resources/js/app-management.js'])
+@vite(['resources/js/app-management.js', 'resources/js/searchMessageLogs.js'])
 @endsection

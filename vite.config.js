@@ -6,14 +6,25 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css', 
-                'resources/js/redirect.js', 
+
+                // General Blade (Welcome, Admin & Subadmin)
                 'resources/js/app.js',
-                'resources/js/theme.js',
+                'resources/js/redirect.js', // Welcome
+                'resources/js/theme.js', // Admin
+
+                // Message Page
                 'resources/js/messages.js',
                 'resources/js/messagesWarning.js',
+
+                // Analytics
                 'resouces/js/analytics.js',
+
+                // User Management
                 'resources/js/userManagement.js',
-                'resources/js/app-management.js'
+
+                // App Management
+                'resources/js/app-management.js',
+                'resources/js/searchMessageLogs.js'
             ],
             refresh: true,
         }),

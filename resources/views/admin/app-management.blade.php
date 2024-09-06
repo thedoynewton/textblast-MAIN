@@ -93,9 +93,11 @@
         <!-- Message Templates Tab -->
         <div id="messageTemplates" class="tab-content hidden">
             <!-- Add Message Template Button -->
-            <div class="mb-4">
+            <div class="mb-4 text-right">
                 <a href="{{ route('message_templates.create') }}"
-                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200 ease-in-out">Add New Template</a>
+                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200 ease-in-out">
+                    Add New Template
+                </a>
             </div>
 
             <!-- Message Templates Table -->
@@ -103,25 +105,41 @@
                 <table id="messageTemplatesTable" class="min-w-full bg-white border border-gray-300 rounded-lg">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="py-3 px-4 border-b font-medium text-gray-700">Template Name</th>
-                            <th class="py-3 px-4 border-b font-medium text-gray-700">Message Content</th>
-                            <th class="py-3 px-4 border-b font-medium text-gray-700">Actions</th>
+                            <th class="py-3 px-4 border-b font-medium text-gray-700 text-left">Template Name</th>
+                            <th class="py-3 px-4 border-b font-medium text-gray-700 text-left">Message Content</th>
+                            <th class="py-3 px-4 border-b font-medium text-gray-700 text-left">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($messageTemplates as $template)
                         <tr class="hover:bg-gray-50 transition duration-150 ease-in-out">
                             <td class="py-3 px-4 border-b text-gray-600">{{ $template->name }}</td>
-                            <td class="py-3 px-4 border-b text-gray-600">{{ $template->content }}</td>
+                            <td class="py-3 px-4 border-b text-gray-600 text-left">
+                                {{ \Illuminate\Support\Str::limit($template->content, 70, '...') }}
+                                @if (strlen($template->content) > 70)
+                                <a href="#" class="text-blue-500 hover:underline"
+                                    data-modal-target="#messageContentModal"
+                                    data-template-name="{{ $template->name }}"
+                                    data-content="{{ $template->content }}">
+                                    Read More
+                                </a>
+                                @endif
+                            </td>
                             <td class="py-3 px-4 border-b text-gray-600">
-                                <a href="{{ route('message_templates.edit', $template->id) }}"
-                                    class="text-blue-500 hover:underline">Edit</a>
-                                <form action="{{ route('message_templates.destroy', $template->id) }}"
-                                    method="POST" class="inline-block">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-500 hover:underline ml-2">Delete</button>
-                                </form>
+                                <div class="flex space-x-2">
+                                    <a href="{{ route('message_templates.edit', $template->id) }}"
+                                        class="text-blue-500 hover:underline">
+                                        <x-tni-edit-circle class="w-9 h-9" />
+                                    </a>
+                                    <form action="{{ route('message_templates.destroy', $template->id) }}"
+                                        method="POST" class="inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="focus:outline-none">
+                                            <x-mdi-delete-circle class="w-10 h-10 text-red-500" />
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         @endforeach
@@ -228,5 +246,34 @@
     </div>
 </div>
 
-@vite(['resources/js/app-management.js', 'resources/js/searchMessageLogs.js'])
+<!-- Modal For Message Templates -->
+<div id="messageContentModal" class="fixed z-10 inset-0 flex items-center justify-center overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+    <!-- Modal Content -->
+    <div class="bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                        <!-- Title will be dynamically loaded here -->
+                    </h3>
+                    <div class="mt-2">
+                        <pre class="text-sm text-gray-500 whitespace-pre-wrap" id="modal-message-content">
+                        <!-- Message content will be dynamically loaded here -->
+                        </pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" id="close-modal">
+                Close
+            </button>
+        </div>
+    </div>
+
+</div>
+
+@vite(['resources/js/app-management.js', 'resources/js/searchMessageLogs.js', 'resources/js/modal.js'])
 @endsection

@@ -24,7 +24,8 @@ export default defineConfig({
 
                 // App Management
                 'resources/js/app-management.js',
-                'resources/js/searchMessageLogs.js'
+                'resources/js/searchMessageLogs.js',
+                'resources/js/modal.js'
             ],
             refresh: true,
         }),

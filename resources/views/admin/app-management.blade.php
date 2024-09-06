@@ -17,7 +17,6 @@
     }
 </style>
 
-
 <div class="container mx-auto">
     <div class="bg-white p-6 rounded-lg shadow-lg">
 
@@ -76,11 +75,11 @@
                 <table id="contactsTable" class="min-w-full bg-white border border-gray-300 rounded-lg">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="py-3 px-4 border-b font-semibold text-gray-500">First Name</th>
-                            <th class="py-3 px-4 border-b font-semibold text-gray-500">Last Name</th>
-                            <th class="py-3 px-4 border-b font-semibold text-gray-500">Middle Name</th>
-                            <th class="py-3 px-4 border-b font-semibold text-gray-500">Contact</th>
-                            <th class="py-3 px-4 border-b font-semibold text-gray-500">Email</th>
+                            <th class="py-3 px-4 border-b font-semibold text-gray-500 text-left">First Name</th>
+                            <th class="py-3 px-4 border-b font-semibold text-gray-500 text-left">Last Name</th>
+                            <th class="py-3 px-4 border-b font-semibold text-gray-500 text-left">Middle Name</th>
+                            <th class="py-3 px-4 border-b font-semibold text-gray-500 text-left">Contact</th>
+                            <th class="py-3 px-4 border-b font-semibold text-gray-500 text-left">Email</th>
                         </tr>
                     </thead>
                     <tbody id="contactsTableBody">
@@ -157,14 +156,12 @@
 
         <!-- Message Logs Tab -->
         <div id="messageLogs" class="tab-content hidden">
-
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                 <!-- Search Bar -->
                 <div>
                     <label for="search" class="block text-sm font-medium text-gray-700">Search Logs</label>
                     <input type="text" id="search" placeholder="Search for logs..." class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
                 </div>
-
                 <!-- Recipient Type Filter -->
                 <div>
                     <label for="recipientType" class="block text-sm font-medium text-gray-700">Filter Recipient</label>
@@ -174,7 +171,6 @@
                         <option value="employees">Employees</option>
                     </select>
                 </div>
-
                 <!-- Message Type Filter -->
                 <div>
                     <label for="messageType" class="block text-sm font-medium text-gray-700">Filter Message Type</label>

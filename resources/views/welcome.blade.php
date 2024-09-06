@@ -101,13 +101,15 @@
 
                 <!-- Display Validation Errors -->
                 @if ($errors->any())
-                    <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
-                        <ul class="list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+                <div class="bg-red-100 text-red-700 p-4 rounded mb-4 text-left">
+                    @foreach ($errors->all() as $error)
+                    @if ($error == 'The selected email is invalid.')
+                    <div>This USeP email does not have access to this System. For concerns please contact sdmd@usep.edu.ph.</div>
+                    @else
+                    <div>{{ $error }}</div>
+                    @endif
+                    @endforeach
+                </div>
                 @endif
 
                 <!-- Email Input -->

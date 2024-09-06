@@ -7,60 +7,87 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+# BRANCH - Text Broadcasting System
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Important Information
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Ensure you have the .env file within your laravel project folder.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+### 1. Database Setup
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**For Windows Users:**
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+1. Install Microsoft SQL Server for database purposes.
+2. Clone the repository to your local environment.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**For Mac Users:**
 
-## Laravel Sponsors
+1. Install Docker and Azure Data Studio.
+2. Create a container in your docker before creating a database connection.
+Run this docker command, to create a container specific to MacOS M1 Chip
+```bash
+# For Docker Set-Up
+docker pull --platform linux/arm64/v8 mcr.microsoft.com/azure-sql-edge
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# Replace userNameHere, YourPasswordHere, serverName base from your needs
+docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_usernameHere_PASSWORD=YourPasswordHere' -p 1433:1433 --name serverName --platform linux/arm64/v8 -d mcr.microsoft.com/azure-sql-edge
+```
 
-### Premium Partners
+3. Create a database connection in your Azure Data Studio
+After the connection between Docker and Azure Data Studio is established,
+4. Create an empty database without tables.
+5. Run this command in your Laravel project terminal
+```bash
+# This should create the tables in your database
+php artisan migrate
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+6. Run a new query in your database, for the data to be stored in the table
+7. Clone the repository to your local environment.
 
-## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-## Code of Conduct
+### 2. Project Setup
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Once the database has been set up, navigate to your project directory and run the following commands:
 
-## Security Vulnerabilities
+```bash
+# Install PHP dependencies
+composer install
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Install JavaScript dependencies
+npm i
+```
 
-## License
+### 3. Running the Application
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+To start the application, execute the following commands:
+
+```bash
+# Start the Laravel development server
+php artisan serve
+
+# Start the queue worker
+php artisan queue:work
+
+# Compile assets with Vite
+npm run dev  # For Vite to load
+```
+
+### 4. Blade Icons
+
+If you encounter an error with Blade Icons, this command should install the required dependencies.
+```bash
+composer install
+
+# For the Message Templates Icons
+composer require codeat3/blade-teeny-icons
+composer require postare/blade-mdi
+```
+
+
+### Additional Notes
+
+1. Ensure your .env file is configured with the correct database connection details.
+2. For further assistance, contact the development team

@@ -11,23 +11,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
         tableRows.forEach(row => {
             const cells = row.querySelectorAll('td');
-            let rowText = '';
             let matchFound = false;
             let recipientTypeMatch = true;
             let messageTypeMatch = true;
 
             // Check if the row matches the selected recipient type
-            const recipientTypeCell = row.querySelector('td:nth-child(2)'); // Assuming the recipient type is in the second column
+            const recipientTypeCell = row.querySelector('td:nth-child(2)'); // Adjust the index if necessary
             if (recipientType !== 'all' && recipientTypeCell.textContent.toLowerCase() !== recipientType) {
                 recipientTypeMatch = false;
             }
 
-            // Check if the row matches the selected message type
-            const messageTypeCell = row.querySelector('td:nth-child(4)'); // Assuming the message type is in the fourth column
-            if (messageType !== 'all' && messageTypeCell.textContent.toLowerCase() !== messageType) {
-                messageTypeMatch = false;
+            // Check if the row matches the selected message type in both Message Type and Status columns
+            const messageTypeCell = row.querySelector('td:nth-child(4)'); // Assuming Message Type is in the 4th column
+            const statusCell = row.querySelector('td:nth-child(9)'); // Assuming Status is in the 9th column
+            
+            if (messageType !== 'all') {
+                if (messageTypeCell.textContent.toLowerCase() !== messageType &&
+                    statusCell.textContent.toLowerCase() !== messageType) {
+                    messageTypeMatch = false;
+                }
             }
 
+            // Highlight search term if found
             cells.forEach(cell => {
                 const cellText = cell.textContent.toLowerCase();
                 if (cellText.includes(searchTerm)) {
@@ -37,9 +42,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else {
                     cell.innerHTML = cell.textContent; // Reset if no match
                 }
-                rowText += cellText;
             });
 
+            // Show or hide the row based on matching criteria
             if (matchFound && recipientTypeMatch && messageTypeMatch) {
                 row.style.display = '';
             } else {

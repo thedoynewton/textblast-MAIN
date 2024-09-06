@@ -68,14 +68,8 @@
             </div>
         </div>
         <div class="flex flex-col sm:flex-row justify-end mt-8 space-y-4 sm:space-y-0 sm:space-x-4">
-            <button type="reset"
-                class="w-full p-2 sm:w-auto bg-red-500 text-white text-sm font-semibold rounded-md shadow-md py-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 transition-transform duration-300 hover:scale-105">
-                Clear Fields
-            </button>
-            <button type="submit"
-                class="w-full p-2 sm:w-auto bg-blue-500 text-white text-sm font-semibold rounded-md shadow-md py-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition-transform duration-300 hover:scale-105">
-                Add User
-            </button>
+            <x-button type="reset" color="red">Clear Fields</x-button>
+            <x-button type="submit" color="green">Add User</x-button>
         </div>
     </form>
 

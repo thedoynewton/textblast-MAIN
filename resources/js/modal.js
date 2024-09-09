@@ -21,11 +21,4 @@ document.addEventListener('DOMContentLoaded', function () {
     closeModalButton.addEventListener('click', function () {
         modal.classList.add('hidden'); // Hide the modal
     });
-
-    // Close modal when clicking outside of it
-    window.addEventListener('click', function (event) {
-        if (event.target == modal) {
-            modal.classList.add('hidden'); // Hide the modal if clicking outside
-        }
-    });
 });

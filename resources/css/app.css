@@ -1,8 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
 
 :root {
     --primary-bg: #c3cbdc;
@@ -43,7 +43,8 @@ body {
 /* LOGO */
 .text-gradient {
     background: linear-gradient(90deg, #614514, #c78e29);
-    -webkit-background-clip: text;
+    background-clip: text; /* Standard property for modern browsers */
+    -webkit-background-clip: text; /* Vendor prefix for older WebKit browsers */
     -webkit-text-fill-color: transparent;
 }
 
@@ -119,4 +120,9 @@ body {
 #exportDropdown {
     top: 40px;
     /* Adjust this value if needed to better align the dropdown */
+}
+
+.highlight {
+    background-color: yellow;
+    font-weight: bold;
 }

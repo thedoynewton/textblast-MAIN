@@ -17,7 +17,7 @@ export default defineConfig({
                 'resources/js/messagesWarning.js',
 
                 // Analytics
-                'resouces/js/analytics.js',
+                'resources/js/analytics.js',
 
                 // User Management
                 'resources/js/userManagement.js',

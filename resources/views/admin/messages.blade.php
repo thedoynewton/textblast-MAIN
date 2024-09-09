@@ -194,7 +194,7 @@
         </div>
 
         <div class="flex justify-end">
-            <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded-lg">Review Message</button>
+            <x-button type="submit" color="yellow">Review Message</x-button>
         </div>
     </form>
 </div>

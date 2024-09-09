@@ -139,18 +139,34 @@ class AdminController extends Controller
 
     public function addUser(Request $request)
     {
+        // Validate the input
         $request->validate([
             'name' => 'required|string|max:50',
-            'email' => ['required', 'string', 'email', 'max:50', 'unique:users', 'regex:/^[a-zA-Z0-9._%+-]+@usep\.edu\.ph$/'],
+            'email' => [
+                'required', 
+                'string', 
+                'email', 
+                'max:50', 
+                'regex:/^[a-zA-Z0-9._%+-]+@usep\.edu\.ph$/', // Ensure it's a valid @usep.edu.ph email
+                'unique:users,email' // Ensure email doesn't already exist in the users table
+            ],
         ]);
-
+    
+        // Check if the email exists in the Employee table
+        $employee = Employee::where('emp_email', $request->email)->first();
+    
+        if (!$employee) {
+            return redirect()->back()->withErrors(['email' => 'The email does not exist in the Employee records.']);
+        }
+    
+        // Create the user if the email exists in Employee table
         User::create([
             'name' => $request->name,
             'email' => $request->email,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
+    
         return redirect()->route('admin.user-management')->with('success', 'User added successfully.');
     }
 

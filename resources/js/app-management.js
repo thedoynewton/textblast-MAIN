@@ -1,9 +1,17 @@
-//This is for the tabs highlight (DO NOT MODIFY)
+// This is for the tabs highlight (DO NOT MODIFY)
 document.addEventListener('DOMContentLoaded', function () {
     const buttons = document.querySelectorAll('.tab-button');
     const hiddenInput = document.getElementById('selected_tab');
 
+    // Get the current tab from the URL (query parameter)
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentTab = urlParams.get('tab') || 'contacts';  // Default to 'contacts' tab
+
+    // Set the hidden input value based on the URL parameter
+    hiddenInput.value = currentTab;
+
     buttons.forEach(button => {
+        // Add click event listener for each button
         button.addEventListener('click', function () {
             // Remove the active state from all buttons
             buttons.forEach(btn => btn.classList.remove('text-indigo-500', 'border-b-2', 'border-indigo-500'));
@@ -14,15 +22,15 @@ document.addEventListener('DOMContentLoaded', function () {
             // Update the hidden input value
             hiddenInput.value = this.getAttribute('data-value');
 
-            // Handle tab content display (assuming you have tab content divs)
+            // Handle tab content display
             const tabContents = document.querySelectorAll('.tab-content');
             tabContents.forEach(content => content.classList.add('hidden'));
             document.getElementById(this.getAttribute('data-value')).classList.remove('hidden');
         });
     });
 
-    // Trigger the first tab to be open by default on page load
-    buttons[0].click();
+    // Automatically activate the tab from the URL parameter or the default one
+    document.querySelector(`[data-value="${currentTab}"]`).click();
 });
 
 // JavaScript to handle fetching, displaying, and searching contacts

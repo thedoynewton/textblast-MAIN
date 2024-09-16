@@ -158,7 +158,7 @@
                 <h2 class="text-xl font-bold">Messages Sent Over Time</h2>
                 <div class="relative inline-block text-left">
                     <button id="exportChartButton" class="inline-flex justify-center w-full rounded-md border-gray-300 shadow-sm px-4 py-2 bg-blue-500 text-white text-sm font-medium hover:bg-blue-700">
-                        Export Chart
+                        Generate Report
                     </button>
                     <div id="exportDropdown" class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden">
                         <div class="py-1">

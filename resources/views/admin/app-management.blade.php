@@ -224,10 +224,14 @@
                                 @if ($log->status === 'Pending')
                                 <form action="{{ route('admin.cancelScheduledMessage', $log->id) }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="text-red-500 hover:underline">Cancel</button>
+                                    <button type="submit" class="text-red-500 hover:underline">
+                                        <div class="rounded-full bg-red-500 p-2 hover:bg-red-600" title="Cancel Send">
+                                            <img src="/images/cancel.png" alt="Remove Access" class="h-5 w-5" style="filter: brightness(0) invert(1);">
+                                        </div>
+                                    </button>
                                 </form>
                                 @else
-                                <span class="text-gray-400">Cannot Cancel</span>
+                                <span class="text-gray-400">N/A</span>
                                 @endif
                             </td>
                         </tr>

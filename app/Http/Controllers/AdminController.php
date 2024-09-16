@@ -73,6 +73,13 @@ class AdminController extends Controller
         $balanceData = $moviderService->getBalance();
         $balance = $balanceData['balance'] ?? 0;
 
+        // Fetch campuses, years, offices, statuses, and types from the database
+        $campuses = Campus::all();
+        $years = Year::all();
+        $offices = Office::all();
+        $statuses = Status::all();
+        $types = Type::all();
+
         // Set the threshold for low balance
         $warningThreshold = 0.065; // Adjust as needed
 
@@ -82,7 +89,7 @@ class AdminController extends Controller
         // Log the balance value
         Log::info('Movider Balance:', ['balance' => $balance]);
 
-        return view('admin.analytics', compact('balance', 'lowBalance'));
+        return view('admin.analytics', compact('balance', 'lowBalance', 'campuses', 'years', 'offices', 'statuses', 'types'));
     }
 
 

@@ -1,10 +1,22 @@
 document.addEventListener('DOMContentLoaded', function () {
     const dateRangeSelect = document.getElementById('date-range');
+    const recipientTypeSelect = document.getElementById('recipient-type');
+    const studentFilters = document.getElementById('student-filters');
+    const employeeFilters = document.getElementById('employee-filters');
+    const campusSelect = document.getElementById('campus');
+    const collegeSelect = document.getElementById('college');
+    const programSelect = document.getElementById('program');
+    const yearSelect = document.getElementById('year');
+    const officeSelect = document.getElementById('office');
+    const statusSelect = document.getElementById('status');
+    const typeSelect = document.getElementById('type');
 
+    // Function to update analytics data
     function updateAnalytics() {
         const dateRange = dateRangeSelect.value;
+        const recipientType = recipientTypeSelect ? recipientTypeSelect.value : null;
 
-        fetch(`/api/analytics?date_range=${dateRange}`)
+        fetch(`/api/analytics?date_range=${dateRange}&recipient_type=${recipientType}`)
             .then(response => response.json())
             .then(data => {
                 // Update the numbers
@@ -12,7 +24,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('total-failed').textContent = data.total_failed;
                 document.getElementById('total-scheduled').textContent = data.total_scheduled;
                 document.getElementById('total-immediate').textContent = data.total_immediate;
-                document.getElementById('total-cancelled').textContent = data.total_cancelled; // Update cancelled messages
                 document.getElementById('remaining-balance').textContent = data.balance;
 
                 // Update the chart
@@ -23,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const ctx = document.getElementById('messagesChart').getContext('2d');
     let messagesChart = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: [],
             datasets: [{
@@ -54,29 +65,101 @@ document.addEventListener('DOMContentLoaded', function () {
         messagesChart.update();
     }
 
-    // Fetch data on load
-    updateAnalytics();
+    // Handle recipient type change and toggle filters
+    if (recipientTypeSelect) {
+        recipientTypeSelect.addEventListener('change', function () {
+            const recipientType = recipientTypeSelect.value;
 
-    // Fetch data on date range change
+            if (recipientType === 'student') {
+                studentFilters.classList.remove('hidden');
+                employeeFilters.classList.add('hidden');
+            } else if (recipientType === 'employee') {
+                studentFilters.classList.add('hidden');
+                employeeFilters.classList.remove('hidden');
+            } else if (recipientType === 'both') {
+                studentFilters.classList.remove('hidden');
+                employeeFilters.classList.remove('hidden');
+            }
+
+            // Fetch new analytics data on recipient change
+            updateAnalytics();
+        });
+    }
+
+    // Handle campus change and populate college dropdown
+    if (campusSelect) {
+        campusSelect.addEventListener('change', function () {
+            const campusId = this.value;
+            if (campusId) {
+                fetch(`/analytics/colleges?campus_id=${campusId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        collegeSelect.innerHTML = '<option value="" disabled selected>Select College</option>';
+                        data.forEach(college => {
+                            collegeSelect.innerHTML += `<option value="${college.college_id}">${college.college_name}</option>`;
+                        });
+                        collegeSelect.disabled = false;
+                    })
+                    .catch(error => console.error('Error fetching colleges:', error));
+            }
+        });
+    }
+
+    // Handle college change and populate program dropdown
+    if (collegeSelect) {
+        collegeSelect.addEventListener('change', function () {
+            const collegeId = this.value;
+            if (collegeId) {
+                fetch(`/analytics/programs?college_id=${collegeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        programSelect.innerHTML = '<option value="" disabled selected>Select Program</option>';
+                        data.forEach(program => {
+                            programSelect.innerHTML += `<option value="${program.program_id}">${program.program_name}</option>`;
+                        });
+                        programSelect.disabled = false;
+                    })
+                    .catch(error => console.error('Error fetching programs:', error));
+            }
+        });
+    }
+
+    // Fetch year data on page load
+    if (yearSelect) {
+        fetch('/analytics/years')
+            .then(response => response.json())
+            .then(data => {
+                yearSelect.innerHTML = '<option value="" disabled selected>Select Year</option>';
+                data.forEach(year => {
+                    yearSelect.innerHTML += `<option value="${year.year_id}">${year.year_name}</option>`;
+                });
+            })
+            .catch(error => console.error('Error fetching years:', error));
+    }
+
+    // Fetch data on load and for date range changes
+    updateAnalytics();
     dateRangeSelect.addEventListener('change', updateAnalytics);
 
-    // Toggle the dropdown visibility
+    // Toggle the export dropdown visibility
     const exportButton = document.getElementById('exportChartButton');
     const dropdown = document.getElementById('exportDropdown');
 
-    exportButton.addEventListener('click', function (event) {
-        dropdown.classList.toggle('hidden');
-        event.stopPropagation(); // Prevent click event from propagating to document
-    });
+    if (exportButton && dropdown) {
+        exportButton.addEventListener('click', function (event) {
+            dropdown.classList.toggle('hidden');
+            event.stopPropagation();
+        });
 
-    // Close the dropdown if clicked outside
-    document.addEventListener('click', function (event) {
-        if (!dropdown.classList.contains('hidden') && !dropdown.contains(event.target) && !exportButton.contains(event.target)) {
-            dropdown.classList.add('hidden');
-        }
-    });
+        // Close the dropdown if clicked outside
+        document.addEventListener('click', function (event) {
+            if (!dropdown.classList.contains('hidden') && !dropdown.contains(event.target) && !exportButton.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    }
 
-    // Export as PNG
+    // Export chart as PNG
     document.getElementById('exportPNG').addEventListener('click', function () {
         const canvas = document.getElementById('messagesChart');
         const ctx = canvas.getContext('2d');
@@ -99,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ctx.restore();
     });
 
-    // Export as Excel (using a library like SheetJS)
+    // Export chart as Excel (using a library like SheetJS)
     document.getElementById('exportExcel').addEventListener('click', function () {
         const workbook = XLSX.utils.book_new();
         const worksheetData = [
@@ -110,5 +193,4 @@ document.addEventListener('DOMContentLoaded', function () {
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Messages Sent');
         XLSX.writeFile(workbook, 'messages_chart.xlsx');
     });
-
 });

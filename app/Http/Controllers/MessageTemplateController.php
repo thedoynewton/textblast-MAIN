@@ -30,8 +30,8 @@ class MessageTemplateController extends Controller
             'name' => $request->input('name'),
             'content' => $request->input('content'),
         ]);
-
-        return redirect()->route('message_templates.index')->with('success', 'Message Template created successfully.');
+        return redirect()->route('admin.app-management', ['tab' => 'messageTemplates'])
+        ->with('success', 'Message Template created successfully.');
     }
 
     public function edit($id)
@@ -62,6 +62,8 @@ class MessageTemplateController extends Controller
         $template = MessageTemplate::findOrFail($id);
         $template->delete();
 
-        return redirect()->route('message_templates.index')->with('success', 'Message Template deleted successfully.');
+        return redirect()->route('admin.app-management', ['tab' => 'messageTemplates'])
+        ->with('success', 'Message Template deleted successfully.');
+
     }
 }

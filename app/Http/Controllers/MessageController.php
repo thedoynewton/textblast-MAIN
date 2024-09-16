@@ -626,32 +626,6 @@ class MessageController extends Controller
         // Return the total count as a JSON response
         return response()->json(['total' => $total ?: 0]); // Return 0 if no recipients are found
     }
-    
-
-    // public function getProgress($logId)
-    // {
-    //     $log = MessageLog::find($logId);
-    //     if ($log) {
-    //         $totalRecipients = $log->total_recipients;
-    //         $sentCount = $log->sent_count;
-    //         $failedCount = $log->failed_count;
-    //         $percentageSent = $totalRecipients > 0 ? ($sentCount + $failedCount) / $totalRecipients * 100 : 0;
-
-    //         return response()->json([
-    //             'percentageSent' => round($percentageSent, 2),
-    //             'sentCount' => $sentCount,
-    //             'failedCount' => $failedCount,
-    //             'totalRecipients' => $totalRecipients,
-    //         ]);
-    //     }
-
-    //     return response()->json([
-    //         'percentageSent' => 0,
-    //         'sentCount' => 0,
-    //         'failedCount' => 0,
-    //         'totalRecipients' => 0,
-    //     ]);
-    // }
 
     public function getProgress($logId)
     {
@@ -766,8 +740,6 @@ class MessageController extends Controller
         }
     }
     
-    
-
     private function getChartData($startDate)
     {
         // Retrieve message logs starting from the provided date
@@ -801,7 +773,6 @@ class MessageController extends Controller
         ];
     }
     
-
     private function getDateRange($dateRange)
     {
         // Determine the start date based on the selected date range
@@ -830,5 +801,4 @@ class MessageController extends Controller
         // Return the calculated start date
         return $startDate;
     }
-    
 }

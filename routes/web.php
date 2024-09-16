@@ -59,6 +59,9 @@ Route::middleware(['auth', CheckRole::class . ':admin'])->group(function () {
 
     // App Management
     Route::get('/admin/app-management', [AdminController::class, 'appManagement'])->name('admin.app-management');
+    
+    // Update Contact Number
+    Route::post('/admin/update-contact-number', [AdminController::class, 'updateContactNumber'])->name('admin.update-contact-number');
 });
 
 // Sub-Admin Routes (with authentication and role middleware)
@@ -71,10 +74,6 @@ Route::middleware(['auth', CheckRole::class . ':subadmin'])->group(function () {
     Route::post('/subadmin/broadcast', [MessageController::class, 'broadcastToRecipients'])->name('subadmin.broadcastToRecipients');
     Route::post('/subadmin/review-message', [MessageController::class, 'reviewMessage'])->name('subadmin.reviewMessage');
     Route::post('/subadmin/send-messages', [MessageController::class, 'sendBulkMessages'])->name('subadmin.send-messages');
-    //Route::post('/subadmin/messages/cancel/{id}', [MessageController::class, 'cancelScheduledMessage'])->name('subadmin.cancelScheduledMessage');
-
-    // Message Logs
-    //Route::get('/admin/message-logs', [MessageController::class, 'getMessageLogs'])->name('admin.messageLogs');
 
     // Analytics
     Route::get('/subadmin/analytics', [SubAdminController::class, 'analytics'])->name('subadmin.analytics');

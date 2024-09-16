@@ -42,7 +42,6 @@ class AdminController extends Controller
         return view('admin.messages', compact('campuses', 'colleges', 'programs', 'years', 'offices', 'statuses', 'types', 'messageTemplates'));
     }
 
-
     public function broadcastMessages(Request $request)
     {
         return app(MessageController::class)->broadcastToRecipients($request);
@@ -92,7 +91,6 @@ class AdminController extends Controller
         return view('admin.analytics', compact('balance', 'lowBalance', 'campuses', 'years', 'offices', 'statuses', 'types'));
     }
 
-
     public function userManagement()
     {
         $users = User::all();
@@ -137,7 +135,38 @@ class AdminController extends Controller
         );
     }
 
+    // Method to update the contact number
+    public function updateContactNumber(Request $request)
+    {
+        // Validate request data
+        $validator = $request->validate([
+            'email' => 'required|email',
+            'contact_number' => 'required|string|max:15',  // Modify as per requirements
+        ]);
 
+        $email = $request->input('email');
+        $newContactNumber = $request->input('contact_number');
+
+        // Look for the recipient by email (Student or Employee)
+        $recipient = Student::where('stud_email', $email)->first() ?? Employee::where('emp_email', $email)->first();
+
+        // If no recipient is found, return an error
+        if (!$recipient) {
+            return response()->json(['success' => false, 'message' => 'Recipient not found.'], 404);
+        }
+
+        // Update the contact number based on whether the recipient is a Student or Employee
+        if ($recipient instanceof Student) {
+            $recipient->stud_contact = $newContactNumber;
+        } else if ($recipient instanceof Employee) {
+            $recipient->emp_contact = $newContactNumber;
+        }
+
+        // Save the updated contact number
+        $recipient->save();
+
+        return response()->json(['success' => true, 'message' => 'Contact number updated successfully.']);
+    }
 
     public function importEmployees(Request $request)
     {

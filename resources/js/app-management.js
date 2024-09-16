@@ -33,12 +33,19 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector(`[data-value="${currentTab}"]`).click();
 });
 
-// JavaScript to handle fetching, displaying, and searching contacts
+// JavaScript to handle fetching, displaying, searching, and editing contacts
 document.addEventListener('DOMContentLoaded', function () {
     const campusSelect = document.getElementById('campus');
     const filterSelect = document.getElementById('filter');
     const contactsTableBody = document.getElementById('contactsTableBody');
     const contactsSearch = document.getElementById('contactsSearch');
+    const editContactModal = document.getElementById('editContactModal');
+    const editContactInput = document.getElementById('editContactInput');
+    const editContactEmail = document.getElementById('editContactEmail');
+    const saveContactBtn = document.getElementById('saveContactBtn');
+    const cancelContactBtn = document.getElementById('cancelContactBtn');
+
+    let currentEmail = '';
 
     // Function to fetch and display contacts
     function fetchContacts() {
@@ -61,6 +68,11 @@ document.addEventListener('DOMContentLoaded', function () {
                                         <td class="py-3 px-4 border-b text-gray-600">${contact.stud_mname || contact.emp_mname || ''}</td>
                                         <td class="py-3 px-4 border-b text-gray-600">${contact.stud_contact || contact.emp_contact}</td>
                                         <td class="py-3 px-4 border-b text-gray-600">${contact.stud_email || contact.emp_email}</td>
+                                        <td class="py-3 px-4 border-b text-gray-600">
+                                            <button class="edit-contact text-blue-500 hover:underline" data-email="${contact.stud_email || contact.emp_email}" data-contact="${contact.stud_contact || contact.emp_contact}">
+                                                Edit
+                                            </button>
+                                        </td>
                                     </tr>`;
                         contactsTableBody.insertAdjacentHTML('beforeend', row);
                     });
@@ -94,6 +106,58 @@ document.addEventListener('DOMContentLoaded', function () {
             tr[i].style.display = showRow ? '' : 'none';
         }
     }
+
+    // Handle clicking "Edit" in the contacts table
+    contactsTableBody.addEventListener('click', function (e) {
+        if (e.target && e.target.matches('.edit-contact')) {
+            const email = e.target.dataset.email;
+            const contact = e.target.dataset.contact;
+
+            currentEmail = email; // Set the email of the recipient to edit
+
+            // Populate the modal with current contact details
+            editContactInput.value = contact;
+            editContactEmail.value = email;
+
+            // Show the modal
+            editContactModal.classList.remove('hidden');
+        }
+    });
+
+    // Handle saving the new contact number
+    saveContactBtn.addEventListener('click', function () {
+        const newContactNumber = editContactInput.value;
+
+        fetch(`/api/contacts/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+            body: JSON.stringify({
+                email: currentEmail,
+                contact_number: newContactNumber,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Close the modal and refresh the contact list
+                editContactModal.classList.add('hidden');
+                fetchContacts();
+            } else {
+                alert('Failed to update contact');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+
+    // Handle cancel button
+    cancelContactBtn.addEventListener('click', function () {
+        editContactModal.classList.add('hidden');
+    });
 
     // Event listeners to trigger fetching contacts
     campusSelect.addEventListener('change', fetchContacts);

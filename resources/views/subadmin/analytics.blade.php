@@ -70,6 +70,7 @@
             </div>
             <canvas id="messagesChart" height="100"></canvas>
         </div>
+        <!-- End of Chart View -->
     </div>
 </div>
 

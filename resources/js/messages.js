@@ -171,8 +171,15 @@ function updateSelectOptions(selectId, options) {
 
 function clearDropdownOptions(selectId) {
     var select = document.getElementById(selectId);
-    select.innerHTML = '<option value="" disabled selected>Select ' + selectId.charAt(0).toUpperCase() + selectId.slice(1) + '</option>';
-    select.innerHTML += '<option value="all">All ' + selectId.charAt(0).toUpperCase() + selectId.slice(1) + '</option>';
+    select.innerHTML = ''; // Clear current options
+
+    if (selectId === 'college') {
+        select.innerHTML = '<option value="" disabled selected>Select Academic Unit</option>';
+        select.innerHTML += '<option value="all">All Academic Unit</option>';
+    } else {
+        select.innerHTML = '<option value="" disabled selected>Select ' + selectId.charAt(0).toUpperCase() + selectId.slice(1) + '</option>';
+        select.innerHTML += '<option value="all">All ' + selectId.charAt(0).toUpperCase() + selectId.slice(1) + '</option>';
+    }
 }
 
 function updateProgramDropdown() {

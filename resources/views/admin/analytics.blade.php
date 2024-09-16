@@ -17,7 +17,7 @@
         <!-- Number of Messages and Balance -->
         <div class="mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div class="bg-blue-100 p-4 rounded-lg">
-                <h2 class="text-xl font-bold">Total Messages Sent</h2>
+                <h2 class="text-xl font-bold">Total Messages Sent to Recipients</h2>
                 <p class="text-2xl font-semibold" id="total-sent">0</p>
             </div>
             <div class="bg-red-100 p-4 rounded-lg">

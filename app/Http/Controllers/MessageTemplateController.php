@@ -53,9 +53,10 @@ class MessageTemplateController extends Controller
             'content' => $request->input('content'),
         ]);
 
-        return redirect()->route('message_templates.index')->with('success', 'Message Template updated successfully.');
+        return redirect()->route('admin.app-management', ['tab' => 'messageTemplates'])
+        ->with('success', 'Template updated successfully.');
     }
-
+    
     public function destroy($id)
     {
         $template = MessageTemplate::findOrFail($id);

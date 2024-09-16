@@ -91,27 +91,6 @@ body {
     --secondary-text: #757575;
 }
 
-[data-theme="rosyred"] {
-    --primary-bg: #66070e;
-    --primary-text: #000000;
-    --secondary-bg: #ffcdcd94;
-    --secondary-text: #000000;
-}
-
-[data-theme="slimegreen"] {
-    --primary-bg: #1a5319;
-    --primary-text: #000000;
-    --secondary-bg: #80af81;
-    --secondary-text: #000000;
-}
-
-[data-theme="bluesky"] {
-    --primary-bg: #008dda;
-    --primary-text: #000000;
-    --secondary-bg: #a7cdff;
-    --secondary-text: #000000;
-}
-
 /* Export Button for Analytics Page */
 #exportChartButton {
     margin-right: 0;

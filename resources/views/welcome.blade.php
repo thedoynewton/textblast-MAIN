@@ -58,16 +58,9 @@
         <!-- Left Side Content -->
         <div class="absolute inset-0 flex justify-start items-center">
             <div class="flex flex-col items-center ml-40 mb-16">
-                <h1 class="font-semibold text-2xl text-center text-primary">USeP TEXT BROADCASTING SYSTEM</h1>
+                <h1 class="font-semibold text-2xl text-center text-primary">USeP TEXT BROADCAST SYSTEM</h1>
                 <!-- Using the SVG file as an image source -->
                 <img src="{{ asset('svg/loginIllus.svg') }}" alt="Broadcasting Image" class="w-[400px] h-auto lg:w-[500px] lg:h-auto">
-                <p class="text-gray-500 text-sm">
-                    Copyright © 2024. All Rights Reserved.
-                </p>
-                <div class="">
-                    <a href="#" class="text-primary hover:underline mx-2">Terms of Use</a> |
-                    <a href="#" class="text-primary hover:underline mx-2">Privacy Policy</a>
-                </div>
             </div>
         </div>
 
@@ -119,17 +112,18 @@
                 </div>
 
                 <!-- Email Login Button -->
-                <button type="submit" class="bg-primary text-white font-semibold px-4 py-2 rounded-lg w-full">
+                <button type="submit" class="bg-primary text-white font-semibold px-4 py-2 rounded-lg w-full mb-12">
                     Continue with email
                 </button>
             </form>
 
             <!-- Footer -->
-            <div class="mt-14">
-                <div class="text-center">
-                    <p class="text-gray-500 mb-2">Having Trouble?</p>
-                    <a href="#" class="text-primary">Send us a message</a>
-                </div>
+            <p class="text-gray-500 text-sm">
+                Copyright © 2024. All Rights Reserved.
+            </p>
+            <div class="">
+                <a href="#" class="text-primary hover:underline mx-2">Terms of Use</a> |
+                <a href="#" class="text-primary hover:underline mx-2">Privacy Policy</a>
             </div>
             @endguest
         </div>

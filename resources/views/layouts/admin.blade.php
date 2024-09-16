@@ -22,9 +22,8 @@
     <div class="bg-white w-73 flex flex-col justify-between fixed h-full z-50">
         <!-- Menu -->
         <div>
-            <div class="flex items-center my-5 align-center pl-6">
-                <img src="/images/SePhi Favicon.png" class="w-14 h-auto pr-2" />
-                <h1 class="text-gradient font-semibold text-xl">Text Broadcasting</h1>
+            <div class="flex justify-center my-5">
+                <img src="/images/SePhi Favicon.png" class="w-14 h-auto" />
             </div>
 
             <hr class="my-4 border-t-2 border-gray-200 w-full">
@@ -32,17 +31,11 @@
             <div class="flex items-center justify-center w-full my-10">
                 <img src="{{ Auth::user()->avatar }}" alt="user profile" class="w-10 h-auto rounded-full">
                 <p class="text-black pl-2 text-sm font-medium">{{ strtok(Auth::user()->email, '@') }}</p>
-                <div class="ml-2 px-2 py-1 h-6 text-black font-semibold text-xs rounded" style="background-color: #C3CBDC;">
-                    edu
-                </div>
                 <div class="relative">
-                    <img src="/images/SettingsIcon.png" class="ml-2 w-5 h-5 cursor-pointer" onclick="toggleDropdown()">
+                    <img src="/images/SettingsIcon.png" class="ml-12 w-5 h-5 cursor-pointer" onclick="toggleDropdown()">
                     <div id="dropdown" class="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg hidden">
                         <button onclick="setTheme('light')" class="dropdown-item text-gray-800 hover:bg-gray-200">Light Theme</button>
                         <button onclick="setTheme('dark')" class="dropdown-item text-gray-800 hover:bg-gray-200">Dark Theme</button>
-                        <button onclick="setTheme('rosyred')" class="dropdown-item text-gray-800 hover:bg-gray-200">Rosy Red</button>
-                        <button onclick="setTheme('slimegreen')" class="dropdown-item text-gray-800 hover:bg-gray-200">Slime Green</button>
-                        <button onclick="setTheme('bluesky')" class="dropdown-item text-gray-800 hover:bg-gray-200">Blue Sky</button>
                         <hr class="border-t-2 border-gray-200 my-2">
                         <a href="{{ url('logout') }}" class="dropdown-item text-gray-800 hover:bg-gray-200">Logout</a>
                     </div>

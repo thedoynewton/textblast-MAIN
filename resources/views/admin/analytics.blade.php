@@ -43,7 +43,6 @@
         </div>
 
         <!-- Default Filters -->
-        <h1 class="text-lg text-black font-semibold">Select Filters</h1>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
             <!-- Date Range Filter -->
             <div class="col-span-1">
@@ -85,9 +84,9 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- College Selection -->
                 <div class="col-span-1">
-                    <label for="college" class="block text-sm font-medium text-gray-700">College</label>
+                    <label for="college" class="block text-sm font-medium text-gray-700">Academic Unit</label>
                     <select name="college" id="college" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" disabled>
-                        <option value="" disabled selected>Select College</option>
+                        <option value="" disabled selected>Select Academic Unit</option>
                     </select>
                 </div>
 

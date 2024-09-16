@@ -4,12 +4,6 @@
 
 @section('content')
 
-{{-- Import Button --}}
-<button type="button"
-    class="btn btn-primary absolute right-8 top-7 bg-green-500 py-2 px-4 text-white font-bold rounded-lg shadow-md hover:bg-green-600 hover:shadow-lg hover:text-gray-100">
-    Import
-</button>
-
 <div class="container mx-auto">
     <div class="bg-white p-6 rounded-lg shadow-lg">
 
@@ -33,15 +27,17 @@
 
         <!-- Contacts Tab -->
         <div id="contacts" class="tab-content">
-            <!-- Filters Selection (Updated to be inline) -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-                <div>
+            <!-- Filters Selection -->
+            <div class="grid grid-cols-12 gap-4 mb-4">
+                <!-- Search Contacts (Spans 5 out of 12 columns) -->
+                <div class="col-span-5">
                     <label for="contactsSearch" class="block text-sm font-medium text-gray-700">Search Contacts</label>
                     <input type="text" id="contactsSearch" placeholder="Search for contacts..."
                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
                 </div>
 
-                <div>
+                <!-- Select Campus (Spans 3 out of 12 columns) -->
+                <div class="col-span-3">
                     <label for="campus" class="block text-sm font-medium text-gray-700">Select Campus</label>
                     <select name="campus" id="campus"
                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
@@ -52,7 +48,8 @@
                     </select>
                 </div>
 
-                <div>
+                <!-- Filter By (Spans 3 out of 12 columns) -->
+                <div class="col-span-3 mr-3">
                     <label for="filter" class="block text-sm font-medium text-gray-700">Filter By</label>
                     <select name="filter" id="filter"
                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
@@ -60,6 +57,14 @@
                         <option value="students">Students</option>
                         <option value="employees">Employees</option>
                     </select>
+                </div>
+
+                <!-- Import Button (Spans 1 out of 12 columns, Aligned Right with Padding Adjusted) -->
+                <div class="col-span-1 flex justify-end items-center">
+                    <button type="button"
+                        class="bg-green-500 py-2 px-4 mt-5 text-white font-bold rounded-lg shadow-md hover:bg-green-600 hover:shadow-lg hover:text-gray-100">
+                        Import
+                    </button>
                 </div>
             </div>
 

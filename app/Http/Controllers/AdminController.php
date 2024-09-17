@@ -28,18 +28,18 @@ class AdminController extends Controller
         // Get balance from the Movider service
         $balanceData = $moviderService->getBalance();
         $balance = $balanceData['balance'] ?? 0;
-    
+
         // Set a low balance threshold
         $warningThreshold = 0.065;
         $lowBalance = $balance < $warningThreshold;
-    
+
         // Fetch message statistics
         $totalSent = MessageLog::where('status', 'Sent')->count();
         $totalFailed = MessageLog::where('status', 'Failed')->count();
         $totalScheduled = MessageLog::where('schedule', 'scheduled')->count();
         $totalImmediate = MessageLog::where('schedule', 'immediate')->count();
         $totalCancelled = MessageLog::whereNotNull('cancelled_at')->count();
-    
+
         // Pass the data to the dashboard view
         return view('admin.dashboard', compact(
             'balance',
@@ -51,7 +51,7 @@ class AdminController extends Controller
             'totalCancelled'
         ));
     }
-    
+
 
     public function messages()
     {
@@ -62,9 +62,10 @@ class AdminController extends Controller
         $offices = Office::all();
         $statuses = Status::all();
         $types = Type::all();
-        $messageTemplates = MessageTemplate::all(); // Add this line to fetch all message templates
+        $messageTemplates = MessageTemplate::all();
+        $majors = Major::all(); // Fetch all majors
 
-        return view('admin.messages', compact('campuses', 'colleges', 'programs', 'years', 'offices', 'statuses', 'types', 'messageTemplates'));
+        return view('admin.messages', compact('campuses', 'colleges', 'programs', 'years', 'offices', 'statuses', 'types', 'messageTemplates', 'majors'));
     }
 
     public function broadcastMessages(Request $request)
@@ -204,22 +205,22 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required|string|max:50',
             'email' => [
-                'required', 
-                'string', 
-                'email', 
-                'max:50', 
+                'required',
+                'string',
+                'email',
+                'max:50',
                 'regex:/^[a-zA-Z0-9._%+-]+@usep\.edu\.ph$/', // Ensure it's a valid @usep.edu.ph email
                 'unique:users,email' // Ensure email doesn't already exist in the users table
             ],
         ]);
-    
+
         // Check if the email exists in the Employee table
         $employee = Employee::where('emp_email', $request->email)->first();
-    
+
         if (!$employee) {
             return redirect()->back()->withErrors(['email' => 'The email does not exist in the Employee records.']);
         }
-    
+
         // Create the user if the email exists in Employee table
         User::create([
             'name' => $request->name,
@@ -227,7 +228,7 @@ class AdminController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-    
+
         return redirect()->route('admin.user-management')->with('success', 'User added successfully.');
     }
 

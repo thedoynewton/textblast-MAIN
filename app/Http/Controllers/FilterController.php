@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\College;
 use App\Models\Employee;
+use App\Models\Major;
 use App\Models\Office;
 use App\Models\Program;
 use App\Models\Status;
@@ -46,6 +47,16 @@ class FilterController extends Controller
 
         return response()->json($response);
     }
+
+    public function getMajorsByProgram($programId)
+{
+    $majors = ($programId === 'all') 
+        ? Major::all(['major_id as id', 'major_name as name']) // Assuming you have a `Major` model with `major_id` and `major_name` fields
+        : Major::where('program_id', $programId)->get(['major_id as id', 'major_name as name']);
+
+    return response()->json(['majors' => $majors]);
+}
+
 
     public function getProgramsByCollege($collegeId)
     {

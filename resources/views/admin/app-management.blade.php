@@ -228,14 +228,25 @@
                             <td class="py-3 px-4 border-b text-gray-600 text-center">{{ $log->sent_count }}</td>
                             <td class="py-3 px-4 border-b text-gray-600 text-center">{{ $log->failed_count }}</td>
                             <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">
-                                <!-- Actions -->
+                                @if ($log->status === 'Pending')
+                                <form action="{{ route('admin.cancelScheduledMessage', $log->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="text-red-500 hover:underline">
+                                        <div class="rounded-full bg-red-500 p-2 hover:bg-red-600" title="Cancel Send">
+                                            <img src="/images/cancel.png" alt="Remove Access" class="h-5 w-5" style="filter: brightness(0) invert(1);">
+                                        </div>
+                                    </button>
+                                </form>
+                                @else
+                                <span class="text-gray-400">N/A</span>
+                                @endif
                             </td>
                         </tr>
                         @endforeach
-                
+
                         @if ($messageLogs->isEmpty())
                         <tr>
-                            <td colspan="14" class="text-center py-4 text-gray-500">No message logs found.</td>
+                            <td colspan="13" class="text-center py-4 text-gray-500">No message logs found.</td>
                         </tr>
                         @endif
                     </tbody>

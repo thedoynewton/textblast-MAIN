@@ -15,6 +15,7 @@
                     @if ($data['broadcast_type'] === 'students' || $data['broadcast_type'] === 'all')
                     {{ trim($filterNames['college']) }},
                     {{ trim($filterNames['program']) }},
+                    {{ trim($filterNames['major']) }}, <!-- Added Major -->
                     {{ trim($filterNames['year']) }},
                     @endif
                     @if ($data['broadcast_type'] === 'employees' || $data['broadcast_type'] === 'all')
@@ -69,6 +70,10 @@
             <input type="hidden" name="program" value="{{ $data['program'] }}">
             @endif
 
+            @if (isset($data['major'])) <!-- Added Major field -->
+            <input type="hidden" name="major" value="{{ $data['major'] }}">
+            @endif
+
             @if (isset($data['year']))
             <input type="hidden" name="year" value="{{ $data['year'] }}">
             @endif
@@ -83,9 +88,9 @@
 
             @if (isset($data['type']))
             <input type="hidden" name="type" value="{{ $data['type'] }}">
+            @endif
 
             <input type="hidden" name="total_recipients" value="{{ $totalRecipients }}">
-            @endif
 
             <!-- Edit Message Button -->
             <button class="bg-yellow-500 text-white px-4 py-2 rounded-lg mr-2">

@@ -68,54 +68,65 @@ class SendScheduledMessage implements ShouldQueue
     protected function sendIndividualMessages(MoviderService $moviderService, $recipientType)
     {
         $query = $recipientType === 'students' ? Student::query() : Employee::query();
-
+    
+        // Filter by campus if it's specified
         if (isset($this->data['campus']) && $this->data['campus'] !== 'all') {
             $query->where('campus_id', $this->data['campus']);
         }
-
+    
+        // Filters specific to students
         if ($recipientType === 'students') {
             if (isset($this->data['college']) && $this->data['college'] !== 'all') {
                 $query->where('college_id', $this->data['college']);
             }
-
+    
             if (isset($this->data['program']) && $this->data['program'] !== 'all') {
                 $query->where('program_id', $this->data['program']);
             }
-
+    
+            // Add the major filter here
+            if (isset($this->data['major']) && $this->data['major'] !== 'all') {
+                $query->where('major_id', $this->data['major']);
+            }
+    
             if (isset($this->data['year']) && $this->data['year'] !== 'all') {
                 $query->where('year_id', $this->data['year']);
             }
-        } else {
+        } 
+        // Filters specific to employees
+        else {
             if (isset($this->data['office']) && $this->data['office'] !== 'all') {
                 $query->where('office_id', $this->data['office']);
             }
-
+    
             if (isset($this->data['status']) && $this->data['status'] !== 'all') {
                 $query->where('status_id', $this->data['status']);
             }
-
+    
             if (isset($this->data['type']) && $this->data['type'] !== 'all') {
                 $query->where('type_id', $this->data['type']);
             }
         }
-
+    
+        // Fetch the recipients based on the filters
         $recipients = $query->get();
         $this->totalRecipients += $recipients->count();
         $invalidRecipients = [];
-
+    
         foreach ($recipients as $recipient) {
             $number = $recipientType === 'students' ? $recipient->stud_contact : $recipient->emp_contact;
-
+    
+            // Clean and format the number for sending
             $number = preg_replace('/\D/', '', $number);
             $number = substr($number, -10);
-
+    
             if (strlen($number) === 10) {
                 $formattedNumber = '+63' . $number;
-
+    
                 // Send the message individually
                 try {
                     $response = $moviderService->sendBulkSMS([$formattedNumber], $this->data['message']);
-
+    
                     if (isset($response->phone_number_list) && !empty($response->phone_number_list)) {
                         $this->successCount += count($response->phone_number_list);
                         Log::info("Message sent successfully to: {$formattedNumber}");
@@ -135,12 +146,12 @@ class SendScheduledMessage implements ShouldQueue
                 ];
             }
         }
-
+    
         if (!empty($invalidRecipients)) {
             Log::warning('The following numbers are invalid:', $invalidRecipients);
         }
     }
-
+    
     protected function updateMessageLogStatus()
     {
         $messageLog = MessageLog::where('id', $this->data['log_id'])->first();

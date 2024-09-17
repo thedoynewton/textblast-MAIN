@@ -399,34 +399,16 @@ class MessageController extends Controller
                 'scheduled_at' => $scheduledAt,
                 'sent_at' => $scheduleType === 'immediate' ? now() : null,
                 'status' => $status,
-            ]);
-    
-            // Role-based logging for better traceability
-            $role = Auth::user()->role;
-            Log::info("Message log created by $role user with ID $userId", [
-                'log_id' => $log->id,
-                'recipient_type' => $request->broadcast_type,
-                'schedule_type' => $scheduleType,
-                'scheduled_at' => $scheduledAt,
-                'status' => $status,
+                'campus_id' => $request->campus,  // Save campus_id from the request
             ]);
     
             return $log->id;
         } catch (\Exception $e) {
-            // Log the error for debugging
-            Log::error('Error creating message log: ' . $e->getMessage(), [
-                'user_id' => $userId,
-                'role' => Auth::user()->role,
-                'schedule_type' => $scheduleType,
-            ]);
-    
-            // Optionally, notify the user (if appropriate for your application)
-            session()->flash('error', 'There was an issue logging the message. Please try again.');
-    
-            // Return null or handle it as needed in the calling method
+            // Handle error
             return null;
         }
-    }    
+    }
+       
 
     protected function updateMessageLogStatus($logId, $status)
     {

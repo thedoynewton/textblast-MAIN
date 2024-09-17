@@ -23,30 +23,10 @@ use Illuminate\Support\Facades\Http;
 
 class AdminController extends Controller
 {
-    public function dashboard(MoviderService $moviderService)
+    public function dashboard()
     {
-        $balanceData = $moviderService->getBalance();
-        $balance = $balanceData['balance'] ?? 0;
-    
-        // Fetch necessary data from the database
-        $campuses = Campus::all();
-        $years = Year::all();
-        $offices = Office::all();
-        $statuses = Status::all();
-        $types = Type::all();
-    
-        // Set the threshold for low balance
-        $warningThreshold = 0.065;
-    
-        // Check if the balance is low
-        $lowBalance = $balance < $warningThreshold;
-    
-        // Log the balance value
-        Log::info('Movider Balance:', ['balance' => $balance]);
-    
-        return view('admin.dashboard', compact('balance', 'lowBalance', 'campuses', 'years', 'offices', 'statuses', 'types'));
+        return view('admin.dashboard');
     }
-    
 
     public function messages()
     {

@@ -390,6 +390,9 @@ class MessageController extends Controller
         try {
             $status = $scheduleType === 'immediate' ? 'Sent' : 'Pending';
     
+            // Set campus_id to null if 'All Campus' is selected, otherwise use the provided campus ID
+            $campusId = $request->campus === 'all' ? null : $request->campus;
+    
             // Create a new log entry in the MessageLog model
             $log = MessageLog::create([
                 'user_id' => $userId,
@@ -399,34 +402,16 @@ class MessageController extends Controller
                 'scheduled_at' => $scheduledAt,
                 'sent_at' => $scheduleType === 'immediate' ? now() : null,
                 'status' => $status,
-            ]);
-    
-            // Role-based logging for better traceability
-            $role = Auth::user()->role;
-            Log::info("Message log created by $role user with ID $userId", [
-                'log_id' => $log->id,
-                'recipient_type' => $request->broadcast_type,
-                'schedule_type' => $scheduleType,
-                'scheduled_at' => $scheduledAt,
-                'status' => $status,
+                'campus_id' => $campusId,  // Save campus_id, handling the 'all' case
             ]);
     
             return $log->id;
         } catch (\Exception $e) {
-            // Log the error for debugging
-            Log::error('Error creating message log: ' . $e->getMessage(), [
-                'user_id' => $userId,
-                'role' => Auth::user()->role,
-                'schedule_type' => $scheduleType,
-            ]);
-    
-            // Optionally, notify the user (if appropriate for your application)
-            session()->flash('error', 'There was an issue logging the message. Please try again.');
-    
-            // Return null or handle it as needed in the calling method
+            // Handle error
             return null;
         }
-    }    
+    }
+    
 
     protected function updateMessageLogStatus($logId, $status)
     {
@@ -510,7 +495,7 @@ class MessageController extends Controller
     
             // Redirect based on user role with an error message
             $redirectRoute = Auth::user()->role === 'admin' ? 'admin.app-management' : 'subadmin.app-management';
-            return redirect()->route($redirectRoute)
+            return redirect()->route($redirectRoute, ['tab' => 'messageLogs'])  // Redirect to messageLogs tab
                 ->with('error', 'Message cannot be canceled because it has already been sent, canceled, or does not exist.');
         }
     
@@ -527,9 +512,10 @@ class MessageController extends Controller
     
         // Redirect to the appropriate route based on the user's role with a success message
         $redirectRoute = $role === 'admin' ? 'admin.app-management' : 'subadmin.app-management';
-        return redirect()->route($redirectRoute)
+        return redirect()->route($redirectRoute, ['tab' => 'messageLogs'])  // Redirect to messageLogs tab
             ->with('success', 'Scheduled message has been canceled successfully.');
     }
+    
     
 
     public function getMessageLogs()

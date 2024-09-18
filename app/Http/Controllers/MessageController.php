@@ -18,6 +18,7 @@ use App\Services\MoviderService;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Jobs\SendScheduledMessage;
+use App\Models\Major;
 use Illuminate\Support\Facades\Log;
 
 class MessageController extends Controller
@@ -99,6 +100,10 @@ class MessageController extends Controller
             if (isset($data['program']) && $data['program'] !== 'all') {
                 $filterNames['program'] = Program::find($data['program'])->program_name ?? 'All Programs';
                 $studentQuery->where('program_id', $data['program']);
+            }
+            if (isset($data['major']) && $data['major'] !== 'all') {
+                $filterNames['major'] = Major::find($data['major'])->major_name ?? 'All Majors'; // Added Major handling
+                $studentQuery->where('major_id', $data['major']);
             }
             if (isset($data['year']) && $data['year'] !== 'all') {
                 $filterNames['year'] = Year::find($data['year'])->year_name ?? 'All Years';

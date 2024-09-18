@@ -84,6 +84,11 @@ class SendScheduledMessage implements ShouldQueue
                 $query->where('program_id', $this->data['program']);
             }
 
+            // Add the major filter here
+            if (isset($this->data['major']) && $this->data['major'] !== 'all') {
+                $query->where('major_id', $this->data['major']);
+            }
+
             if (isset($this->data['year']) && $this->data['year'] !== 'all') {
                 $query->where('year_id', $this->data['year']);
             }

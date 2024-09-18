@@ -36,10 +36,14 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('status').addEventListener('change', updateTypeDropdown);
     document.getElementById('college').addEventListener('change', updateProgramDropdown);
 
+    // New: Add event listener for major dropdown update
+    document.getElementById('program').addEventListener('change', updateMajorDropdown);
+
     // Event listeners for all dropdowns
     document.getElementById('campus').addEventListener('change', updateRecipientCount);
     document.getElementById('college').addEventListener('change', updateRecipientCount);
     document.getElementById('program').addEventListener('change', updateRecipientCount);
+    document.getElementById('major').addEventListener('change', updateRecipientCount); // New: Major dropdown listener
     document.getElementById('year').addEventListener('change', updateRecipientCount);
     document.getElementById('office').addEventListener('change', updateRecipientCount);
     document.getElementById('status').addEventListener('change', updateRecipientCount);
@@ -115,6 +119,7 @@ function toggleFilters() {
     // Clear dropdown values when switching tabs
     clearDropdownOptions('college');
     clearDropdownOptions('program');
+    clearDropdownOptions('major'); // New: Clear majors dropdown
     clearDropdownOptions('year');
     clearDropdownOptions('office');
     clearDropdownOptions('status');
@@ -134,6 +139,7 @@ function updateDependentFilters() {
         // If "All Campuses" is chosen, clear all other dropdowns
         clearDropdownOptions('college');
         clearDropdownOptions('program');
+        clearDropdownOptions('major'); // Clear majors if campus changes
         clearDropdownOptions('year');
         clearDropdownOptions('office');
         clearDropdownOptions('status');
@@ -176,6 +182,9 @@ function clearDropdownOptions(selectId) {
     if (selectId === 'college') {
         select.innerHTML = '<option value="" disabled selected>Select Academic Unit</option>';
         select.innerHTML += '<option value="all">All Academic Unit</option>';
+    } else if (selectId === 'major') {
+        select.innerHTML = '<option value="" disabled selected>Select Major</option>'; // New: Major dropdown
+        select.innerHTML += '<option value="all">All Majors</option>';
     } else {
         select.innerHTML = '<option value="" disabled selected>Select ' + selectId.charAt(0).toUpperCase() + selectId.slice(1) + '</option>';
         select.innerHTML += '<option value="all">All ' + selectId.charAt(0).toUpperCase() + selectId.slice(1) + '</option>';
@@ -185,8 +194,9 @@ function clearDropdownOptions(selectId) {
 function updateProgramDropdown() {
     var collegeId = document.getElementById('college').value;
 
-    // Reset the program dropdown
+    // Reset the program and major dropdown
     clearDropdownOptions('program');
+    clearDropdownOptions('major'); // Clear majors when college or program changes
 
     if (collegeId === 'all') {
         return;
@@ -198,6 +208,27 @@ function updateProgramDropdown() {
             .then(response => response.json())
             .then(data => {
                 updateSelectOptions('program', data.programs);
+            });
+    }
+}
+
+// New: Update major dropdown based on selected program
+function updateMajorDropdown() {
+    var programId = document.getElementById('program').value;
+
+    // Reset the major dropdown
+    clearDropdownOptions('major');
+
+    if (programId === 'all') {
+        return;
+    }
+
+    if (programId) {
+        // Make an AJAX request to get the dependent majors based on the selected program
+        fetch(`/api/filters/program/${programId}/majors`)
+            .then(response => response.json())
+            .then(data => {
+                updateSelectOptions('major', data.majors);
             });
     }
 }
@@ -225,6 +256,7 @@ function updateRecipientCount() {
     const campusId = document.getElementById('campus').value;
     const collegeId = document.getElementById('college') ? document.getElementById('college').value : null;
     const programId = document.getElementById('program') ? document.getElementById('program').value : null;
+    const majorId = document.getElementById('major') ? document.getElementById('major').value : null; // New: Add majorId
     const yearId = document.getElementById('year') ? document.getElementById('year').value : null;
     const officeId = document.getElementById('office') ? document.getElementById('office').value : null;
     const statusId = document.getElementById('status') ? document.getElementById('status').value : null;
@@ -234,7 +266,7 @@ function updateRecipientCount() {
     document.getElementById('total_recipients').value = '0';
 
     fetch(
-        `/api/recipients/count?broadcast_type=${broadcastType}&campus_id=${campusId}&college_id=${collegeId}&program_id=${programId}&year_id=${yearId}&office_id=${officeId}&status_id=${statusId}&type_id=${typeId}`)
+        `/api/recipients/count?broadcast_type=${broadcastType}&campus_id=${campusId}&college_id=${collegeId}&program_id=${programId}&major_id=${majorId}&year_id=${yearId}&office_id=${officeId}&status_id=${statusId}&type_id=${typeId}`) // New: Include majorId in the API call
         .then(response => response.json())
         .then(data => {
             document.getElementById('total_recipients').value = data.total;
@@ -243,4 +275,4 @@ function updateRecipientCount() {
             console.error('Error fetching recipient count:', error);
             document.getElementById('total_recipients').value = 'Error';
         });
-}
+}   

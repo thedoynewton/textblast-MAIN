@@ -37,10 +37,12 @@ class AdminController extends Controller
         $offices = Office::all();
         $statuses = Status::all();
         $types = Type::all();
-        $messageTemplates = MessageTemplate::all(); // Add this line to fetch all message templates
-
-        return view('admin.messages', compact('campuses', 'colleges', 'programs', 'years', 'offices', 'statuses', 'types', 'messageTemplates'));
+        $majors = Major::all(); // Fetch all majors
+        $messageTemplates = MessageTemplate::all();
+    
+        return view('admin.messages', compact('campuses', 'colleges', 'programs', 'years', 'offices', 'statuses', 'types', 'majors', 'messageTemplates'));
     }
+    
 
     public function broadcastMessages(Request $request)
     {

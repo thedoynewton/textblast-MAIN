@@ -18,7 +18,6 @@ use App\Services\MoviderService;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Jobs\SendScheduledMessage;
-use App\Models\Major;
 use Illuminate\Support\Facades\Log;
 
 class MessageController extends Controller
@@ -47,7 +46,7 @@ class MessageController extends Controller
         // Calculate the number of messages to be sent
         $broadcastType = $request->input('broadcast_type');
         $totalRecipients = 0;
-    
+
         if ($broadcastType === 'students' || $broadcastType === 'all') {
             $studentQuery = $this->buildRecipientQuery($request, 'students');
             $totalRecipients += $studentQuery->count();
@@ -56,40 +55,39 @@ class MessageController extends Controller
             $employeeQuery = $this->buildRecipientQuery($request, 'employees');
             $totalRecipients += $employeeQuery->count();
         }
-    
+
         // Calculate the total cost
         $messageCost = 0.0065; // cost per message
         $totalCost = $totalRecipients * $messageCost;
-    
+
         // Fetch the current balance
         $balanceData = $this->moviderService->getBalance();
         $currentBalance = $balanceData['balance'] ?? 0;
-    
+
         // Check if the balance is sufficient
         if ($currentBalance < $totalCost) {
             $route = Auth::user()->role === 'admin' ? 'admin.messages' : 'subadmin.messages';
             return redirect()->route($route)
                 ->with('error', 'Insufficient balance to send the messages.');
         }
-    
+
         // Proceed with the usual review process if balance is sufficient
         $data = $request->all();
-    
+
         $campus = $data['campus'] === 'all' ? 'All Campuses' : Campus::find($data['campus'])->campus_name ?? 'All Campuses';
-    
+
         $filterNames = [
             'college' => 'All Colleges',
             'program' => 'All Programs',
-            'major' => 'All Majors', // Added Major field
             'year' => 'All Years',
             'office' => 'All Offices',
             'status' => 'All Statuses',
             'type' => 'All Types'
         ];
-    
+
         $studentQuery = Student::query();
         $employeeQuery = Employee::query();
-    
+
         if ($data['broadcast_type'] === 'students' || $data['broadcast_type'] === 'all') {
             if (isset($data['campus']) && $data['campus'] !== 'all') {
                 $studentQuery->where('campus_id', $data['campus']);
@@ -102,16 +100,12 @@ class MessageController extends Controller
                 $filterNames['program'] = Program::find($data['program'])->program_name ?? 'All Programs';
                 $studentQuery->where('program_id', $data['program']);
             }
-            if (isset($data['major']) && $data['major'] !== 'all') {
-                $filterNames['major'] = Major::find($data['major'])->major_name ?? 'All Majors'; // Added Major handling
-                $studentQuery->where('major_id', $data['major']);
-            }
             if (isset($data['year']) && $data['year'] !== 'all') {
                 $filterNames['year'] = Year::find($data['year'])->year_name ?? 'All Years';
                 $studentQuery->where('year_id', $data['year']);
             }
         }
-    
+
         if ($data['broadcast_type'] === 'employees' || $data['broadcast_type'] === 'all') {
             if (isset($data['campus']) && $data['campus'] !== 'all') {
                 $employeeQuery->where('campus_id', $data['campus']);
@@ -129,7 +123,7 @@ class MessageController extends Controller
                 $employeeQuery->where('type_id', $data['type']);
             }
         }
-    
+
         // Calculate total recipients
         if ($data['broadcast_type'] === 'all') {
             $totalRecipients = $studentQuery->count() + $employeeQuery->count();
@@ -138,16 +132,15 @@ class MessageController extends Controller
         } else {
             $totalRecipients = $employeeQuery->count();
         }
-    
+
         $data['schedule_type'] = $request->input('schedule', 'immediate');
         $data['scheduled_at'] = $request->input('scheduled_date');
-    
+
         // Determine the view to return based on the user's role
         $view = Auth::user()->role === 'admin' ? 'admin.review-message' : 'subadmin.review-message';
-    
+
         return view($view, compact('data', 'campus', 'filterNames', 'totalRecipients'));
     }
-    
     public function broadcastToRecipients(Request $request)
     {
         $broadcastType = $request->broadcast_type;
@@ -406,16 +399,34 @@ class MessageController extends Controller
                 'scheduled_at' => $scheduledAt,
                 'sent_at' => $scheduleType === 'immediate' ? now() : null,
                 'status' => $status,
-                'campus_id' => $request->campus,  // Save campus_id from the request
+            ]);
+    
+            // Role-based logging for better traceability
+            $role = Auth::user()->role;
+            Log::info("Message log created by $role user with ID $userId", [
+                'log_id' => $log->id,
+                'recipient_type' => $request->broadcast_type,
+                'schedule_type' => $scheduleType,
+                'scheduled_at' => $scheduledAt,
+                'status' => $status,
             ]);
     
             return $log->id;
         } catch (\Exception $e) {
-            // Handle error
+            // Log the error for debugging
+            Log::error('Error creating message log: ' . $e->getMessage(), [
+                'user_id' => $userId,
+                'role' => Auth::user()->role,
+                'schedule_type' => $scheduleType,
+            ]);
+    
+            // Optionally, notify the user (if appropriate for your application)
+            session()->flash('error', 'There was an issue logging the message. Please try again.');
+    
+            // Return null or handle it as needed in the calling method
             return null;
         }
-    }
-       
+    }    
 
     protected function updateMessageLogStatus($logId, $status)
     {

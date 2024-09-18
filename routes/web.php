@@ -87,4 +87,3 @@ Route::get('/api/contacts', [FilterController::class, 'getContacts']);
 Route::get('/api/recipients/count', [MessageController::class, 'getRecipientCount']);
 Route::get('/api/progress/{logId}', [MessageController::class, 'getProgress']);
 Route::get('/api/analytics', [MessageController::class, 'getAnalyticsData'])->name('api.analytics');
-Route::get('/api/filters/program/{programId}/majors', [FilterController::class, 'getMajorsByProgram']);

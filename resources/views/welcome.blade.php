@@ -41,7 +41,7 @@
         }
     </style>
 
-    {{-- @if (Auth::check())
+    @if (Auth::check())
     <script type="module">
         window.userRole = "{{ Auth::user()->role }}";
         window.adminDashboardUrl = "{{ route('admin.dashboard') }}";
@@ -49,7 +49,7 @@
 
         import '/resources/js/redirect.js';
     </script>
-    @endif --}}
+    @endif
 
 </head>
 
@@ -91,6 +91,19 @@
             <!-- Email Login Form -->
             <form action="{{ route('login.email') }}" method="POST">
                 @csrf
+
+                <!-- Display Validation Errors -->
+                @if ($errors->any())
+                <div class="bg-red-100 text-red-700 p-4 rounded mb-4 text-left">
+                    @foreach ($errors->all() as $error)
+                    @if ($error == 'The selected email is invalid.')
+                    <div>This USeP email does not have access to this System. For concerns please contact sdmd@usep.edu.ph.</div>
+                    @else
+                    <div>{{ $error }}</div>
+                    @endif
+                    @endforeach
+                </div>
+                @endif
 
                 <!-- Email Input -->
                 <div class="mb-4">

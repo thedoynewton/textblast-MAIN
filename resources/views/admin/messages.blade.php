@@ -88,37 +88,27 @@
 
             <!-- Student-specific Filters -->
             <div class="flex space-x-4 mb-4" id="student_filters" style="display: none;">
-                <div class="w-1/4">
+                <div class="w-1/3">
                     <label for="college" class="block text-sm font-medium">Academic Unit</label>
                     <select name="college" id="college" required
                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2"
                         onchange="updateProgramDropdown()">
                         <option value="" disabled selected>Select Academic Unit</option>
+                        <option value="">Select Academic Unit</option>
                         <option value="all">All Academic Unit</option>
                     </select>
                 </div>
 
-                <div class="w-1/4">
+                <div class="w-1/3">
                     <label for="program" class="block text-sm font-medium">Academic Program</label>
                     <select name="program" id="program" required
-                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2"
-                        onchange="updateMajorDropdown()">
+                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
                         <option value="" disabled selected>Select Program</option>
                         <option value="all">All Programs</option>
                     </select>
                 </div>
 
-                <!-- New: Major Selection Dropdown -->
-                <div class="w-1/4">
-                    <label for="major" class="block text-sm font-medium">Major</label>
-                    <select name="major" id="major" required
-                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
-                        <option value="" disabled selected>Select Major</option>
-                        <option value="all">All Majors</option>
-                    </select>
-                </div>
-
-                <div class="w-1/4">
+                <div class="w-1/3">
                     <label for="year" class="block text-sm font-medium">Year</label>
                     <select name="year" id="year" required
                         class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">

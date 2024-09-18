@@ -16,7 +16,6 @@ class CreateMessageLogsTable extends Migration
         Schema::create('message_logs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('campus_id')->nullable(); // Add campus_id as foreign key
             $table->string('recipient_type');
             $table->text('content');
             $table->string('schedule');
@@ -29,9 +28,8 @@ class CreateMessageLogsTable extends Migration
             $table->integer('failed_count')->default(0); // Add failed_count field
             $table->timestamps();
 
-            // Foreign key constraints
+            // Foreign key constraint
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('campus_id')->references('campus_id')->on('campuses')->onDelete('set null'); // Set null on campus deletion
         });
     }
 

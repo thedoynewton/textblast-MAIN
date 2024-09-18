@@ -9,7 +9,7 @@ export default defineConfig({
 
                 // General Blade (Welcome, Admin & Subadmin)
                 'resources/js/app.js',
-                // 'resources/js/redirect.js', // Welcome
+                'resources/js/redirect.js', // Welcome
                 'resources/js/theme.js', // Admin
 
                 // Message Page

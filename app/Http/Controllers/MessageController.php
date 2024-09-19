@@ -80,6 +80,7 @@ class MessageController extends Controller
         $filterNames = [
             'college' => 'All Colleges',
             'program' => 'All Programs',
+            'major' => 'All Major',
             'year' => 'All Years',
             'office' => 'All Offices',
             'status' => 'All Statuses',
@@ -515,8 +516,7 @@ class MessageController extends Controller
     
             // Redirect based on user role with an error message
             $redirectRoute = Auth::user()->role === 'admin' ? 'admin.app-management' : 'subadmin.app-management';
-            return redirect()->route($redirectRoute)
-                ->with('error', 'Message cannot be canceled because it has already been sent, canceled, or does not exist.');
+            return redirect()->route($redirectRoute, ['tab' => 'messageLogs'])->with('error', 'Message cannot be canceled because it has already been sent, canceled, or does not exist.');
         }
     
         // Set the status to 'Cancelled' and update the cancelled_at timestamp
@@ -532,8 +532,7 @@ class MessageController extends Controller
     
         // Redirect to the appropriate route based on the user's role with a success message
         $redirectRoute = $role === 'admin' ? 'admin.app-management' : 'subadmin.app-management';
-        return redirect()->route($redirectRoute)
-            ->with('success', 'Scheduled message has been canceled successfully.');
+        return redirect()->route($redirectRoute, ['tab' => 'messageLogs'])->with('success', 'Scheduled message has been canceled successfully.');
     }
     
 

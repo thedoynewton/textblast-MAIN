@@ -69,12 +69,10 @@ class SendScheduledMessage implements ShouldQueue
     {
         $query = $recipientType === 'students' ? Student::query() : Employee::query();
 
-        // Add the campus filter
         if (isset($this->data['campus']) && $this->data['campus'] !== 'all') {
             $query->where('campus_id', $this->data['campus']);
         }
 
-        // Filters specific to students
         if ($recipientType === 'students') {
             if (isset($this->data['college']) && $this->data['college'] !== 'all') {
                 $query->where('college_id', $this->data['college']);
@@ -93,7 +91,6 @@ class SendScheduledMessage implements ShouldQueue
                 $query->where('year_id', $this->data['year']);
             }
         } else {
-            // Filters specific to employees
             if (isset($this->data['office']) && $this->data['office'] !== 'all') {
                 $query->where('office_id', $this->data['office']);
             }
@@ -107,7 +104,6 @@ class SendScheduledMessage implements ShouldQueue
             }
         }
 
-        // Fetch the recipients based on the filters
         $recipients = $query->get();
         $this->totalRecipients += $recipients->count();
         $invalidRecipients = [];
@@ -115,7 +111,6 @@ class SendScheduledMessage implements ShouldQueue
         foreach ($recipients as $recipient) {
             $number = $recipientType === 'students' ? $recipient->stud_contact : $recipient->emp_contact;
 
-            // Clean and format the number for sending
             $number = preg_replace('/\D/', '', $number);
             $number = substr($number, -10);
 

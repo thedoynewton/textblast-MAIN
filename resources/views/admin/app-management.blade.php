@@ -199,7 +199,6 @@
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Recipient</th>
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Message</th>
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Category</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Campus</th> <!-- New Campus Column -->
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Created</th>
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Scheduled Date</th>
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Date Sent</th>
@@ -218,11 +217,10 @@
                             <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->recipient_type }}</td>
                             <td class="py-3 px-4 border-b text-gray-600">{{ $log->content }}</td>
                             <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->schedule }}</td>
-                            <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->campus ? $log->campus->campus_name : 'N/A' }}</td> <!-- Display Campus Name -->
                             <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->created_at->format('F j, Y g:i A') }}</td>
                             <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->scheduled_at ? $log->scheduled_at->format('F j, Y g:i A') : 'N/A' }}</td>
                             <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->sent_at ? $log->sent_at->format('F j, Y g:i A') : 'N/A' }}</td>
-                            <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->cancelled_at ? $log->cancelled_at->format('F j, Y g:i A') : 'N/A' }}</td>
+                            <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->cancelled_at ? $log->cancelled_at->format('F j, Y g:i A') : 'N/A' }}</td> <!-- Display Cancelled At -->
                             <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->status }}</td>
                             <td class="py-3 px-4 border-b text-gray-600 text-center">{{ $log->total_recipients }}</td>
                             <td class="py-3 px-4 border-b text-gray-600 text-center">{{ $log->sent_count }}</td>
@@ -246,7 +244,7 @@
 
                         @if ($messageLogs->isEmpty())
                         <tr>
-                            <td colspan="14" class="text-center py-4 text-gray-500">No message logs found.</td>
+                            <td colspan="13" class="text-center py-4 text-gray-500">No message logs found.</td>
                         </tr>
                         @endif
                     </tbody>

@@ -21,8 +21,14 @@ class MessageLog extends Model
         'sent_count',             // Field to track the number of successfully sent messages
         'failed_count',           // Field to track the number of failed messages
         'cancelled_at',           // Field to track the timestamp when a message was cancelled
+        'campus_id',  // Add campus_id to fillable attributes
     ];
 
+    public function campus()
+    {
+        return $this->belongsTo(Campus::class, 'campus_id');
+    }
+    
     protected $casts = [
         'scheduled_at' => 'datetime',
         'sent_at' => 'datetime',

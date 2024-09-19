@@ -198,7 +198,8 @@
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">User</th>
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Recipient</th>
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Message</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Category</th>
+                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Delivery Type</th>
+                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Campus</th> <!-- New Campus Column -->
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Created</th>
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Scheduled Date</th>
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Date Sent</th>
@@ -217,6 +218,7 @@
                             <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->recipient_type }}</td>
                             <td class="py-3 px-4 border-b text-gray-600">{{ $log->content }}</td>
                             <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->schedule }}</td>
+                            <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->campus ? $log->campus->campus_name : 'N/A' }}</td> <!-- Display Campus Name -->
                             <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->created_at->format('F j, Y g:i A') }}</td>
                             <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->scheduled_at ? $log->scheduled_at->format('F j, Y g:i A') : 'N/A' }}</td>
                             <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->sent_at ? $log->sent_at->format('F j, Y g:i A') : 'N/A' }}</td>

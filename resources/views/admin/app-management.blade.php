@@ -198,7 +198,7 @@
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">User</th>
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Recipient</th>
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Message</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Delivery Type</th>
+                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Message Type</th>
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Campus</th> <!-- New Campus Column -->
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Created</th>
                             <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Scheduled Date</th>

@@ -14,34 +14,6 @@
         </div>
         @endif
 
-        <!-- Number of Messages and Balance -->
-        <div class="mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="bg-blue-100 p-4 rounded-lg">
-                <h2 class="text-xl font-bold">Total Messages Sent to Recipients</h2>
-                <p class="text-2xl font-semibold" id="total-sent">0</p>
-            </div>
-            <div class="bg-red-100 p-4 rounded-lg">
-                <h2 class="text-xl font-bold">Failed Messages</h2>
-                <p class="text-2xl font-semibold" id="total-failed">0</p>
-            </div>
-            <div class="bg-green-100 p-4 rounded-lg">
-                <h2 class="text-xl font-bold">Scheduled Messages</h2>
-                <p class="text-2xl font-semibold" id="total-scheduled">0</p>
-            </div>
-            <div class="bg-yellow-100 p-4 rounded-lg">
-                <h2 class="text-xl font-bold">Immediate Messages</h2>
-                <p class="text-2xl font-semibold" id="total-immediate">0</p>
-            </div>
-            <div class="bg-purple-100 p-4 rounded-lg">
-                <h2 class="text-xl font-bold">Cancelled Messages</h2>
-                <p class="text-2xl font-semibold" id="total-cancelled">0</p>
-            </div>
-            <div class="bg-purple-100 p-4 rounded-lg">
-                <h2 class="text-xl font-bold">Remaining Balance</h2>
-                <p class="text-2xl font-semibold" id="remaining-balance">{{ $balance }}</p>
-            </div>
-        </div>
-
         <!-- Default Filters -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
             <!-- Date Range Filter -->

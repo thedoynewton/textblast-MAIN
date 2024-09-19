@@ -23,10 +23,44 @@ use Illuminate\Support\Facades\Http;
 
 class AdminController extends Controller
 {
-    public function dashboard()
+    public function dashboard(MoviderService $moviderService)
     {
-        return view('admin.dashboard');
+        // Get balance using Movider Service
+        $balanceData = $moviderService->getBalance();
+        $balance = $balanceData['balance'] ?? 0;
+    
+        // Query MessageLog table only once and aggregate counts
+        $messageStats = MessageLog::selectRaw("
+            COUNT(CASE WHEN status = 'Sent' THEN 1 END) AS total_sent,
+            COUNT(CASE WHEN schedule = 'scheduled' AND status = 'Sent' THEN 1 END) AS scheduled_sent,
+            COUNT(CASE WHEN failed_count > 0 THEN 1 END) AS total_failed,
+            COUNT(CASE WHEN schedule = 'immediate' AND status = 'Sent' THEN 1 END) AS total_immediate,
+            COUNT(CASE WHEN status = 'Cancelled' THEN 1 END) AS total_cancelled,
+            COUNT(CASE WHEN status = 'Pending' THEN 1 END) AS total_pending,
+            COUNT(CASE WHEN status = 'Scheduled' THEN 1 END) AS total_scheduled
+        ")->first();
+    
+        // Set default values if stats are null
+        $totalSent = $messageStats->total_sent ?? 0;
+        $scheduledSent = $messageStats->scheduled_sent ?? 0;
+        $totalFailed = $messageStats->total_failed ?? 0;
+        $totalImmediate = $messageStats->total_immediate ?? 0;
+        $totalCancelled = $messageStats->total_cancelled ?? 0;
+        $totalPending = $messageStats->total_pending ?? 0;
+        $totalScheduled = $messageStats->total_scheduled ?? 0;
+    
+        return view('admin.dashboard', compact(
+            'balance',
+            'totalSent',
+            'scheduledSent',
+            'totalFailed',
+            'totalImmediate',
+            'totalCancelled',
+            'totalPending',
+            'totalScheduled'
+        ));
     }
+     
 
     public function messages()
     {

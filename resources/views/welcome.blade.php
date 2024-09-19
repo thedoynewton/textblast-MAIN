@@ -41,16 +41,6 @@
         }
     </style>
 
-    {{-- @if (Auth::check())
-    <script type="module">
-        window.userRole = "{{ Auth::user()->role }}";
-        window.adminDashboardUrl = "{{ route('admin.dashboard') }}";
-        window.subadminDashboardUrl = "{{ route('subadmin.dashboard') }}";
-
-        import '/resources/js/redirect.js';
-    </script>
-    @endif --}}
-
 </head>
 
 <body class="bg-gray-100 h-screen relative">

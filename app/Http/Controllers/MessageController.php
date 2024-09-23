@@ -511,34 +511,34 @@ class MessageController extends Controller
     {
         // Find the message log entry by its ID
         $messageLog = MessageLog::find($id);
-
+    
         if (!$messageLog || $messageLog->status !== 'Pending') {
             // Log an error if the message log was not found or is not in a cancellable state
             Log::error("Failed to cancel message: Log ID $id not found or not pending", [
                 'role' => Auth::user()->role,
             ]);
-
+    
             // Redirect based on user role with an error message
-            $redirectRoute = Auth::user()->role === 'admin' ? 'admin.app-management' : 'subadmin.app-management';
-            return redirect()->route($redirectRoute, ['tab' => 'messageLogs'])->with('error', 'Message cannot be canceled because it has already been sent, canceled, or does not exist.');
+            $redirectRoute = Auth::user()->role === 'admin' ? 'admin.dashboard' : 'subadmin.dashboard';
+            return redirect()->route($redirectRoute)->with('error', 'Message cannot be canceled because it has already been sent, canceled, or does not exist.');
         }
-
+    
         // Set the status to 'Cancelled' and update the cancelled_at timestamp
         $messageLog->status = 'Cancelled';
         $messageLog->cancelled_at = now(); // Set the current timestamp
         $messageLog->save();
-
+    
         // Role-based logging for better traceability
         $role = Auth::user()->role;
         Log::info("Scheduled message cancelled by $role user with log ID $id", [
             'cancelled_at' => $messageLog->cancelled_at,
         ]);
-
+    
         // Redirect to the appropriate route based on the user's role with a success message
-        $redirectRoute = $role === 'admin' ? 'admin.app-management' : 'subadmin.app-management';
-        return redirect()->route($redirectRoute, ['tab' => 'messageLogs'])->with('success', 'Scheduled message has been canceled successfully.');
+        $redirectRoute = $role === 'admin' ? 'admin.dashboard' : 'subadmin.dashboard';
+        return redirect()->route($redirectRoute)->with('success', 'Scheduled message has been canceled successfully.');
     }
-
+    
 
     public function getMessageLogs()
     {

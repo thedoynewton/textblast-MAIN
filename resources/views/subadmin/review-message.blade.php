@@ -15,6 +15,7 @@
                     @if ($data['broadcast_type'] === 'students' || $data['broadcast_type'] === 'all')
                     {{ trim($filterNames['college']) }},
                     {{ trim($filterNames['program']) }},
+                    {{ trim($filterNames['major']) }},
                     {{ trim($filterNames['year']) }},
                     @endif
                     @if ($data['broadcast_type'] === 'employees' || $data['broadcast_type'] === 'all')
@@ -67,6 +68,10 @@
 
             @if (isset($data['program']))
             <input type="hidden" name="program" value="{{ $data['program'] }}">
+            @endif
+
+            @if (isset($data['major'])) <!-- Added Major field -->
+            <input type="hidden" name="major" value="{{ $data['major'] }}">
             @endif
 
             @if (isset($data['year']))

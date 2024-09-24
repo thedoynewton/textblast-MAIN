@@ -11,6 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\MessageLog;
 use App\Models\Student;
 use App\Models\Employee;
+use App\Models\MessageRecipient;
 use Illuminate\Support\Facades\Log;
 
 class SendScheduledMessage implements ShouldQueue
@@ -41,7 +42,6 @@ class SendScheduledMessage implements ShouldQueue
         }
 
         if ($messageLog->status === 'Cancelled') {
-            // If the message was cancelled, log this and stop the job
             Log::info("Scheduled message [ID: {$this->data['log_id']}] has been cancelled. Aborting sending process.");
             return;
         }
@@ -82,7 +82,6 @@ class SendScheduledMessage implements ShouldQueue
                 $query->where('program_id', $this->data['program']);
             }
 
-            // Add the major filter here
             if (isset($this->data['major']) && $this->data['major'] !== 'all') {
                 $query->where('major_id', $this->data['major']);
             }
@@ -117,20 +116,56 @@ class SendScheduledMessage implements ShouldQueue
             if (strlen($number) === 10) {
                 $formattedNumber = '+63' . $number;
 
-                // Send the message individually
+                // Insert recipient into message_recipients table
                 try {
-                    $response = $moviderService->sendBulkSMS([$formattedNumber], $this->data['message']);
+                    $messageRecipient = MessageRecipient::create([
+                        'message_log_id' => $this->data['log_id'],
+                        'recipient_type' => $recipientType === 'students' ? 'student' : 'employee',
+                        'stud_id' => $recipientType === 'students' ? $recipient->stud_id : null,
+                        'emp_id' => $recipientType === 'employees' ? $recipient->emp_id : null,
+                        'first_name' => $recipient->stud_fname ?? $recipient->emp_fname,
+                        'last_name' => $recipient->stud_lname ?? $recipient->emp_lname,
+                        'middle_name' => $recipient->stud_mname ?? $recipient->emp_mname,
+                        'contact_number' => '09' . substr($number, -9),
+                        'email' => $recipient->stud_email ?? $recipient->emp_email,
+                        'campus_id' => $recipient->campus_id,
+                        'college_id' => $recipientType === 'students' ? $recipient->college_id : null,
+                        'program_id' => $recipientType === 'students' ? $recipient->program_id : null,
+                        'major_id' => $recipientType === 'students' ? $recipient->major_id : null,
+                        'year_id' => $recipientType === 'students' ? $recipient->year_id : null,
+                        'enrollment_stat' => $recipientType === 'students' ? $recipient->enrollment_stat : null,
+                        'office_id' => $recipientType === 'employees' ? $recipient->office_id : null,
+                        'status_id' => $recipientType === 'employees' ? $recipient->status_id : null,
+                        'type_id' => $recipientType === 'employees' ? $recipient->type_id : null,
+                        'sent_status' => 'Failed', // Default to Failed, will update to Sent if successful
+                    ]);
 
+                    Log::info("Recipient successfully logged in message_recipients table", [
+                        'message_log_id' => $this->data['log_id'],
+                        'recipient_type' => $recipientType,
+                        'contact_number' => $formattedNumber,
+                        'recipient_id' => $messageRecipient->id,
+                    ]);
+
+                    // Send the message individually
+                    $response = $moviderService->sendBulkSMS([$formattedNumber], $this->data['message']);
                     if (isset($response->phone_number_list) && !empty($response->phone_number_list)) {
                         $this->successCount += count($response->phone_number_list);
                         Log::info("Message sent successfully to: {$formattedNumber}");
+
+                        // Update sent_status to 'Sent' for successful messages
+                        $messageRecipient->update(['sent_status' => 'Sent']);
                     } else {
                         $this->failedCount++;
                         Log::error("Failed to send message to: {$formattedNumber} - Error: " . ($response->error->description ?? 'Unknown error'));
                     }
                 } catch (\Exception $e) {
                     $this->failedCount++;
-                    Log::error("Exception sending message to: {$formattedNumber} - " . $e->getMessage());
+                    Log::error("Error logging recipient in message_recipients table: " . $e->getMessage(), [
+                        'recipient_type' => $recipientType,
+                        'contact_number' => $formattedNumber,
+                        'message_log_id' => $this->data['log_id'],
+                    ]);
                 }
             } else {
                 $this->failedCount++;

@@ -148,6 +148,7 @@ class MessageController extends Controller
 
         return view($view, compact('data', 'campus', 'filterNames', 'totalRecipients'));
     }
+    
     public function broadcastToRecipients(Request $request)
     {
         $broadcastType = $request->broadcast_type;
@@ -229,7 +230,6 @@ class MessageController extends Controller
             return redirect()->route($redirectRoute);
         }
     }
-    
 
     protected function sendMessageImmediately(Request $request, $userId)
     {
@@ -289,7 +289,6 @@ class MessageController extends Controller
         $redirectRoute = Auth::user()->role === 'admin' ? 'admin.messages' : 'subadmin.messages';
         return redirect()->route($redirectRoute);
     }
-    
 
     protected function sendBulkMessages(Request $request, $recipientType, $batchSize, $logId)
     {
@@ -399,7 +398,6 @@ class MessageController extends Controller
             'errorDetails' => $errorDetails
         ];
     }    
-    
     
     protected function buildRecipientQuery(Request $request, $type)
     {

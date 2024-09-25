@@ -110,6 +110,15 @@ class SendScheduledMessage implements ShouldQueue
         foreach ($recipients as $recipient) {
             $number = $recipientType === 'students' ? $recipient->stud_contact : $recipient->emp_contact;
 
+            // Check if the stud_id or emp_id is present
+            Log::info("Processing recipient", [
+                'recipient_type' => $recipientType,
+                'stud_id' => $recipient->stud_id ?? 'N/A',
+                'emp_id' => $recipient->emp_id ?? 'N/A',
+                'first_name' => $recipient->stud_fname ?? $recipient->emp_fname,
+                'last_name' => $recipient->stud_lname ?? $recipient->emp_lname,
+            ]);
+
             $number = preg_replace('/\D/', '', $number);
             $number = substr($number, -10);
 
@@ -143,10 +152,11 @@ class SendScheduledMessage implements ShouldQueue
                     Log::info("Recipient successfully logged in message_recipients table", [
                         'message_log_id' => $this->data['log_id'],
                         'recipient_type' => $recipientType,
+                        'stud_id' => $messageRecipient->stud_id,
+                        'emp_id' => $messageRecipient->emp_id,
                         'contact_number' => $formattedNumber,
-                        'recipient_id' => $messageRecipient->id,
                     ]);
-
+                    
                     // Send the message individually
                     $response = $moviderService->sendBulkSMS([$formattedNumber], $this->data['message']);
                     if (isset($response->phone_number_list) && !empty($response->phone_number_list)) {

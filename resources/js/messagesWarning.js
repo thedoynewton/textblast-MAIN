@@ -1,5 +1,37 @@
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('broadcast-form');
+    const messageInput = document.getElementById('message');
+    const charCountDisplay = document.getElementById('charCount');
+    const charWarning = document.getElementById('charWarning');
+    const maxCharLimit = 160;
+    const templateSelect = document.getElementById('template'); // Message template dropdown
+
+    // Function to update character count and display warning if needed
+    function updateCharacterCount() {
+        const messageLength = messageInput.value.length;
+        charCountDisplay.textContent = messageLength;
+
+        if (messageLength > maxCharLimit) {
+            charWarning.classList.remove('hidden'); // Show warning message
+        } else {
+            charWarning.classList.add('hidden'); // Hide warning message
+        }
+    }
+
+    // Update character count when the message input changes
+    messageInput.addEventListener('input', updateCharacterCount);
+
+    // Handle the selection of a message template
+    if (templateSelect) {
+        templateSelect.addEventListener('change', function () {
+            // Set the message input to the selected template's content
+            const selectedTemplateContent = templateSelect.value;
+            messageInput.value = selectedTemplateContent;
+
+            // Update the character count based on the selected template
+            updateCharacterCount();
+        });
+    }
 
     // Add validation for form submission
     form.addEventListener('submit', function(event) {
@@ -8,10 +40,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // Clear previous error messages
         clearErrorMessages();
 
-        var filtersValid = true;
-        var broadcastType = document.getElementById('broadcast_type').value;
-        var campus = document.getElementById('campus');
-        var message = document.getElementById('message');
+        let filtersValid = true;
+        const broadcastType = document.getElementById('broadcast_type').value;
+        const campus = document.getElementById('campus');
+        const message = document.getElementById('message');
 
         // Validate ALL tab
         if (broadcastType === 'all') {
@@ -28,9 +60,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Validate STUDENTS tab
         if (broadcastType === 'students') {
-            var college = document.getElementById('college');
-            var program = document.getElementById('program');
-            var year = document.getElementById('year');
+            const college = document.getElementById('college');
+            const program = document.getElementById('program');
+            const year = document.getElementById('year');
 
             if (!campus.value) {
                 showError(campus, 'Please select a campus.');
@@ -60,9 +92,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Validate EMPLOYEES tab
         if (broadcastType === 'employees') {
-            var office = document.getElementById('office');
-            var status = document.getElementById('status');
-            var type = document.getElementById('type');
+            const office = document.getElementById('office');
+            const status = document.getElementById('status');
+            const type = document.getElementById('type');
 
             if (!campus.value) {
                 showError(campus, 'Please select a campus.');
@@ -90,6 +122,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
+        // Ensure message length doesn't exceed maxCharLimit
+        if (message.value.length > maxCharLimit) {
+            showError(message, 'Your message exceeds 160 characters.');
+            filtersValid = false;
+        }
+
         // Submit the form if all validations pass
         if (filtersValid) {
             this.submit();
@@ -106,12 +144,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function clearErrorMessages() {
-        var errorElements = document.querySelectorAll('.error-message');
+        const errorElements = document.querySelectorAll('.error-message');
         errorElements.forEach(function(element) {
             element.remove();
         });
 
-        var fields = document.querySelectorAll('.error');
+        const fields = document.querySelectorAll('.error');
         fields.forEach(function(field) {
             field.classList.remove('error');
         });
@@ -120,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function showError(input, message) {
         input.classList.add('error');  // Highlight the input field with an error
 
-        var errorMessage = document.createElement('div');
+        const errorMessage = document.createElement('div');
         errorMessage.className = 'error-message text-red-600 text-sm mt-1';
         errorMessage.innerText = message;
 
@@ -129,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function removeError(input) {
         input.classList.remove('error');  // Remove the error class from the input field
-        var errorElement = input.parentNode.querySelector('.error-message');
+        const errorElement = input.parentNode.querySelector('.error-message');
         if (errorElement) {
             errorElement.remove();  // Remove the error message
         }

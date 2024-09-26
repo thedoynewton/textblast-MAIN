@@ -74,6 +74,11 @@ Route::middleware(['auth', CheckRole::class . ':subadmin'])->group(function () {
     // Dashboard
     Route::get('/subadmin/dashboard', [SubAdminController::class, 'dashboard'])->name('subadmin.dashboard');
 
+    // Route to get recipient details
+    Route::get('/subadmin/recipients/immediate', [SubAdminController::class, 'getImmediateRecipients']);
+    Route::get('/subadmin/recipients/failed', [SubAdminController::class, 'getFailedRecipients']);
+    Route::get('/subadmin/recipients/scheduled', [SubAdminController::class, 'getScheduledMessageRecipients']);
+
     // Messages
     Route::get('/subadmin/messages', [MessageController::class, 'showMessagesForm'])->name('subadmin.messages');
     Route::post('/subadmin/broadcast', [MessageController::class, 'broadcastToRecipients'])->name('subadmin.broadcastToRecipients');

@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const closeRecipientModalButtons = document.querySelectorAll('#closeModal, #closeModalFooter');
     const recipientContent = document.getElementById('recipientContent');
 
+    // Get the role of the user (assuming you have the role in a hidden input or data attribute)
+    const userRole = document.body.getAttribute('data-user-role'); // Ensure your body tag has this attribute set
+
     // ***************************
     // "Read More" Modal Functionality
     // ***************************
@@ -68,12 +71,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
         }
 
+        // Determine the base URL based on the user's role
+        const baseUrl = userRole === 'admin' ? '/admin/recipients' : '/subadmin/recipients';
+
         // Fetch and display recipient details when the "Immediate Messages Sent" card is clicked
         const immediateMessagesSentCard = document.getElementById('immediateMessagesSentCard');
         if (immediateMessagesSentCard) {
             immediateMessagesSentCard.addEventListener('click', function () {
                 console.log('Immediate Messages Sent card clicked'); 
-                fetchAndDisplayRecipients('/admin/recipients/immediate');
+                fetchAndDisplayRecipients(`${baseUrl}/immediate`);
             });
         }
 
@@ -82,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (failedMessagesCard) {
             failedMessagesCard.addEventListener('click', function () {
                 console.log('Failed Messages card clicked');
-                fetchAndDisplayRecipients('/admin/recipients/failed', true); 
+                fetchAndDisplayRecipients(`${baseUrl}/failed`, true); 
             });
         }
 
@@ -91,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (scheduledMessagesSentCard) {
             scheduledMessagesSentCard.addEventListener('click', function () {
                 console.log('Scheduled Messages Sent card clicked');
-                fetchAndDisplayRecipients('/admin/recipients/scheduled');
+                fetchAndDisplayRecipients(`${baseUrl}/scheduled`);
             });
         }
 

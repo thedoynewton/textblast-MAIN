@@ -30,6 +30,10 @@ Route::middleware(['auth', CheckRole::class . ':admin'])->group(function () {
     // Dashboard
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
+    // Route to get recipient details
+    Route::get('/admin/recipients/immediate', [AdminController::class, 'getImmediateRecipients']);
+
+
     // Messages
     Route::get('/admin/messages', [MessageController::class, 'showMessagesForm'])->name('admin.messages');
     Route::post('/admin/broadcast', [MessageController::class, 'broadcastToRecipients'])->name('admin.broadcastToRecipients');
@@ -59,7 +63,7 @@ Route::middleware(['auth', CheckRole::class . ':admin'])->group(function () {
 
     // App Management
     Route::get('/admin/app-management', [AdminController::class, 'appManagement'])->name('admin.app-management');
-    
+
     // Update Contact Number
     Route::post('/admin/update-contact-number', [AdminController::class, 'updateContactNumber'])->name('admin.update-contact-number');
 });

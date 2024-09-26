@@ -13,6 +13,7 @@ use App\Models\Student;
 use App\Models\Employee;
 use App\Models\Major;
 use App\Models\MessageLog;
+use App\Models\MessageRecipient;
 use App\Models\MessageTemplate;
 use App\Models\Type;
 use App\Services\MoviderService;
@@ -23,6 +24,17 @@ use Illuminate\Support\Facades\Http;
 
 class AdminController extends Controller
 {
+
+    public function getImmediateRecipients()
+    {
+        $recipients = MessageRecipient::whereHas('messageLog', function ($query) {
+            $query->where('schedule', 'immediate');
+        })->get(['first_name', 'last_name', 'email', 'contact_number']);
+    
+        return response()->json($recipients);
+    }
+    
+
     public function dashboard(MoviderService $moviderService)
     {
         // Get balance using Movider Service

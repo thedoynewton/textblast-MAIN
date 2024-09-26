@@ -32,6 +32,7 @@ Route::middleware(['auth', CheckRole::class . ':admin'])->group(function () {
 
     // Route to get recipient details
     Route::get('/admin/recipients/immediate', [AdminController::class, 'getImmediateRecipients']);
+    Route::get('/admin/recipients/failed', [AdminController::class, 'getFailedRecipients']);
 
 
     // Messages

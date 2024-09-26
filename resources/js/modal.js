@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const readMoreModalContent = document.getElementById('modal-message-content');
     const closeReadMoreModalButton = document.getElementById('close-modal');
 
-    // Variables for the "Immediate Messages Sent" modal
+    // Variables for the "Immediate Messages Sent" and "Failed Messages" modals
     const recipientModal = document.getElementById('recipientModal');
     const closeRecipientModalButtons = document.querySelectorAll('#closeModal, #closeModalFooter');
     const recipientContent = document.getElementById('recipientContent');
@@ -36,45 +36,59 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ***************************
-    // "Immediate Messages Sent" Modal Functionality
+    // "Immediate Messages Sent" and "Failed Messages" Modal Functionality
     // ***************************
 
     // Check if the recipientContent exists before attempting to use it
     if (recipientContent && recipientModal) {
-        // Fetch and display recipient details when the Immediate Messages Sent card is clicked
+        
+        // Common function to fetch and display recipient details for the given URL
+        function fetchAndDisplayRecipients(url) {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate the modal with recipient details
+                    recipientContent.innerHTML = ''; // Clear any existing content
+                    if (data.length > 0) {
+                        data.forEach(recipient => {
+                            const recipientElement = document.createElement('div');
+                            recipientElement.classList.add('border-b', 'py-2');
+                            recipientElement.innerHTML = `
+                                <p><strong>Name:</strong> ${recipient.first_name} ${recipient.last_name}</p>
+                                <p><strong>Email:</strong> ${recipient.email}</p>
+                                <p><strong>Contact Number:</strong> ${recipient.contact_number}</p>
+                            `;
+                            recipientContent.appendChild(recipientElement);
+                        });
+                    } else {
+                        recipientContent.innerHTML = '<p class="text-gray-500">No recipients found.</p>';
+                    }
+                    recipientModal.classList.remove('hidden'); // Show the modal
+                })
+                .catch(error => {
+                    console.error('Error fetching recipient details:', error);
+                });
+        }
+
+        // Fetch and display recipient details when the "Immediate Messages Sent" card is clicked
         const immediateMessagesSentCard = document.getElementById('immediateMessagesSentCard');
         if (immediateMessagesSentCard) {
             immediateMessagesSentCard.addEventListener('click', function () {
                 console.log('Immediate Messages Sent card clicked'); // Log message to confirm the card is clicked
-
-                fetch('/admin/recipients/immediate')
-                    .then(response => response.json())
-                    .then(data => {
-                        // Populate the modal with recipient details
-                        recipientContent.innerHTML = ''; // Clear any existing content
-                        if (data.length > 0) {
-                            data.forEach(recipient => {
-                                const recipientElement = document.createElement('div');
-                                recipientElement.classList.add('border-b', 'py-2');
-                                recipientElement.innerHTML = `
-                                    <p><strong>Name:</strong> ${recipient.first_name} ${recipient.last_name}</p>
-                                    <p><strong>Email:</strong> ${recipient.email}</p>
-                                    <p><strong>Contact Number:</strong> ${recipient.contact_number}</p>
-                                `;
-                                recipientContent.appendChild(recipientElement);
-                            });
-                        } else {
-                            recipientContent.innerHTML = '<p class="text-gray-500">No recipients found.</p>';
-                        }
-                        recipientModal.classList.remove('hidden'); // Show the modal
-                    })
-                    .catch(error => {
-                        console.error('Error fetching recipient details:', error);
-                    });
+                fetchAndDisplayRecipients('/admin/recipients/immediate'); // Fetch recipients for immediate messages
             });
         }
 
-        // Close the modal when any of the close buttons are clicked for the "Immediate Messages Sent" modal
+        // Fetch and display recipient details when the "Failed Messages" card is clicked
+        const failedMessagesCard = document.getElementById('failedMessagesCard');
+        if (failedMessagesCard) {
+            failedMessagesCard.addEventListener('click', function () {
+                console.log('Failed Messages card clicked'); // Log message to confirm the card is clicked
+                fetchAndDisplayRecipients('/admin/recipients/failed'); // Fetch recipients for failed messages
+            });
+        }
+
+        // Close the modal when any of the close buttons are clicked for the recipient modal
         closeRecipientModalButtons.forEach(button => {
             button.addEventListener('click', function () {
                 recipientModal.classList.add('hidden'); // Hide the modal

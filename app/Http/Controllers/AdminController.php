@@ -30,10 +30,16 @@ class AdminController extends Controller
         $recipients = MessageRecipient::whereHas('messageLog', function ($query) {
             $query->where('schedule', 'immediate');
         })->get(['first_name', 'last_name', 'email', 'contact_number']);
-    
+
         return response()->json($recipients);
     }
-    
+
+    public function getFailedRecipients()
+    {
+        $recipients = MessageRecipient::where('sent_status', 'Failed')->get(['first_name', 'last_name', 'email', 'contact_number']);
+        return response()->json($recipients);
+    }
+
 
     public function dashboard(MoviderService $moviderService)
     {

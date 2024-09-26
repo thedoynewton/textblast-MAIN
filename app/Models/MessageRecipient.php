@@ -29,6 +29,7 @@ class MessageRecipient extends Model
         'status_id',
         'type_id',
         'sent_status',
+        'failure_reason',
     ];
 
     public function messageLog()

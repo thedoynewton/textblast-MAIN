@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (recipientContent && recipientModal) {
         
         // Common function to fetch and display recipient details for the given URL
-        function fetchAndDisplayRecipients(url) {
+        function fetchAndDisplayRecipients(url, isFailed = false) {
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <p><strong>Name:</strong> ${recipient.first_name} ${recipient.last_name}</p>
                                 <p><strong>Email:</strong> ${recipient.email}</p>
                                 <p><strong>Contact Number:</strong> ${recipient.contact_number}</p>
+                                ${isFailed && recipient.failure_reason ? `<p><strong>Failure Reason:</strong> ${recipient.failure_reason}</p>` : ''}
                             `;
                             recipientContent.appendChild(recipientElement);
                         });
@@ -84,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (failedMessagesCard) {
             failedMessagesCard.addEventListener('click', function () {
                 console.log('Failed Messages card clicked'); // Log message to confirm the card is clicked
-                fetchAndDisplayRecipients('/admin/recipients/failed'); // Fetch recipients for failed messages
+                fetchAndDisplayRecipients('/admin/recipients/failed', true); // Fetch recipients for failed messages, pass true to indicate it’s failed
             });
         }
 

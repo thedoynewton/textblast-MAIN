@@ -147,6 +147,7 @@ class SendScheduledMessage implements ShouldQueue
                         'status_id' => $recipientType === 'employees' ? $recipient->status_id : null,
                         'type_id' => $recipientType === 'employees' ? $recipient->type_id : null,
                         'sent_status' => 'Failed', // Default to Failed, will update to Sent if successful
+                        'failure_reason' => null, 
                     ]);
 
                     Log::info("Recipient successfully logged in message_recipients table", [
@@ -163,14 +164,19 @@ class SendScheduledMessage implements ShouldQueue
                         $this->successCount += count($response->phone_number_list);
                         Log::info("Message sent successfully to: {$formattedNumber}");
 
-                        // Update sent_status to 'Sent' for successful messages
-                        $messageRecipient->update(['sent_status' => 'Sent']);
+                         // Update sent_status to 'Sent' for successful messages
+                    $messageRecipient->update(['sent_status' => 'Sent', 'failure_reason' => null]);
                     } else {
                         $this->failedCount++;
-                        Log::error("Failed to send message to: {$formattedNumber} - Error: " . ($response->error->description ?? 'Unknown error'));
+                        $errorDescription = $response->error->description ?? 'Unknown error';
+                        $messageRecipient->update(['sent_status' => 'Failed', 'failure_reason' => $errorDescription]);
+    
+                        Log::error("Failed to send message to: {$formattedNumber} - Error: {$errorDescription}");
                     }
                 } catch (\Exception $e) {
                     $this->failedCount++;
+                    $messageRecipient->update(['failure_reason' => $e->getMessage()]);
+                    
                     Log::error("Error logging recipient in message_recipients table: " . $e->getMessage(), [
                         'recipient_type' => $recipientType,
                         'contact_number' => $formattedNumber,

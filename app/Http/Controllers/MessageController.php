@@ -300,17 +300,16 @@ class MessageController extends Controller
     
         foreach ($recipients as $recipient) {
             $number = $recipientType === 'students' ? $recipient->stud_contact : $recipient->emp_contact;
-            $number = preg_replace('/\D/', '', $number); // Remove non-digit characters
-            $number = substr($number, -10); // Ensure it captures the last 10 digits
+            $number = preg_replace('/\D/', '', $number); 
+            $number = substr($number, -10); 
     
             if (strlen($number) === 10) {
-                $formattedNumber = '+63' . $number; // Format as +63 for sending
+                $formattedNumber = '+63' . $number; 
                 $formattedRecipients[] = $formattedNumber;
     
-                // Log each formatted recipient number to confirm it's being processed correctly
                 Log::info("Formatted number for sending: {$formattedNumber}");
     
-                // Add a record to the message_recipients table
+                // Create record in the message_recipients table
                 MessageRecipient::create([
                     'message_log_id' => $logId,
                     'recipient_type' => $recipientType === 'students' ? 'student' : 'employee',
@@ -319,7 +318,7 @@ class MessageController extends Controller
                     'first_name' => $recipient->stud_fname ?? $recipient->emp_fname,
                     'last_name' => $recipient->stud_lname ?? $recipient->emp_lname,
                     'middle_name' => $recipient->stud_mname ?? $recipient->emp_mname,
-                    'contact_number' => '09' . substr($number, -9), // Store as 09xxxxxxxxx
+                    'contact_number' => '09' . substr($number, -9),
                     'email' => $recipient->stud_email ?? $recipient->emp_email,
                     'campus_id' => $recipient->campus_id,
                     'college_id' => $recipientType === 'students' ? $recipient->college_id : null,
@@ -330,7 +329,8 @@ class MessageController extends Controller
                     'office_id' => $recipientType === 'employees' ? $recipient->office_id : null,
                     'status_id' => $recipientType === 'employees' ? $recipient->status_id : null,
                     'type_id' => $recipientType === 'employees' ? $recipient->type_id : null,
-                    'sent_status' => 'Failed', // Default to Failed, will update to Sent if successful
+                    'sent_status' => 'Failed', 
+                    'failure_reason' => null, 
                 ]);
             } else {
                 $invalidRecipients[] = [
@@ -343,8 +343,7 @@ class MessageController extends Controller
     
         if (empty($formattedRecipients)) {
             $errorMessage = 'All numbers are invalid.';
-            $role = Auth::user()->role;
-            Log::error("Bulk message sending failed for $role: $errorMessage");
+            Log::error("Bulk message sending failed: $errorMessage");
     
             return [
                 'successCount' => 0,
@@ -363,18 +362,25 @@ class MessageController extends Controller
             if (isset($response->phone_number_list)) {
                 $successCount += count($response->phone_number_list);
     
-                // Convert "+63" numbers back to "09" format for updating
                 $localNumbers = array_map(function ($num) {
                     return '09' . substr($num, -9);
                 }, $batch);
     
-                // Ensure the `sent_status` is updated for these successfully sent messages
                 MessageRecipient::where('message_log_id', $logId)
                     ->whereIn('contact_number', $localNumbers)
-                    ->update(['sent_status' => 'Sent']);
+                    ->update(['sent_status' => 'Sent', 'failure_reason' => null]);
             } else {
                 $errorCount += count($batch);
-                $batchErrors[] = $response->error->description ?? 'Unknown error';
+                $errorDescription = $response->error->description ?? 'Unknown error';
+    
+                foreach ($batch as $failedNumber) {
+                    $localNumber = '09' . substr($failedNumber, -9);
+                    MessageRecipient::where('message_log_id', $logId)
+                        ->where('contact_number', $localNumber)
+                        ->update(['sent_status' => 'Failed', 'failure_reason' => $errorDescription]);
+                }
+    
+                $batchErrors[] = $errorDescription;
             }
         }
     
@@ -388,9 +394,7 @@ class MessageController extends Controller
             $errorDetails .= ' ' . implode(', ', $batchErrors);
         }
     
-        // Add role-based logging if needed
-        $role = Auth::user()->role;
-        Log::info("Bulk message sending result for $role: $successCount successes, $errorCount errors");
+        Log::info("Bulk message sending result: $successCount successes, $errorCount errors");
     
         return [
             'successCount' => $successCount,

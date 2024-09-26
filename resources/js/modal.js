@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const readMoreModalContent = document.getElementById('modal-message-content');
     const closeReadMoreModalButton = document.getElementById('close-modal');
 
-    // Variables for the "Immediate Messages Sent" and "Failed Messages" modals
+    // Variables for the "Immediate Messages Sent," "Failed Messages," and "Scheduled Messages Sent" modals
     const recipientModal = document.getElementById('recipientModal');
     const closeRecipientModalButtons = document.querySelectorAll('#closeModal, #closeModalFooter');
     const recipientContent = document.getElementById('recipientContent');
@@ -16,27 +16,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Check if the "Read More" modal elements exist
     if (readMoreModal && readMoreModalTitle && readMoreModalContent && closeReadMoreModalButton) {
-        // Handle "Read More" link click
         document.querySelectorAll('a[data-modal-target]').forEach(link => {
             link.addEventListener('click', function (e) {
                 e.preventDefault();
                 const title = this.getAttribute('data-template-name');
                 const content = this.getAttribute('data-content');
                 
-                readMoreModalTitle.textContent = title; // Populate the title
-                readMoreModalContent.textContent = content; // Populate the content
-                readMoreModal.classList.remove('hidden'); // Show the modal
+                readMoreModalTitle.textContent = title;
+                readMoreModalContent.textContent = content;
+                readMoreModal.classList.remove('hidden');
             });
         });
 
-        // Handle "Close" button click for "Read More" modal
         closeReadMoreModalButton.addEventListener('click', function () {
-            readMoreModal.classList.add('hidden'); // Hide the modal
+            readMoreModal.classList.add('hidden');
         });
     }
 
     // ***************************
-    // "Immediate Messages Sent" and "Failed Messages" Modal Functionality
+    // "Immediate Messages Sent," "Failed Messages," and "Scheduled Messages Sent" Modal Functionality
     // ***************************
 
     // Check if the recipientContent exists before attempting to use it
@@ -47,8 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    // Populate the modal with recipient details
-                    recipientContent.innerHTML = ''; // Clear any existing content
+                    recipientContent.innerHTML = ''; // Clear existing content
                     if (data.length > 0) {
                         data.forEach(recipient => {
                             const recipientElement = document.createElement('div');
@@ -75,8 +72,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const immediateMessagesSentCard = document.getElementById('immediateMessagesSentCard');
         if (immediateMessagesSentCard) {
             immediateMessagesSentCard.addEventListener('click', function () {
-                console.log('Immediate Messages Sent card clicked'); // Log message to confirm the card is clicked
-                fetchAndDisplayRecipients('/admin/recipients/immediate'); // Fetch recipients for immediate messages
+                console.log('Immediate Messages Sent card clicked'); 
+                fetchAndDisplayRecipients('/admin/recipients/immediate');
             });
         }
 
@@ -84,15 +81,24 @@ document.addEventListener('DOMContentLoaded', function () {
         const failedMessagesCard = document.getElementById('failedMessagesCard');
         if (failedMessagesCard) {
             failedMessagesCard.addEventListener('click', function () {
-                console.log('Failed Messages card clicked'); // Log message to confirm the card is clicked
-                fetchAndDisplayRecipients('/admin/recipients/failed', true); // Fetch recipients for failed messages, pass true to indicate it’s failed
+                console.log('Failed Messages card clicked');
+                fetchAndDisplayRecipients('/admin/recipients/failed', true); 
+            });
+        }
+
+        // Fetch and display recipient details when the "Scheduled Messages Sent" card is clicked
+        const scheduledMessagesSentCard = document.getElementById('scheduledMessagesSentCard');
+        if (scheduledMessagesSentCard) {
+            scheduledMessagesSentCard.addEventListener('click', function () {
+                console.log('Scheduled Messages Sent card clicked');
+                fetchAndDisplayRecipients('/admin/recipients/scheduled');
             });
         }
 
         // Close the modal when any of the close buttons are clicked for the recipient modal
         closeRecipientModalButtons.forEach(button => {
             button.addEventListener('click', function () {
-                recipientModal.classList.add('hidden'); // Hide the modal
+                recipientModal.classList.add('hidden'); 
             });
         });
     }

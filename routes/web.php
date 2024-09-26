@@ -33,7 +33,7 @@ Route::middleware(['auth', CheckRole::class . ':admin'])->group(function () {
     // Route to get recipient details
     Route::get('/admin/recipients/immediate', [AdminController::class, 'getImmediateRecipients']);
     Route::get('/admin/recipients/failed', [AdminController::class, 'getFailedRecipients']);
-
+    Route::get('/admin/recipients/scheduled', [AdminController::class, 'getScheduledMessageRecipients']);
 
     // Messages
     Route::get('/admin/messages', [MessageController::class, 'showMessagesForm'])->name('admin.messages');

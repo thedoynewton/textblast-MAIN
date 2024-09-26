@@ -14,10 +14,10 @@
                 <h2 class="text-xl font-bold">Total Messages Sent</h2>
                 <p class="text-2xl font-semibold">{{ $totalSent }}</p>
             </div>
-            <div class="bg-indigo-100 p-4 rounded-lg">
+            <div id="scheduledMessagesSentCard" class="bg-indigo-100 p-4 rounded-lg cursor-pointer">
                 <h2 class="text-xl font-bold">Scheduled Messages Sent</h2>
                 <p class="text-2xl font-semibold">{{ $scheduledSent }}</p>
-            </div>
+            </div>            
             <div id="failedMessagesCard" class="bg-red-100 p-4 rounded-lg cursor-pointer">
                 <h2 class="text-xl font-bold">Failed Messages</h2>
                 <p class="text-2xl font-semibold">{{ $totalFailed }}</p>

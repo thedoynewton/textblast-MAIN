@@ -40,7 +40,16 @@ class AdminController extends Controller
             ->get(['first_name', 'last_name', 'email', 'contact_number', 'failure_reason']);
         return response()->json($recipients);
     }
-    
+
+    public function getScheduledMessageRecipients()
+    {
+        $recipients = MessageRecipient::whereHas('messageLog', function ($query) {
+            $query->where('schedule', 'scheduled')->where('status', 'Sent');
+        })->get();
+
+        return response()->json($recipients);
+    }
+
 
 
     public function dashboard(MoviderService $moviderService)

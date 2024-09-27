@@ -10,8 +10,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const closeRecipientModalButtons = document.querySelectorAll('#closeModal, #closeModalFooter');
     const recipientContent = document.getElementById('recipientContent');
 
-    // Get the role of the user (assuming you have the role in a hidden input or data attribute)
-    const userRole = document.body.getAttribute('data-user-role'); // Ensure your body tag has this attribute set
+    // The base URL is provided by the Blade view through a script tag.
+    // Ensure this variable is declared in the Blade view.
+    // Example: <script>const baseUrl = "/admin/recipients";</script>
 
     // ***************************
     // "Read More" Modal Functionality
@@ -70,9 +71,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.error('Error fetching recipient details:', error);
                 });
         }
-
-        // Determine the base URL based on the user's role
-        const baseUrl = userRole === 'admin' ? '/admin/recipients' : '/subadmin/recipients';
 
         // Fetch and display recipient details when the "Immediate Messages Sent" card is clicked
         const immediateMessagesSentCard = document.getElementById('immediateMessagesSentCard');

@@ -17,15 +17,15 @@
             <div id="scheduledMessagesSentCard" class="bg-indigo-100 p-4 rounded-lg cursor-pointer">
                 <h2 class="text-xl font-bold">Scheduled Messages Sent</h2>
                 <p class="text-2xl font-semibold">{{ $scheduledSent }}</p>
-            </div>            
+            </div>
             <div id="failedMessagesCard" class="bg-red-100 p-4 rounded-lg cursor-pointer">
                 <h2 class="text-xl font-bold">Failed Messages</h2>
                 <p class="text-2xl font-semibold">{{ $totalFailed }}</p>
-            </div>            
+            </div>
             <div id="immediateMessagesSentCard" class="bg-yellow-100 p-4 rounded-lg cursor-pointer">
                 <h2 class="text-xl font-bold">Immediate Messages Sent</h2>
                 <p class="text-2xl font-semibold">{{ $totalImmediate }}</p>
-            </div>            
+            </div>
             <div class="bg-purple-100 p-4 rounded-lg">
                 <h2 class="text-xl font-bold">Cancelled Messages</h2>
                 <p class="text-2xl font-semibold">{{ $totalCancelled }}</p>
@@ -148,30 +148,34 @@
         </div>
     </div>
 
-<!-- Modal HTML Structure -->
-<div id="recipientModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center hidden z-50">
-    <div class="bg-white rounded-lg shadow-lg w-3/4 md:w-1/2 lg:w-1/3">
-        <!-- Modal Header -->
-        <div class="flex justify-between items-center border-b px-4 py-2">
-            <h3 class="text-lg font-semibold">Recipients Details</h3>
-            <button id="closeModal" class="text-gray-500 hover:text-gray-800">
-                &times;
-            </button>
-        </div>
+    <!-- Modal HTML Structure -->
+    <div id="recipientModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-lg w-3/4 md:w-1/2 lg:w-1/3">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center border-b px-4 py-2">
+                <h3 class="text-lg font-semibold">Recipients Details</h3>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-800">
+                    &times;
+                </button>
+            </div>
 
-        <!-- Modal Content -->
-        <div id="recipientContent" class="p-4 max-h-80 overflow-y-auto">
-            <!-- Recipient details will be dynamically populated here -->
-        </div>
+            <!-- Modal Content -->
+            <div id="recipientContent" class="p-4 max-h-80 overflow-y-auto">
+                <!-- Recipient details will be dynamically populated here -->
+            </div>
 
-        <!-- Modal Footer -->
-        <div class="border-t px-4 py-2 flex justify-end">
-            <button id="closeModalFooter" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
-                Close
-            </button>
+            <!-- Modal Footer -->
+            <div class="border-t px-4 py-2 flex justify-end">
+                <button id="closeModalFooter" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                    Close
+                </button>
+            </div>
         </div>
+        <!-- Inject user role data into JavaScript -->
+        <script>
+            const baseUrl = @json(Auth::user()->role === 'admin' ? '/admin/recipients' : '/subadmin/recipients');
+        </script>
     </div>
-</div>
 
 
 

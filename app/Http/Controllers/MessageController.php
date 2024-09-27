@@ -444,22 +444,29 @@ class MessageController extends Controller
     {
         try {
             $status = $scheduleType === 'immediate' ? 'Sent' : 'Pending';
-
+    
             // Set campus_id to null if 'All Campus' is selected, otherwise use the provided campus ID
             $campusId = $request->campus === 'all' ? null : $request->campus;
-
+    
+            // Retrieve the message template based on the content in the request
+            $templateContent = $request->message;
+            $messageTemplate = MessageTemplate::where('content', $templateContent)->first();
+    
+            // If a template is found, use its name; otherwise, store the content as it is
+            $messageContent = $messageTemplate ? $messageTemplate->name : $templateContent;
+    
             // Create a new log entry in the MessageLog model
             $log = MessageLog::create([
                 'user_id' => $userId,
                 'recipient_type' => $request->broadcast_type,
-                'content' => $request->message,
+                'content' => $messageContent, // Store the template name or original content
                 'schedule' => $scheduleType === 'scheduled' && $scheduledAt ? 'scheduled' : 'immediate',
                 'scheduled_at' => $scheduledAt,
                 'sent_at' => $scheduleType === 'immediate' ? now() : null,
                 'status' => $status,
                 'campus_id' => $campusId,
             ]);
-
+    
             // Role-based logging for better traceability
             $role = Auth::user()->role;
             Log::info("Message log created by $role user with ID $userId", [
@@ -469,7 +476,7 @@ class MessageController extends Controller
                 'scheduled_at' => $scheduledAt,
                 'status' => $status,
             ]);
-
+    
             return $log->id;
         } catch (\Exception $e) {
             // Log the error for debugging
@@ -478,14 +485,15 @@ class MessageController extends Controller
                 'role' => Auth::user()->role,
                 'schedule_type' => $scheduleType,
             ]);
-
+    
             // Optionally, notify the user (if appropriate for your application)
             session()->flash('error', 'There was an issue logging the message. Please try again.');
-
+    
             // Return null or handle it as needed in the calling method
             return null;
         }
     }
+    
 
     protected function updateMessageLogStatus($logId, $status)
     {

@@ -169,6 +169,9 @@
             </button>
         </div>
     </div>
+    <script>
+        const baseUrl = @json(Auth::user()->role === 'admin' ? '/admin/recipients' : '/subadmin/recipients');
+    </script>
 </div>
 
     @vite(['resources/js/app.css', 'resources/js/app-management.js', 'resources/js/searchMessageLogs.js', 'resources/js/modal.js'])

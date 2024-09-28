@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FilterController;
 use App\Http\Controllers\MessageController;
@@ -55,6 +56,8 @@ Route::middleware(['auth', CheckRole::class . ':admin'])->group(function () {
 
     // Analytics
     Route::get('/admin/analytics', [AdminController::class, 'analytics'])->name('admin.analytics');
+    Route::get('/api/analytics/messages', [AnalyticsController::class, 'getBroadcastedMessagesData']);
+
 
     // User Management
     Route::get('/admin/user-management', [AdminController::class, 'userManagement'])->name('admin.user-management');

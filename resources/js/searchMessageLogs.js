@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function filterTable() {
         const searchTerm = searchInput.value.toLowerCase();
-        const recipientType = recipientTypeFilter.value;
-        const messageType = messageTypeFilter.value;
+        const recipientType = recipientTypeFilter.value.toLowerCase();
+        const messageType = messageTypeFilter.value.toLowerCase();
 
         tableRows.forEach(row => {
             const cells = row.querySelectorAll('td');
@@ -21,15 +21,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 recipientTypeMatch = false;
             }
 
-            // Check if the row matches the selected message type in both Message Type and Status columns
-            const messageTypeCell = row.querySelector('td:nth-child(4)'); // Assuming Message Type is in the 4th column
-            const statusCell = row.querySelector('td:nth-child(9)'); // Assuming Status is in the 9th column
-            
-            if (messageType !== 'all') {
-                if (messageTypeCell.textContent.toLowerCase() !== messageType &&
-                    statusCell.textContent.toLowerCase() !== messageType) {
-                    messageTypeMatch = false;
-                }
+            // Check if the row matches the selected message type in the STATUS column (10th column)
+            const statusCell = row.querySelector('td:nth-child(10)'); // Adjusted index to the correct column
+            if (messageType !== 'all' && statusCell.textContent.toLowerCase() !== messageType) {
+                messageTypeMatch = false;
             }
 
             // Highlight search term if found

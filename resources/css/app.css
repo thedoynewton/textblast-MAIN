@@ -5,14 +5,17 @@
 @tailwind utilities; */
 
 :root {
-    --primary-bg: #c3cbdc;
+    --primary-color: #800000;
+
     --primary-text: #000000;
-    --secondary-bg: #ffffff;
     --secondary-text: #757575;
+
+    --primary-bg: #c3cbdc;
+    --secondary-bg: #ffffff;
 
     /* For the Navigation Link Button State */
     --button-text: #291e13;
-    --button-hover-text: #6a6a6a;
+    --button-hover-text: #eab308;
     --button-selected-text: #000000;
     --button-selected-bg: #e5e7eb;
 }
@@ -24,11 +27,26 @@ body {
 }
 
 .bg-primary {
-    background-color: var(--primary-bg);
+    background-color: var(--primary-color);
 }
 
 .text-primary {
-    color: var(--primary-text);
+    color: var(--primary-color);
+}
+
+.border-primary {
+    border-color: var(--primary-color);
+}
+
+/* Login Floating Panel */
+.floating-panel {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    transform: translateY(-10px);
+    z-index: 10;
+    position: relative;
+    margin-left: auto;
+    margin-right: 5%;
 }
 
 .w-73 {
@@ -38,14 +56,6 @@ body {
 
 .ml-73 {
     margin-left: 18.25rem; /* 73 x 0.25rem */
-}
-
-/* LOGO */
-.text-gradient {
-    background: linear-gradient(90deg, #614514, #c78e29);
-    background-clip: text; /* Standard property for modern browsers */
-    -webkit-background-clip: text; /* Vendor prefix for older WebKit browsers */
-    -webkit-text-fill-color: transparent;
 }
 
 .z-50 {
@@ -65,30 +75,27 @@ body {
 
 /* BUTTON STATES */
 .button-default {
-    color: var(--button-text);
+    color: var(--button-text); /* Default text color */
 }
 
 .button-hover:hover {
-    color: var(--button-hover-text);
+    color: var(--button-hover-text); /* Hover state */
+    background-color: var(--button-hover-bg); /* Optional hover background color */
 }
 
 .button-selected {
-    color: var(--button-selected-text);
+    color: #8d0101; /* Dark red text color */
+    border-left: 4px solid #8b0000; /* Border on the left side to emphasize selection */
+    font-weight: bold; /* Bold text for selected state */
     background-color: var(--button-selected-bg);
 }
 
 /* SYSTEM THEMES */
 [data-theme="dark"] {
-    --primary-bg: #1c4e80;
-    --primary-text: #000000;
+    --primary-bg: #800000;
+    --primary-text: #080707;
     --secondary-bg: #7c909a;
     --secondary-text: #000000;
-}
-
-[data-theme="light"] {
-    --primary-text: #000000;
-    --secondary-bg: #ffffff;
-    --secondary-text: #757575;
 }
 
 /* Export Button for Analytics Page */
@@ -101,7 +108,25 @@ body {
     /* Adjust this value if needed to better align the dropdown */
 }
 
+/* Search Bar Highlighter */
 .highlight {
     background-color: yellow;
     font-weight: bold;
+}
+
+/* Wave Asset */
+.wave-container {
+    position: relative;
+    width: 100%;
+    height: 150px; /* Adjust as needed */
+    overflow: hidden;
+}
+
+/* Apply the primary color for checked radio buttons */
+input[type="radio"]:checked + label {
+    color: var(--primary-color); /* Using the primary color defined in your CSS */
+}
+
+input[type="radio"] {
+    accent-color: var(--primary-color); /* Change the radio button color itself */
 }

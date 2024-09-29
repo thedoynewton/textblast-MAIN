@@ -12,7 +12,7 @@ return [
         // TestDB connection
         'testdb' => [
             'driver' => 'sqlsrv',
-            'host' => env('DB_HOST', 'localhost'),
+            'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '1433'),
             'database' => env('DB_DATABASE', 'testdb'),
             'username' => env('DB_USERNAME', 'dadoy'),

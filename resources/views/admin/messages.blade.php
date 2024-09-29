@@ -1,7 +1,5 @@
 @extends('layouts.admin')
 
-@section('title', 'Messages')
-
 @section('content')
     <!-- Display Success or Error Messages -->
     @if (session('success'))
@@ -114,7 +112,7 @@
                         </select>
                     </div>
 
-                    <!-- New: Major Selection Dropdown -->
+                    <!-- Major Selection Dropdown -->
                     <div class="w-1/4">
                         <label for="major" class="block text-sm font-medium">Major</label>
                         <select name="major" id="major" required
@@ -180,8 +178,8 @@
                 <div class="mt-1 text-sm text-gray-500">
                     <span id="charCount">0</span>/160 characters
                 </div>
-                <p id="charWarning" class="mt-1 text-red-500 text-sm hidden">The message exceeds 160 characters. Exceeding may be
-                    split into multiple SMS and cost more.</p>
+                <p id="charWarning" class="mt-1 text-red-500 text-sm hidden">The message exceeds 160 characters. Exceeding
+                    may split into multiple SMS and cost more.</p>
             </div>
 
 
@@ -220,10 +218,10 @@
             </div>
 
             <div class="flex justify-end">
-                <x-button type="submit" color="yellow">Review Message</x-button>
+                <x-button type="submit" color="red">Review Message</x-button>
             </div>
         </form>
     </div>
     <!-- This loads the script in resources/js -->
-    @vite(['resources/js/messages.js', 'resources/js/messagesWarning.js'])
+    @vite(['resources/js/messages.js', 'resources/js/app.js'])
 @endsection

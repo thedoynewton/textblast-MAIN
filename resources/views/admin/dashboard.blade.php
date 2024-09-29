@@ -1,163 +1,160 @@
 @extends('layouts.admin')
 
-@section('title', 'Admin Dashboard')
-
 @section('content')
     <div class="container mx-auto">
-        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <p class="text-gray-700">Welcome to the Admin Dashboard. Here you can manage your application.</p>
-        </div>
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-8 transition-transform duration-200 hover:scale-101">
 
-        <!-- Number of Messages and Balance -->
-        <div class="mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Total Messages Sent Card -->
-            <div class="bg-blue-100 p-4 rounded-lg">
-                <h2 class="text-xl font-bold">Total Messages Sent to Recipients</h2>
-                <p class="text-2xl font-semibold">{{ $totalRecipients }}</p>
-            </div>
-            
-            <!-- Scheduled Messages Sent Card -->
-            <div id="scheduledMessagesSentCard" class="bg-indigo-100 p-4 rounded-lg cursor-pointer">
-                <h2 class="text-xl font-bold">Scheduled Messages Sent</h2>
-                <p class="text-2xl font-semibold">{{ $scheduledSentRecipients }}</p>
-            </div>
-            
-            <!-- Immediate Messages Sent Card -->
-            <div id="immediateMessagesSentCard" class="bg-yellow-100 p-4 rounded-lg cursor-pointer">
-                <h2 class="text-xl font-bold">Immediate Messages Sent</h2>
-                <p class="text-2xl font-semibold">{{ $immediateSentRecipients }}</p>
-            </div>
-            
-            <!-- Failed Messages Card -->
-            <div id="failedMessagesCard" class="bg-red-100 p-4 rounded-lg cursor-pointer">
-                <h2 class="text-xl font-bold">Failed Messages</h2>
-                <p class="text-2xl font-semibold">{{ $totalFailedRecipients }}</p>
-            </div>
-            
-            <!-- Cancelled Messages Card -->
-            <div class="bg-purple-100 p-4 rounded-lg">
-                <h2 class="text-xl font-bold">Cancelled Messages</h2>
-                <p class="text-2xl font-semibold">{{ $totalCancelled }}</p>
-            </div>
-        
-            <!-- Pending Messages Card -->
-            <div class="bg-orange-100 p-4 rounded-lg">
-                <h2 class="text-xl font-bold">Pending Messages</h2>
-                <p class="text-2xl font-semibold">{{ $totalPending }}</p>
-            </div>
-            
-            <div class="bg-purple-100 p-4 rounded-lg">
-                <h2 class="text-xl font-bold">Remaining Account Balance</h2>
-                <p class="text-2xl font-semibold">{{ $balance }}</p>
-            </div>
-        </div>
-        
+            <!-- Number of Messages and Balance -->
+            <div class="mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Total Messages Sent Card -->
+                <div class="bg-blue-100 p-4 rounded-lg">
+                    <h2 class="text-xl font-bold">Total Messages Sent to Recipients</h2>
+                    <p class="text-2xl font-semibold">{{ $totalRecipients }}</p>
+                </div>
 
-        <!-- Message Logs Section -->
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-bold mb-4">Message Logs</h2>
+                <!-- Scheduled Messages Sent Card -->
+                <div id="scheduledMessagesSentCard" class="bg-indigo-100 p-4 rounded-lg cursor-pointer">
+                    <h2 class="text-xl font-bold">Scheduled Messages Sent</h2>
+                    <p class="text-2xl font-semibold">{{ $scheduledSentRecipients }}</p>
+                </div>
 
+                <!-- Immediate Messages Sent Card -->
+                <div id="immediateMessagesSentCard" class="bg-yellow-100 p-4 rounded-lg cursor-pointer">
+                    <h2 class="text-xl font-bold">Immediate Messages Sent</h2>
+                    <p class="text-2xl font-semibold">{{ $immediateSentRecipients }}</p>
+                </div>
+
+                <!-- Failed Messages Card -->
+                <div id="failedMessagesCard" class="bg-red-100 p-4 rounded-lg cursor-pointer">
+                    <h2 class="text-xl font-bold">Failed Messages</h2>
+                    <p class="text-2xl font-semibold">{{ $totalFailedRecipients }}</p>
+                </div>
+
+                <!-- Cancelled Messages Card -->
+                <div class="bg-purple-100 p-4 rounded-lg">
+                    <h2 class="text-xl font-bold">Cancelled Messages</h2>
+                    <p class="text-2xl font-semibold">{{ $totalCancelled }}</p>
+                </div>
+
+                <!-- Pending Messages Card -->
+                <div class="bg-orange-100 p-4 rounded-lg">
+                    <h2 class="text-xl font-bold">Pending Messages</h2>
+                    <p class="text-2xl font-semibold">{{ $totalPending }}</p>
+                </div>
+
+                <div class="bg-purple-100 p-4 rounded-lg">
+                    <h2 class="text-xl font-bold">Remaining Account Balance</h2>
+                    <p class="text-2xl font-semibold">{{ $balance }}</p>
+                </div>
+            </div>
+
+
+            <!-- Message Logs Section -->
+            <h2 class="text-2xl font-bold mb-4 border-b-2 border-[#9d1e18] pb-2">Message Logs</h2>
             <!-- Filters -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
                 <!-- Search Bar -->
-                <div>
+                <div class="flex flex-col">
                     <label for="search" class="block text-sm font-medium text-gray-700">Search Logs</label>
                     <input type="text" id="search" placeholder="Search for logs..."
-                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
+                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2 focus:border-[#d50600] focus:ring-[#d50600] transition duration-150">
                 </div>
                 <!-- Recipient Type Filter -->
-                <div>
+                <div class="flex flex-col">
                     <label for="recipientType" class="block text-sm font-medium text-gray-700">Filter Recipient</label>
-                    <select id="recipientType" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
+                    <select id="recipientType"
+                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2 focus:border-[#d50600] focus:ring-[#d50600] transition duration-150">
                         <option value="all" selected>All Recipients</option>
                         <option value="students">Students</option>
                         <option value="employees">Employees</option>
                     </select>
                 </div>
-                <!-- Message Type Filter -->
-                <div>
-                    <label for="messageType" class="block text-sm font-medium text-gray-700">Filter Message Type</label>
-                    <select id="messageType" class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2">
-                        <option value="all" selected>All Message Types</option>
-                        <option value="immediate">Immediate</option>
-                        <option value="scheduled">Scheduled</option>
+                <!-- Message Status Filter -->
+                <div class="flex flex-col">
+                    <label for="messageType" class="block text-sm font-medium text-gray-700">Filter Message Status</label>
+                    <select id="messageType"
+                        class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2 focus:border-[#d50600] focus:ring-[#d50600] transition duration-150">
+                        <option value="all" selected>All Message Status</option>
+                        <option value="sent">Sent</option>
+                        <option value="pending">Pending</option>
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
+                <!-- Generate Logs Button -->
+                <div class="flex flex-col items-start">
+                    <label for="generateLogs" class="block text-sm font-medium text-gray-700 mb-1">Generate Message Logs
+                        Report</label>
+                    <x-button class="w-full transform hover:scale-105 transition duration-200" color="red"
+                        id="generateLogs">Generate Report</x-button>
+                </div>
             </div>
-
             <!-- Message Logs Table -->
-            <div class="overflow-x-auto overflow-y-auto max-h-96 mb-8">
-                <table id="messageLogsTable"
-                    class="min-w-full bg-white border border-gray-300 rounded-lg divide-y divide-gray-200">
-                    <thead class="bg-gray-100">
+            <div class="overflow-x-auto max-h-[450px] rounded-lg shadow-md border border-gray-300">
+                <table id="messageLogsTable" class="min-w-full bg-white divide-y divide-gray-200 rounded-lg">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">User</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Recipient</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Message</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Message Type</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Campus</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Created</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Scheduled Date</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Date Sent</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Date Cancelled</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Status</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Total Recipients</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Successful Deliveries</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Failed Messages</th>
-                            <th class="py-3 px-4 border-b font-medium text-left text-gray-700">Actions</th>
+                            @foreach (['User', 'Recipient', 'Message', 'Sent Type', 'Campus', 'Created', 'Scheduled Date', 'Date Sent', 'Date Cancelled', 'Status', 'Total Recipients', 'Successful Deliveries', 'Failed Messages', 'Actions'] as $header)
+                                <th
+                                    class="py-2 px-4 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {{ $header }}
+                                </th>
+                            @endforeach
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach ($messageLogs as $log)
-                            <tr class="hover:bg-gray-50 transition duration-150 ease-in-out">
-                                <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->user->name }}</td>
-                                <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->recipient_type }}
+                    <tbody class="bg-white divide-y divide-gray-200 text-sm">
+                        @forelse ($messageLogs as $log)
+                            <tr class="hover:bg-red-100 transition duration-150 ease-in-out">
+                                <!-- Retaining red hover effect -->
+                                <td class="py-2 px-4 text-xs text-gray-700 whitespace-nowrap">{{ $log->user->name }}</td>
+                                <td class="py-2 px-4 text-xs text-gray-700 whitespace-nowrap">{{ $log->recipient_type }}
                                 </td>
-                                <td class="py-3 px-4 border-b text-gray-600">{{ $log->content }}</td>
-                                <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->schedule }}</td>
-                                <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">
+                                <td class="py-2 px-4 text-xs text-gray-700">
+                                    {{ \Illuminate\Support\Str::limit($log->content, 20, '...') }}
+                                    @if (strlen($log->content) > 70)
+                                        <a href="#" class="text-[#9d1e18] hover:underline"
+                                            data-modal-target="#messageLogsModal" data-template-name="Details"
+                                            data-content="{{ $log->content }}">
+                                            <br>Read More
+                                        </a>
+                                    @endif
+                                </td>
+                                <td class="py-2 px-4 text-xs text-gray-700 whitespace-nowrap">{{ $log->schedule }}</td>
+                                <td class="py-2 px-4 text-xs text-gray-700 whitespace-nowrap">
                                     {{ $log->campus ? $log->campus->campus_name : 'N/A' }}</td>
-                                <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">
+                                <td class="py-2 px-4 text-xs text-gray-700 whitespace-nowrap">
                                     {{ $log->created_at->format('F j, Y g:i A') }}</td>
-                                <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">
+                                <td class="py-2 px-4 text-xs text-gray-700 whitespace-nowrap">
                                     {{ $log->scheduled_at ? $log->scheduled_at->format('F j, Y g:i A') : 'N/A' }}</td>
-                                <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">
+                                <td class="py-2 px-4 text-xs text-gray-700 whitespace-nowrap">
                                     {{ $log->sent_at ? $log->sent_at->format('F j, Y g:i A') : 'N/A' }}</td>
-                                <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">
+                                <td class="py-2 px-4 text-xs text-gray-700 whitespace-nowrap">
                                     {{ $log->cancelled_at ? $log->cancelled_at->format('F j, Y g:i A') : 'N/A' }}</td>
-                                <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">{{ $log->status }}</td>
-                                <td class="py-3 px-4 border-b text-gray-600 text-center">{{ $log->total_recipients }}</td>
-                                <td class="py-3 px-4 border-b text-gray-600 text-center">{{ $log->sent_count }}</td>
-                                <td class="py-3 px-4 border-b text-gray-600 text-center">{{ $log->failed_count }}</td>
-                                <td class="py-3 px-4 border-b text-gray-600 whitespace-nowrap">
+                                <td class="py-2 px-4 text-xs text-gray-700 whitespace-nowrap">{{ $log->status }}</td>
+                                <td class="py-2 px-4 text-xs text-gray-700 text-center">{{ $log->total_recipients }}</td>
+                                <td class="py-2 px-4 text-xs text-gray-700 text-center">{{ $log->sent_count }}</td>
+                                <td class="py-2 px-4 text-xs text-gray-700 text-center">{{ $log->failed_count }}</td>
+                                <td class="py-3 px-4 border-b text-gray-600">
                                     @if ($log->status === 'Pending')
                                         <form action="{{ route('admin.cancelScheduledMessage', $log->id) }}"
                                             method="POST">
                                             @csrf
-                                            <button type="submit" class="text-red-500 hover:underline">
-                                                <div class="rounded-full bg-red-500 p-2 hover:bg-red-600"
-                                                    title="Cancel Send">
-                                                    <img src="/images/cancel.png" alt="Remove Access" class="h-5 w-5"
-                                                        style="filter: brightness(0) invert(1);">
-                                                </div>
-                                            </button>
+                                            <button type="submit" class="text-red-500 hover:underline">Cancel</button>
                                         </form>
                                     @else
-                                        <span class="text-gray-400">N/A</span>
+                                        <span class="text-gray-400">Cannot Cancel</span>
                                     @endif
                                 </td>
                             </tr>
-                        @endforeach
-
-                        @if ($messageLogs->isEmpty())
+                        @empty
                             <tr>
                                 <td colspan="13" class="text-center py-4 text-gray-500">No message logs found.</td>
                             </tr>
-                        @endif
+                        @endforelse
                     </tbody>
                 </table>
             </div>
+            <!-- Include the Modal Component for Logs -->
+            <x-modal modal-id="messageLogsModal" title="Message Log" content="Exciting News!"></x-modal>
         </div>
     </div>
 

@@ -1,7 +1,5 @@
 @extends('layouts.admin')
 
-@section('title', 'Review Message')
-
 @section('content')
 
 <div class="flex items-start justify-between bg-white p-6 rounded-lg shadow-md">

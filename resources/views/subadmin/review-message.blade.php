@@ -1,7 +1,5 @@
 @extends('layouts.subadmin')
 
-@section('title', 'Review Message')
-
 @section('content')
 
 <div class="flex items-start justify-between bg-white p-6 rounded-lg shadow-md">
@@ -93,7 +91,7 @@
             @endif
 
             <!-- Edit Message Button -->
-            <a href="{{ route('admin.messages', $data) }}" class="bg-yellow-500 text-white px-4 py-2 rounded-lg mr-2 inline-block text-center">
+            <a href="{{ route('subadmin.messages', $data) }}" class="bg-yellow-500 text-white px-4 py-2 rounded-lg mr-2 inline-block text-center">
                 Edit Message
             </a> 
             <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg">Confirm and Send</button>

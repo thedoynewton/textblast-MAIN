@@ -50,50 +50,48 @@ class AdminController extends Controller
         return response()->json($recipients);
     }
 
-
-
     public function dashboard(MoviderService $moviderService)
     {
         // Get balance using Movider Service
         $balanceData = $moviderService->getBalance();
         $balance = $balanceData['balance'] ?? 0;
-
+    
         // Query MessageLog table only once and aggregate counts
         $messageStats = MessageLog::selectRaw("
-            COUNT(CASE WHEN status = 'Sent' THEN 1 END) AS total_sent,
-            COUNT(CASE WHEN schedule = 'scheduled' AND status = 'Sent' THEN 1 END) AS scheduled_sent,
-            COUNT(CASE WHEN failed_count > 0 THEN 1 END) AS total_failed,
-            COUNT(CASE WHEN schedule = 'immediate' AND status = 'Sent' THEN 1 END) AS total_immediate,
+            SUM(sent_count) AS total_recipients, -- Total sent recipients
+            SUM(CASE WHEN schedule = 'scheduled' AND status = 'Sent' THEN sent_count ELSE 0 END) AS scheduled_sent_recipients,
+            SUM(CASE WHEN schedule = 'immediate' AND status = 'Sent' THEN sent_count ELSE 0 END) AS immediate_sent_recipients,
+            SUM(failed_count) AS total_failed_recipients,
             COUNT(CASE WHEN status = 'Cancelled' THEN 1 END) AS total_cancelled,
             COUNT(CASE WHEN status = 'Pending' THEN 1 END) AS total_pending,
             COUNT(CASE WHEN status = 'Scheduled' THEN 1 END) AS total_scheduled
         ")->first();
-
+    
         // Set default values if stats are null
-        $totalSent = $messageStats->total_sent ?? 0;
-        $scheduledSent = $messageStats->scheduled_sent ?? 0;
-        $totalFailed = $messageStats->total_failed ?? 0;
-        $totalImmediate = $messageStats->total_immediate ?? 0;
+        $totalRecipients = $messageStats->total_recipients ?? 0; // Total recipients sent
+        $scheduledSentRecipients = $messageStats->scheduled_sent_recipients ?? 0;
+        $immediateSentRecipients = $messageStats->immediate_sent_recipients ?? 0;
+        $totalFailedRecipients = $messageStats->total_failed_recipients ?? 0;
         $totalCancelled = $messageStats->total_cancelled ?? 0;
         $totalPending = $messageStats->total_pending ?? 0;
         $totalScheduled = $messageStats->total_scheduled ?? 0;
-
+    
         // Fetch all message logs, including the associated user and campus data
         $messageLogs = MessageLog::with(['user', 'campus'])->orderBy('created_at', 'desc')->get();
-
+    
         return view('admin.dashboard', compact(
             'balance',
-            'totalSent',
-            'scheduledSent',
-            'totalFailed',
-            'totalImmediate',
+            'totalRecipients',
+            'scheduledSentRecipients',
+            'immediateSentRecipients',
+            'totalFailedRecipients',
             'totalCancelled',
             'totalPending',
             'totalScheduled',
-            'messageLogs' // Pass the message logs to the view
+            'messageLogs'
         ));
     }
-
+        
 
     public function messages()
     {

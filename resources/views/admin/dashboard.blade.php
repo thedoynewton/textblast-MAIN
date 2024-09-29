@@ -45,6 +45,11 @@
                 <h2 class="text-xl font-bold">Pending Messages</h2>
                 <p class="text-2xl font-semibold">{{ $totalPending }}</p>
             </div>
+            
+            <div class="bg-purple-100 p-4 rounded-lg">
+                <h2 class="text-xl font-bold">Remaining Account Balance</h2>
+                <p class="text-2xl font-semibold">{{ $balance }}</p>
+            </div>
         </div>
         
 

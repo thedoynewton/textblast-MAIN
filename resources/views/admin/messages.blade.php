@@ -178,10 +178,9 @@
                 <div class="mt-1 text-sm text-gray-500">
                     <span id="charCount">0</span>/160 characters
                 </div>
-                <p id="charWarning" class="mt-1 text-red-500 text-sm hidden">The message exceeds 160 characters. Exceeding
-                    may split into multiple SMS and cost more.</p>
+                <p id="charWarning" class="mt-1 text-red-500 text-sm hidden">The message exceeds 160 characters and may be
+                    split into multiple SMS.</p>
             </div>
-
 
             <div class="mb-6 flex items-center space-x-8">
                 <!-- Batch Size Input -->
@@ -218,10 +217,10 @@
             </div>
 
             <div class="flex justify-end">
-                <x-button type="submit" color="red">Review Message</x-button>
+                <x-button type="submit" color="red" id="reviewButton" disabled>Review Message</x-button>
             </div>
         </form>
     </div>
     <!-- This loads the script in resources/js -->
-    @vite(['resources/js/messages.js', 'resources/js/app.js'])
+    @vite(['resources/js/messages.js', 'resources/js/app.js', 'resources/js/characterCount.js'])
 @endsection

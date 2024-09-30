@@ -150,35 +150,6 @@
     </div>
 </div>
 
-    <!-- Modal HTML Structure -->
-    <div id="recipientModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center hidden z-50">
-        <div class="bg-white rounded-lg shadow-lg w-3/4 md:w-1/2 lg:w-1/3">
-            <!-- Modal Header -->
-            <div class="flex justify-between items-center border-b px-4 py-2">
-                <h3 class="text-lg font-semibold">Recipients Details</h3>
-                <button id="closeModal" class="text-gray-500 hover:text-gray-800">
-                    &times;
-                </button>
-            </div>
-
-            <!-- Modal Content -->
-            <div id="recipientContent" class="p-4 max-h-80 overflow-y-auto">
-                <!-- Recipient details will be dynamically populated here -->
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="border-t px-4 py-2 flex justify-end">
-                <button id="closeModalFooter" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
-                    Close
-                </button>
-            </div>
-        </div>
-        <!-- Inject user role data into JavaScript -->
-        <script>
-            const baseUrl = @json(Auth::user()->role === 'admin' ? '/admin/recipients' : '/subadmin/recipients');
-        </script>
-    </div>
-
 @vite([
 'resources/js/app.css',
 'resources/js/searchMessageLogs.js',

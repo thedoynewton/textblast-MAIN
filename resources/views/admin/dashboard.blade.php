@@ -7,44 +7,45 @@
             <!-- Number of Messages and Balance -->
             <div class="mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Total Messages Sent Card -->
-                <div class="bg-blue-100 p-4 rounded-lg">
-                    <h2 class="text-xl font-bold">Total Messages Sent to Recipients</h2>
-                    <p class="text-2xl font-semibold">{{ $totalRecipients }}</p>
+                <div class="bg-red-50 p-4 border-l-4 border-[#d50600] rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold text-[#d50600]">Total Messages Sent to Recipients</h2>
+                    <p class="text-2xl font-semibold text-[#d50600]">{{ $totalRecipients }}</p>
                 </div>
 
                 <!-- Scheduled Messages Sent Card -->
-                <div id="scheduledMessagesSentCard" class="bg-indigo-100 p-4 rounded-lg cursor-pointer">
-                    <h2 class="text-xl font-bold">Scheduled Messages Sent</h2>
-                    <p class="text-2xl font-semibold">{{ $scheduledSentRecipients }}</p>
+                <div id="scheduledMessagesSentCard" class="bg-red-100 p-4 border-l-4 border-[#b10000] rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out hover:scale-105 cursor-pointer">
+                    <h2 class="text-xl font-bold text-[#b10000]">Scheduled Messages Sent</h2>
+                    <p class="text-2xl font-semibold text-[#b10000]">{{ $scheduledSentRecipients }}</p>
                 </div>
 
                 <!-- Immediate Messages Sent Card -->
-                <div id="immediateMessagesSentCard" class="bg-yellow-100 p-4 rounded-lg cursor-pointer">
-                    <h2 class="text-xl font-bold">Immediate Messages Sent</h2>
-                    <p class="text-2xl font-semibold">{{ $immediateSentRecipients }}</p>
+                <div id="immediateMessagesSentCard" class="bg-yellow-100 p-4 border-l-4 border-[#d1a700] rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out hover:scale-105 cursor-pointer">
+                    <h2 class="text-xl font-bold text-[#d1a700]">Immediate Messages Sent</h2>
+                    <p class="text-2xl font-semibold text-[#d1a700]">{{ $immediateSentRecipients }}</p>
                 </div>
 
                 <!-- Failed Messages Card -->
-                <div id="failedMessagesCard" class="bg-red-100 p-4 rounded-lg cursor-pointer">
-                    <h2 class="text-xl font-bold">Failed Messages</h2>
-                    <p class="text-2xl font-semibold">{{ $totalFailedRecipients }}</p>
+                <div id="failedMessagesCard" class="bg-red-200 p-4 border-l-4 border-[#990000] rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out hover:scale-105 cursor-pointer">
+                    <h2 class="text-xl font-bold text-[#990000]">Failed Messages</h2>
+                    <p class="text-2xl font-semibold text-[#990000]">{{ $totalFailedRecipients }}</p>
                 </div>
 
                 <!-- Cancelled Messages Card -->
-                <div class="bg-purple-100 p-4 rounded-lg">
-                    <h2 class="text-xl font-bold">Cancelled Messages</h2>
-                    <p class="text-2xl font-semibold">{{ $totalCancelled }}</p>
+                <div class="bg-gray-200 p-4 border-l-4 border-[#6b7280] rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold text-[#6b7280]">Cancelled Messages</h2>
+                    <p class="text-2xl font-semibold text-[#6b7280]">{{ $totalCancelled }}</p>
                 </div>
 
                 <!-- Pending Messages Card -->
-                <div class="bg-orange-100 p-4 rounded-lg">
-                    <h2 class="text-xl font-bold">Pending Messages</h2>
-                    <p class="text-2xl font-semibold">{{ $totalPending }}</p>
+                <div class="bg-orange-100 p-4 border-l-4 border-[#e07b00] rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold text-[#e07b00]">Pending Messages</h2>
+                    <p class="text-2xl font-semibold text-[#e07b00]">{{ $totalPending }}</p>
                 </div>
 
-                <div class="bg-purple-100 p-4 rounded-lg">
-                    <h2 class="text-xl font-bold">Remaining Account Balance</h2>
-                    <p class="text-2xl font-semibold">{{ $balance }}</p>
+                  <!-- Remaining Account Balance Card -->
+                <div class="bg-purple-100 p-4 border-l-4 border-[#7e57c2] rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold text-[#7e57c2]">Remaining Account Balance</h2>
+                    <p class="text-2xl font-semibold text-[#7e57c2]">{{ $balance }}</p>
                 </div>
             </div>
 
